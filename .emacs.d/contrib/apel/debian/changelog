@@ -1,0 +1,736 @@
+apel (10.7-3) unstable; urgency=low
+
+  * debian/patches/cvs20080906.patch: Patch from the upstream CVS trunk on
+    2008-09-06 for poe.el to fix a format-time-string bug by MORIOKA Tomohiko
+    (cf. http://www.rubyist.net/~matz/20080905.html by Yukihiro Matsumoto).
+  * debian/rules, debian/control: Handle debian/patches with quilt.
+  * debian/emacsen-*: Rewritten.
+  * debian/rules, debian/dirs: Install obsolete files in the attic directory.
+  * debian/rules: Use dh_prep instead of `dh_clean -k'.
+  * debian/compat, debian/control: Update debhelper version to 7.
+  * debian/control:
+    - Remove `make' and `debianutils' from Depends.
+    - Move `Homepage:' from Description to the header.
+    - Remove `timezone.el' from Description.
+    - Update Standards-Version to 3.8.1.
+  * debian/copyright: Updated.
+
+ -- Tatsuya Kinoshita <tats@debian.org>  Fri, 10 Apr 2009 00:06:04 +0900
+
+apel (10.7-2) unstable; urgency=low
+
+  * debian/control: Prefer emacs to emacs21.
+
+ -- Tatsuya Kinoshita <tats@debian.org>  Sun, 08 Jul 2007 21:10:45 +0900
+
+apel (10.7-1) unstable; urgency=low
+
+  * New upstream release.
+  * debian/emacsen-install.in: Recompile reverse depends packages that use
+    APEL's macro.
+  * debian/rules (binary-indep): Don't fails if the obsolete file doesn't
+    exist in the upstream source.
+  * debian/control (Description):
+    - Remove `time-stamp.el'.
+    - Add `Homepage:'.
+  * debian/watch: Set Action to uupdate.
+  * debian/copyright:
+    - Change URL of the upstream site.
+    - Reformat copyright years.
+    - Mention Debian packaging conditions.
+
+ -- Tatsuya Kinoshita <tats@debian.org>  Sun, 08 Apr 2007 19:45:14 +0900
+
+apel (10.6+0.20060424-1) unstable; urgency=low
+
+  * New upstream release. (CVS trunk on 2006-04-24)
+  * debian/control (Build-Depends): Depend on debhelper version 5.
+  * debian/compat: 3 -> 5.
+  * debian/control (Standards-Version): 3.6.1 -> 3.7.2.
+  * debian/copyright: Update the postal address of the Free Software
+    Foundation.
+  * debian/control (Maintainer): tats@vega.ocn.ne.jp -> tats@debian.org.
+  * debian/copyright: Ditto.
+
+ -- Tatsuya Kinoshita <tats@debian.org>  Sun,  4 Jun 2006 21:03:11 +0900
+
+apel (10.6+0.20050606-1) unstable; urgency=low
+
+  * New upstream release. (CVS trunk on 2005-06-06)
+    - poem.el: More precisely binding for `char-or-char-int-p'.
+      (closes: #307260)
+  * debian/emacsen-install.in: Ready for emacsen flavors sxemacs*.
+  * debian/watch: New file.
+  * debian/control: Revise short description.
+  * debian/copyright: Updated.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Mon,  6 Jun 2005 20:40:15 +0900
+
+apel (10.6+0.20040418-1) unstable; urgency=low
+
+  * New upstream release. (CVS snapshot on 2004-04-18 at 20:46 +0900)
+    - filename.el: Doc fix.
+  * debian/emacsen-install.in: Create *.el symlinks.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Sun, 23 May 2004 00:48:54 +0900
+
+apel (10.6+0.20040306-1) unstable; urgency=low
+
+  * New upstream release. (CVS snapshot on 2004-03-06 at 20:11 +0900)
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Sun, 18 Apr 2004 00:38:15 +0900
+
+apel (10.6+0.20040219-1) unstable; urgency=low
+
+  * New upstream release. (CVS snapshot on 2004-02-19 at 23:44 +0900)
+    - calist.el (use-calist-package): Add missing arg to `format'.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Sun, 22 Feb 2004 22:16:34 +0900
+
+apel (10.6+0.20040126-1) unstable; urgency=low
+
+  * New upstream release. (CVS snapshot on 2004-01-26 at 22:59 +0900)
+    - poe-xemacs.el (run-at-time): Don't use `defadvice' in order to
+      avoid a conflict with the Gnus version.
+  * debian/copyright: Revised.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Wed, 28 Jan 2004 00:26:55 +0900
+
+apel (10.6+0.20031213-1) unstable; urgency=low
+
+  * New upstream release. (CVS snapshot on 2003-12-13 at 06:40 +0900)
+    - poe-xemacs.el: Fix run-at-time problem for XEmacs.
+  * debian/copyright: Further clarification.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Sun, 21 Dec 2003 00:14:19 +0900
+
+apel (10.6+0.20030907-1) unstable; urgency=low
+
+  * New upstream release. (CVS snapshot on 2003-09-07)
+    - poem-xm.el (char-length): Don't use `defun-maybe' to define it
+      since this module may be installed as the XEmacs package which
+      should be usable by all the XEmacs 21.x series.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Fri, 14 Nov 2003 00:25:21 +0900
+
+apel (10.6-3) unstable; urgency=low
+
+  * debian/emacsen-install.in: Carefully install emu/* and apel/*.
+    (closes: #208315)
+  * Use debian/compat instead of DH_COMPAT.
+    - debian/compat: New file.
+    - debian/rules: Remove `export DH_COMPAT=3'.
+    - debian/control (Build-Depends-Indep): debhelper (>= 3.4.4).
+  * debian/control (Standards-Version): 3.6.0 -> 3.6.1.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Wed,  3 Sep 2003 22:38:55 +0900
+
+apel (10.6-2) unstable; urgency=low
+
+  * Don't put obsolete files env.el and time-stamp.el in the site-lisp
+    directory. (closes: #205474)
+  * Fix that older version of timezone.el is installed.
+  * To prevent literal-test-file problem, don't put pces-20.el in the
+    site-lisp directory if pces-20.elc is not generated. (relate to
+    Bug#166226)
+  * debian/emacsen-install.in: Set *.elc time stamp correctly.
+  * debian/control (Depends): Add debianutils (>= 1.7) to use the mktemp
+    command.
+  * debian/copyright: Add upstream URL for HTTP.
+  * debian/control (Standards-Version): 3.5.10 -> 3.6.0.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Mon, 18 Aug 2003 07:44:30 +0900
+
+apel (10.6-1) unstable; urgency=medium
+
+  * New upstream release
+    - Fix that APEL's make-temp-file doesn't work on Emacs 21.
+      (closes: #199149)
+  * Maintainer upload correctly. (closes: #196598)
+  * Cleanup installation scripts.
+  * Ready for xemacs21-{mule,nomule} flavors.
+  * debian/emacsen-install: Fix bashism.
+  * debian/rules: Use binary-indep instead of binary-arch.
+  * debian/control (Build-Depends-Indep): Renamed from Build-Depends.
+  * debian/control: Depend on `emacs21 | emacsen' instead of `emacsen'.
+  * debian/rules: Don't use recompile-pkg.sh.
+  * debian/control (Description): Revised.
+  * debian/copyright: Revised.
+  * debian/control: Standards-Version: 3.5.2 -> 3.5.10.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Sun,  6 Jul 2003 22:18:32 +0900
+
+apel (10.5-3) unstable; urgency=medium
+
+  * debian/emacsen-install.in: Add symlinks from mule/nomule directory
+    for compatibility. (closes: #196598)
+  * debian/emacsen-install.in (STAMP_STR): Removed.
+  * New maintainer. (with previous maintainer's consent)
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Thu, 26 Jun 2003 00:03:08 +0900
+
+apel (10.5-2) unstable; urgency=low
+
+  * Maintainer upload.
+    Thanks for some fix by Tatsuya. (closes: #196598)
+
+ -- Takuo KITAME <kitame@debian.org>  Fri, 13 Jun 2003 11:27:50 +0900
+
+apel (10.5-1.0.3) unstable; urgency=medium
+
+  * debian/emacsen-install.in: Display messages for a clarification of
+    XEmacs mule/nomule byte-compilation.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Fri, 13 Jun 2003 08:07:59 +0900
+
+apel (10.5-1.0.2) unstable; urgency=medium
+
+  * debian/emacsen-install.in: Fix re-compilation problem for XEmacs
+    mule/nomule.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Wed, 11 Jun 2003 02:50:07 +0900
+
+apel (10.5-1.0.1) unstable; urgency=medium
+
+  * debian/emacsen-install.in: Byte-compilation for XEmacs mule/nomule.
+  * debian/emacsen-install.in: Fix that *.elc files are not re-compiled when
+    emacsen is upgraded.
+  * debian/emacsen-startup: Rewrite entirely.
+
+ -- Tatsuya Kinoshita <tats@vega.ocn.ne.jp>  Wed, 11 Jun 2003 01:40:07 +0900
+
+apel (10.5-1) unstable; urgency=low
+
+  * New upstream release (closes: #196336)
+
+ -- Takuo KITAME <kitame@debian.org>  Mon,  9 Jun 2003 11:54:09 +0900
+
+apel (10.4+cvs.2003.05.29-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <takuo@debian.gr.jp>  Thu,  5 Jun 2003 12:27:38 +0900
+
+apel (10.4-1) unstable; urgency=low
+
+  * New upstream release
+  * Change Maintainer address to @debian.org
+
+ -- Takuo KITAME <kitame@debian.org>  Wed, 23 Oct 2002 14:24:45 +0900
+
+apel (10.3+cvs.2001.12.05-5) unstable; urgency=low
+
+  * debian/emacsen-startup:
+    - don't add load-path to emu. (closes: #136884)
+
+ -- Takuo KITAME <kitame@northeye.org>  Wed,  6 Mar 2002 20:07:38 +0900
+
+apel (10.3+cvs.2001.12.05-4) unstable; urgency=low
+
+  * fix Description again 
+
+ -- Takuo KITAME <kitame@northeye.org>  Mon, 28 Jan 2002 11:05:52 +0900
+
+apel (10.3+cvs.2001.12.05-3) unstable; urgency=low
+
+  * debian/control: Fix description (closes: #129493)
+
+ -- Takuo KITAME <kitame@northeye.org>  Sat, 19 Jan 2002 03:27:42 +0900
+
+apel (10.3+cvs.2001.12.05-2) unstable; urgency=low
+
+  * install emu into site-lisp/apel/ instead of site-lisp/apel/emu/
+
+ -- Takuo KITAME <kitame@northeye.org>  Fri, 11 Jan 2002 00:40:30 +0900
+
+apel (10.3+cvs.2001.12.05-1) unstable; urgency=low
+
+  * New upstream release
+  * fix common-licenses location in debian/copyright (closes: #126982)
+
+ -- Takuo KITAME <kitame@northeye.org>  Mon, 31 Dec 2001 03:25:26 +0900
+
+apel (10.3+20010601cvs-2) unstable; urgency=low
+
+  * /etc/emacs/site-start.d/20apel.el as conffile
+
+ -- Takuo KITAME <kitame@northeye.org>  Tue, 11 Dec 2001 20:18:24 +0900
+
+apel (10.3+20010601cvs-1) unstable; urgency=low
+
+  * New upstream release
+  * frame-background-mode is nil as default (mule2) (closes: Bug#101302)
+  * clean *.el in ELCDIR (closes: Bug#101303)
+
+ -- Takuo KITAME <kitame@northeye.org>  Mon, 18 Jun 2001 18:16:12 +0900
+
+apel (10.3+20010326cvs-1) unstable; urgency=low
+
+  * New upstream release
+  * apel-init.el priority 51 -> 20
+
+ -- Takuo KITAME <kitame@northeye.org>  Wed, 11 Apr 2001 19:38:38 +0900
+
+apel (10.3+20010226cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Mon, 26 Feb 2001 19:14:26 +0900
+
+apel (10.3+20010115cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Wed, 17 Jan 2001 12:07:30 +0900
+
+apel (10.3+20001231cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Sun, 31 Dec 2000 22:16:59 +0900
+
+apel (10.2+20001228cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Thu, 28 Dec 2000 16:32:47 +0900
+
+apel (10.2+20001225cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Tue, 26 Dec 2000 01:52:03 +0900
+
+apel (10.2+20001221cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Thu, 21 Dec 2000 11:12:32 +0900
+
+apel (10.2+20001220cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Wed, 20 Dec 2000 17:23:50 +0900
+
+apel (10.2+20001109cvs-1.1) unstable; urgency=low
+
+  * Fix for mule
+
+ -- Takuo KITAME <kitame@northeye.org>  Tue, 28 Nov 2000 23:19:55 +0900
+
+apel (10.2+20001109cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Fri, 10 Nov 2000 22:28:28 +0900
+
+apel (10.2+20000810cvs-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/control: Build-Depends: debhelper (closes: Bug#70148)
+
+ -- Takuo KITAME <kitame@northeye.org>  Tue, 29 Aug 2000 02:11:18 +0900
+
+apel (10.2+20000525cvs-1) unstable; urgency=low
+
+  * New upstream release
+  * closes: Bug#66459: apel: Why don't you remove *.el in ELCDIR?
+
+ -- Takuo KITAME <kitame@northeye.org>  Thu, 29 Jun 2000 16:20:19 +0900
+
+apel (10.2+20000308cvs-4) frozen unstable; urgency=low
+
+  * Fixed Dependency problem. emacsen-install needs 'make' command.
+
+ -- Takuo KITAME <kitame@northeye.org>  Thu,  6 Apr 2000 07:34:21 +0900
+
+apel (10.2+20000308cvs-3) frozen unstable; urgency=low
+
+  * Fixed postinstall process of -2, recompiling for other elisp is not needed.
+
+ -- Takuo KITAME <kitame@northeye.org>  Fri, 24 Mar 2000 00:10:36 +0900
+
+apel (10.2+20000308cvs-2) frozen unstable; urgency=high
+
+  * frozen's apel(10.0) is broken for XEmacs21-nomule, should use this version.
+    (it'll closes: Bug#56063)
+  
+ -- Takuo KITAME <kitame@northeye.org>  Tue, 21 Mar 2000 05:45:58 +0900
+
+apel (10.2+20000308cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Fri, 10 Mar 2000 10:56:46 +0900
+
+apel (10.1+20000207cvs-1) unstable; urgency=low
+
+  * New upstream release (CVS as of 2000-02-07).
+
+ -- Takuo KITAME <kitame@northeye.org>  Wed,  9 Feb 2000 06:45:01 +0900
+
+apel (10.1-2) unstable; urgency=low
+
+  * Bug fixed: byte-compile error.
+
+ -- Takuo KITAME <kitame@northeye.org>  Mon, 31 Jan 2000 10:12:38 +0900
+
+apel (10.1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Sun, 23 Jan 2000 10:31:45 +0900
+
+apel (10.0-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Fri, 24 Dec 1999 18:33:43 +0900
+
+apel (9.23-2) unstable; urgency=low
+
+  * * emacsen-common: modified
+
+ -- Takuo KITAME <kitame@northeye.org>  Sun, 24 Oct 1999 10:35:02 +0900
+
+apel (9.23-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Sat, 23 Oct 1999 06:04:28 +0900
+
+apel (9.22.0.19991022cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Fri, 22 Oct 1999 18:11:11 +0900
+
+apel (9.22.0.19991013cvs-3) unstable; urgency=low
+
+  * emacsen-remove: Fixed missing code.
+
+ -- Takuo KITAME <kitame@northeye.org>  Sun, 17 Oct 1999 22:49:06 +0900
+
+apel (9.22.0.19991013cvs-2) unstable; urgency=low
+
+  * emacsen-install: compile-stamp 
+
+ -- Takuo KITAME <kitame@northeye.org>  Thu, 14 Oct 1999 07:49:59 +0900
+
+apel (9.22.0.19991013cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Wed, 13 Oct 1999 23:27:02 +0900
+
+apel (9.22.0.19991004cvs-2) unstable; urgency=low
+
+  * emacsen-install: a little modified.
+
+ -- Takuo KITAME <kitame@northeye.org>  Wed, 13 Oct 1999 21:35:21 +0900
+
+apel (9.22.0.19991004cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Fri,  8 Oct 1999 18:52:52 +0900
+
+apel (9.22.0.19990923cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuo KITAME <kitame@northeye.org>  Fri, 24 Sep 1999 04:53:42 +0900
+
+apel (9.22-2) unstable; urgency=low
+
+  * Rewrited emacsen-install script. (more smartly, I think)
+
+ -- Takuo KITAME <kitame@northeye.org>  Tue, 21 Sep 1999 04:29:58 +0900
+
+apel (9.22-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@northeye.org>  Tue, 14 Sep 1999 03:53:51 +0900
+
+apel (9.21.19990903-1) unstable; urgency=low
+
+  * New upstream release
+  * Rebuild for FHS compliance
+
+ -- Takuro KITAME <kitame@northeye.org>  Sun,  5 Sep 1999 21:40:51 +0900
+
+apel (9.21-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed, 25 Aug 1999 09:31:46 +0900
+
+apel (9.20-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed,  7 Jul 1999 23:50:57 +0900
+
+apel (9.19.19990627cvs-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Mon, 28 Jun 1999 10:41:05 +0900
+
+apel (9.19.19990618cvs-1) unstable; urgency=low
+
+  * New upstream release
+  * emacsen-{install,remove} script Modified for xemacs21
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Sun, 20 Jun 1999 22:11:46 +0900
+
+apel (9.19.19990611cvs-1) unstable; urgency=low
+
+  * New upstream release (got via cvs)
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Mon, 14 Jun 1999 09:15:01 +0900
+
+apel (9.19-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Sat, 29 May 1999 03:13:53 +0900
+
+apel (9.18-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed, 12 May 1999 03:43:47 +0900
+
+apel (9.17-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Mon, 10 May 1999 14:25:00 +0900
+
+apel (9.16-2) unstable; urgency=high
+
+  * Fixed byte-compile error '!! error (("invalid byte code"))' 
+	  on 'unset LANG' or 'LANG=C' .
+    (added 'export LANG=ja_JP' in emacsen-install script)
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Thu, 15 Apr 1999 10:34:31 +0900
+
+apel (9.16-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Tue, 13 Apr 1999 09:35:53 +0900
+
+apel (9.15-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Sat, 20 Mar 1999 22:34:12 +0900
+
+apel (9.13-1) unstable; urgency=low
+
+  * New upstream release
+  * Byte compile log will be redirect to file.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Tue,  2 Mar 1999 15:36:33 +0900
+
+apel (9.12-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Mon, 11 Jan 1999 13:53:19 +0900
+
+apel (9.11+19981225snap-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed,  6 Jan 1999 11:32:09 +0900
+
+apel (9.11+19981210snap-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Fri, 11 Dec 1998 22:22:22 +0900
+
+apel (9.11-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Sat, 14 Nov 1998 20:13:10 +0900
+
+apel (9.10-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Fri, 13 Nov 1998 23:14:22 +0900
+
+apel (9.9-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Sat,  7 Nov 1998 12:58:17 +0900
+
+apel (9.8-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Thu, 29 Oct 1998 13:01:41 +0900
+
+apel (9.7-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Tue, 27 Oct 1998 13:08:50 +0900
+
+apel (9.4-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Tue, 20 Oct 1998 16:21:45 +0900
+
+apel (9.3-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Thu, 15 Oct 1998 16:50:08 +0900
+
+apel (8.18-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed, 16 Sep 1998 16:50:33 +0900
+
+apel (8.17-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Mon, 14 Sep 1998 10:17:12 +0900
+
+apel (8.16-2) unstable-jp; urgency=low
+
+  * site file changed (53 -> 50)
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed, 24 Jun 1998 01:42:35 +0900
+
+apel (8.16-1) unstable-jp; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed, 24 Jun 1998 01:42:35 +0900
+
+apel (8.14-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed, 10 Jun 1998 00:52:42 +0900
+
+apel (8.13-1) unstable; urgency=low
+
+  * new up stream version.
+  * fixed Bug#JP/287
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Tue,  2 Jun 1998 22:15:30 +0900
+
+apel (8.12-1) unstable; urgency=low
+
+  * new up stream version.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Mon, 18 May 1998 01:37:27 +0900
+
+apel (8.11-1) unstable; urgency=low
+
+  * new up stream version.
+
+  Original changes follow.
+  * APEL: Version 8.11 was released.
+  * emu.el (string-as-multibyte): New macro (Emacs 20.3 emulating macro).
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Sun, 10 May 1998 17:49:21 +0900
+
+apel (8.10-1) unstable; urgency=low
+
+  * new up stream version.
+
+  Original changes follow.
+   * APEL: Version 8.10 was released.
+   * README.en (What's APEL?): Delete description about atype.el; add
+     description about calist.el.
+   * calist.el (ctree-add-calist-with-default): fixed.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Thu,  7 May 1998 22:41:07 +0900
+
+apel (8.9-1) unstable; urgency=low
+
+  * new up stream version.
+
+  Original changes follow.
+   * APEL: Version 8.9 was released.
+   * calist.el (ctree-find-calist): fixed duplicated result.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Thu,  7 May 1998 00:53:22 +0900
+
+apel (8.8-1) unstable; urgency=low
+
+  * new up stream version.
+
+   Original changes follow.
+   * APEL: Version 8.8 was released.
+   * calist.el (ctree-find-calist): Delete duplicated result.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Tue,  5 May 1998 20:31:30 +0900
+
+apel (8.7-1) unstable; urgency=low
+
+  * new up stream version.
+    
+  (original changes follow)
+   * APEL: Version 8.7 was released.
+   * calist.el (ctree-match-calist-partially): New function.
+   * APEL: Version 8.6 was released.
+   * emu-20.el (mime-charset-coding-system-alist): Use 'raw-text for
+     us-ascii in default setting.
+   * calist.el (ctree-find-calist): Add optional argument 'all.
+   * calist.el (ctree-find-calist): Renamed from 'ctree-match-calist-all.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Thu, 30 Apr 1998 02:08:26 +0900
+
+apel (8.5-1) unstable; urgency=low
+
+  * new up stream version.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Mon, 27 Apr 1998 01:09:35 +0900
+
+apel (8.4-1) unstable; urgency=low
+
+  * new up stream version.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Wed, 22 Apr 1998 22:00:28 +0900
+
+apel (8.0-1) unstable; urgency=low
+
+  * new up stream version.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Fri, 10 Apr 1998 03:05:11 +0900
+
+apel (7.6+980327-1) unstable; urgency=low
+
+  * new up stream version.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Fri, 27 Mar 1998 10:42:13 +0900
+
+apel (7.5-1.1) unstable; urgency=low
+
+  * lintian check clear.
+  * init.el file name changed
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Thu, 26 Mar 1998 11:50:05 +0900
+
+apel (7.5-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Takuro KITAME <kitame@debian.or.jp>  Tue, 24 Mar 1998 22:30:53 +0900
+

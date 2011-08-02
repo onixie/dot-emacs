@@ -1,0 +1,55 @@
+#! /usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+include /usr/share/quilt/quilt.make
+
+PACKAGE=apel
+ELDIR=$(CURDIR)/debian/$(PACKAGE)/usr/share/emacs/site-lisp/$(PACKAGE)
+
+build: build-stamp
+build-stamp: debian/stamp-patched
+	dh_testdir
+	touch build-stamp
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	-rm -f build-stamp install-stamp
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+
+	cp Makefile EMU-* APEL-* *.el $(ELDIR)/
+
+# Install obsolete files in the attic directory.
+	for f in env.el timezone.el time-stamp.el; do \
+	  if [ -f $(ELDIR)/$$f ]; then mv $(ELDIR)/$$f $(ELDIR)/attic/; fi; \
+	done
+
+	touch install-stamp
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installemacsen --priority=20
+	dh_installdocs
+	dh_installchangelogs ChangeLog
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary-arch: build install
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary

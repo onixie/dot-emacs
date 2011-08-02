@@ -1,0 +1,113 @@
+Aug 20, 2010 Swap Caps Lock and left Ctrl under X11
+1. edit .xmodmap under your home dir; add:
+remove Lock = Caps_Lock
+remove Control = Control_L
+keysym Control_L = Caps_Lock
+keysym Caps_Lock = Control_L
+add Lock = Caps_Lock
+add Control = Control_L
+
+2. edit /etc/rc.local; add:
+xmodmap ~/.xmodmap 2 > /dev/null
+
+Aug 21, 2010 rule for Software tool
+1. only do one thing at a time
+2. process text not binary
+3. use regular expression(POSIX support two form: BRE and ERE)
+4. use standard output/input as default
+5. don't bothering(no need interaction)
+6. make output format consistent with required input format
+7. let tool to do the most difficult thing
+8. before create specialized tool, think more
+
+Aug 25, 2010 Emacs Regex Function
+      (string-match REGEXP STRING &optional START)
+      (match-string NUM &optional STRING)
+      (match-end SUBEXP)
+      (match-beginning SUBEXP)
+Emacs Hook Function
+      (add-hook HOOK FUNCTION &optional APPEND LOCAL)
+      (run-hooks &rest HOOKS)
+      (run-hook-with-args HOOK &rest ARGS)
+Emacs Compile Function
+      (compile COMMAND &optional COMINT)
+
+Aug 30, 2010 Shell Programming - trap, pid, and print format
+1. trap
+   fmt: trap "cmd" signal.
+   meaning: trap a signal and run the cmd
+2. process variable
+   $$ variable is process id
+3. printf
+   %-39s means left-aligning, 39 fixed char length
+
+Aug 31, 2010 Shell Programming - embeded document
+1. embedded document
+   fmt: use << and EOFILE
+   meaning: in a shell script to insert document with variable substitution
+2. word dict
+   /usr/share/dict/
+   /usr/dict/
+   /usr/share/lib/dict/
+   /usr/local/share/dict
+
+Mar 10, 2011 CUPS debugging technique
+1. Attach filter process
+   sleep filter until you can attach from gdb
+2. Send print result to a file
+   1). listen on a local port, "nc -l -p 20000 > filename"
+   2). set printer's device uri to this local port, "socket://localhost:20000"
+   3). print
+3. Use FileDevice URI
+   enable FileDevice in /etc/cups/cups.config
+
+Mar 15, 2011 Network Port Range
+IANA divides port numbers into three ranges:
+0~1023       for common, well-known services, 3FF, On Unix-like operating system, require superuser
+1024~49151   for IANA registered services, BFFF
+49152~65535  for services not officially designated, such as ephemeral ports, FFFF
+
+Mar 16, 2011 Pipeline subshell: Bash vs Ksh
+When doing pipelines, ksh will run each pipeline in current process, 
+in contrary, bash will run each pipeline in a subshell environment.
+
+This difference direct consequnce is when setting some variable in a pipeline in bash,
+it may not reflect the value in the parent scripts.
+
+e.g.
+------------------------------------------------
+echo "bla bla bla.." | while read one two three
+do
+    result=$one $two $three
+done
+
+echo $result
+------------------------------------------------
+
+in ksh, you got bla bla bla..
+in bash, you got nothing
+
+Mar 21, 2011 Robotics simulation toolkits
+Open Sourced:
+ODE, Open Dynamics Engine, written in C++, an open source physics engine, LGPLed or BSD, industrial-quality
+Simbad robot simulator, written in Java, featured with an visulization console, GPLed
+Teambots, portable multi-agent robotic simulator
+Carmen, Carnegie Mellon Robot Navigation Toolkit
+
+Commercial:
+Khepera
+
+Jun 8, 2011  Git 断点续传
+通过git init && git fetch <url>可以实现git下载的断点续传
+git clone不具备这个功能
+
+Jul 25, 2011 SBCL build process
+cross compiling phase:
+make-host-1  ---->  make-target-1
+
+target system compiling phase:
+make-host-2 ----> make-genesis-2  ----> make-target-2
+
+Jul 26, 2011 Git (v1.6.6 above) SMART HTTP PROXY
+1. use http_proxy environment variables and http as the clone protocol
+2. use GIT_CURL_VERBOSE to output verbose information
