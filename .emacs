@@ -850,6 +850,21 @@ This command assumes point is not in a string or comment."
     (forward-sexp (or arg 1))
     (delete-region opoint (point))))
 
+(defun hug-sexp-a-hug ()
+  "Insert a paire of parenthesis around the sexp at point"
+  (interactive)
+  (let ((balance-p (condition-case nil (prog1 t (check-parens))
+		     (error nil))))
+    (if balance-p
+	(progn
+	  (insert ?\()
+	  (forward-sexp)
+	  (insert ?\))
+	  (backward-sexp)
+	  (forward-char)
+	  t)
+      nil)))
+
 (defun replace-sexp-at-point ()
   (interactive)
   (save-excursion
@@ -873,7 +888,8 @@ This command assumes point is not in a string or comment."
 	(define-key map (kbd "<f12>") (lambda ()
 					(interactive)
 					(semantic-ia-fast-jump (point))))
-	(define-key map (kbd "C-S-r ") 'replace-sexp-at-point))
+	(define-key map (kbd "C-S-r") 'replace-sexp-at-point)
+	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug))
       (list lisp-mode-map emacs-lisp-mode-map lisp-interaction-mode-map))
 
 ;;;;;;;;;;;;;;;; C/C++ Programming ;;;;;;;;;;;;;;;;
