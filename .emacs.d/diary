@@ -111,3 +111,7 @@ make-host-2 ----> make-genesis-2  ----> make-target-2
 Jul 26, 2011 Git (v1.6.6 above) SMART HTTP PROXY
 1. use http_proxy environment variables and http as the clone protocol
 2. use GIT_CURL_VERBOSE to output verbose information
+
+Aug 27, 2011 Emacs Tramp for SSH
+C-x C-f and then type /ssh:<user>@<host>:<files>
+it can open remote files by ssh.
