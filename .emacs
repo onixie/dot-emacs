@@ -542,7 +542,7 @@ The advice call MODE-push-curpos by current major-mode"
   `(progn
      ,@(mapcar (lambda (func)
 		 (list 'defadvice func (list 'before (name-combinator (symbol-name group-mode) "-push-curpos") 'activate)
-		       (list 'if (list 'string-equal (symbol-name group-mode) '(group-mode-name major-mode))
+		       (list 'if (list 'and (list 'called-interactively-p ''interactive) (list 'string-equal (symbol-name group-mode) '(group-mode-name major-mode)))
 			     '(cond ((fboundp (current-mode-curpos-push))
 				     (funcall (current-mode-curpos-push)))
 				    ((fboundp (group-mode-curpos-push))
@@ -597,11 +597,12 @@ The advice call MODE-push-curpos by current major-mode"
        (interactive)
        (let ((current-buffer (current-buffer))
 	     (current-point (point)))
-	 (if (null (position (cons current-buffer current-point) 
+	 (if (and (called-interactively-p 'interactive)
+		  (null (position (cons current-buffer current-point) 
 			     ,(name-combinator (symbol-name mode) "-curpos-history")
 			     :test (lambda (arg1 arg2)
 				     (and (equal (car arg1) (car arg2))
-					  (equal (cdr arg1) (cdr arg2))))))
+					  (equal (cdr arg1) (cdr arg2)))))))
 	     (,(name-combinator (symbol-name mode) "-push-curpos")))
 	 (let* ((target-curpos (car ,(name-combinator (symbol-name mode) "-curpos-history")))
 		(target-buffer (car target-curpos))
@@ -644,6 +645,12 @@ The advice call MODE-push-curpos by current major-mode"
 		   end-of-buffer 
 		   beginning-of-buffer 
 		   goto-line 
+		   move-beginning-of-line
+		   move-end-of-line
+		   isearch-repeat-backward
+		   isearch-repeat-forward
+		   isearch-current-word-backward
+		   isearch-current-word-forward
 		   mouse-set-point
 		   semantic-complete-jump-local
 		   semantic-ia-fast-jump)
@@ -653,6 +660,9 @@ The advice call MODE-push-curpos by current major-mode"
 		   beginning-of-buffer
 		   beginning-of-sexp
 		   end-of-sexp
+		   forward-sexp
+		   backward-sexp
+		   backward-up-list
 		   move-beginning-of-line
 		   move-end-of-line
 		   goto-line 
@@ -851,7 +861,7 @@ This command assumes point is not in a string or comment."
     (delete-region opoint (point))))
 
 (defun hug-sexp-a-hug ()
-  "Insert a paire of parenthesis around the sexp at point"
+  "Insert a pair of parenthesis around the sexp at point"
   (interactive)
   (let ((balance-p (condition-case nil (prog1 t (check-parens))
 		     (error nil))))
@@ -864,6 +874,17 @@ This command assumes point is not in a string or comment."
 	  (forward-char)
 	  t)
       nil)))
+
+(defun rip-sexp-a-hug ()
+  "Delete surrounding parenthesis and the first sexp in it"
+  (interactive)
+  (backward-up-list)
+  (forward-sexp)
+  (backward-delete-char 1)
+  (backward-up-list)
+  (delete-char 1)
+  (kill-sexp)
+  )
 
 (defun replace-sexp-at-point ()
   (interactive)
@@ -889,7 +910,8 @@ This command assumes point is not in a string or comment."
 					(interactive)
 					(semantic-ia-fast-jump (point))))
 	(define-key map (kbd "C-S-r") 'replace-sexp-at-point)
-	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug))
+	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug)
+	(define-key map (kbd "C-S-o") 'rip-sexp-a-hug))
       (list lisp-mode-map emacs-lisp-mode-map lisp-interaction-mode-map))
 
 ;;;;;;;;;;;;;;;; C/C++ Programming ;;;;;;;;;;;;;;;;
