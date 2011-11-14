@@ -1,0 +1,268 @@
+#! /bin/sh -x
+
+ACTION=
+FORCEP=false
+DOT_EMACS_VERSION="master"	# Commit/Branch/Tag for the in-used dot-emacs, using latest version by default.
+
+IN_USE_HEAD="dot-emacs-in-use" 	# A branch to track the in-used dot-emacs.
+
+TARGET_DOT_FILE="~/.emacs"
+TARGET_DOT_DIR="~/.emacs.d"
+SRC_DOT_FILE=".emacs"
+SRC_DOT_DIR=".emacs.d"
+
+RET_OK=0
+RET_ERR=1
+RET_CODE=0
+ERR_DOT_LINK_TARGET_OR_SRC_EMPTY=1
+ERR_DOT_LINK_TARGET_EMPTY=2
+ERR_OTHER_CONFIGURATION_METHOD_CONFLICT=3
+ERR_DOT_EMACS_TARGET_LINK_EXIST=4
+ERR_DOT_LINK_CREATE_FAILED=5
+ERR_GIT_REPOSITORY_INVALID=6
+ERR_GIT_COMMIT_INVALID=7
+ERR_INVALID_PARAMETER=8
+ERR_CALC_SHA1SUM_FAILED=9
+ERR_HEAD_NOT_IN_USE=10
+ERR_CREATE_IN_USE_HEAD_FAILED=11
+ERR_REMOVE_IN_USE_HEAD_FAILED=12
+ERR_SWITCH_IN_USE_HEAD_FAILED=13
+
+repository_ok_p()
+{
+    git rev-parse master 1>/dev/null 2>&1
+    if [ $? != 0 ]
+    then
+	ERR_CODE=$ERR_GIT_REPOSITORY_INVALID
+	return $RET_ERR
+    fi
+
+    ERR_CODE=$RET_OK
+    return $RET_OK
+}
+commit_ok_p()
+{
+    git rev-parse $DOT_EMACS_VERSION 1>/dev/null 2>&1
+    if [ $? != 0 ]
+    then
+	ERR_CODE=$ERR_GIT_COMMIT_INVALID
+	return $RET_ERR
+    fi
+
+    ERR_CODE=$RET_OK
+    return $RET_OK
+}
+calc_short_sha1sum()
+{
+    if [ $# = 0 ]
+    then
+	RET_CODE=$ERR_INVALID_PARAMETER
+	return $RET_ERR
+    fi
+    echo "$@" | sha1sum | cut -c1-5
+    
+    if [ $? != 0 ]
+    then
+	ERR_CODE=$ERR_CALC_SHA1SUM_FAILED
+	return $RET_ERR
+    fi
+
+    ERR_CODE=$RET_OK
+    return $RET_OK
+}
+IN_USE_HEAD=$IN_USE_HEAD-$(calc_short_sha1sum $IN_USE_HEAD)
+has_in_use_head_p()
+{
+    git branch -a | grep "$IN_USE_HEAD" 1>/dev/null 2>&1
+    if [ $? != 0 ]
+    then
+	ERR_CODE=$ERR_HEAD_NOT_IN_USE
+	return $RET_ERR
+    fi
+    ERR_CODE=$RET_OK
+    return $RET_OK
+}
+create_in_use_head()
+{
+    has_in_use_head_p
+
+    if [ $? != 0 -a $ERR_CODE = $ERR_HEAD_NOT_IN_USE ]
+    then
+	git checkout -b "$IN_USE_HEAD" "$DOT_EMACS_VERSION" 1>/dev/null 2>&1
+    else
+	git checkout master 1>/dev/null 2>&1\
+	    && git branch -d "$IN_USE_HEAD" 1>/dev/null 2>&1\
+	    && git checkout -b "$IN_USE_HEAD" "$DOT_EMACS_VERSION" 1>/dev/null 2>&1
+    fi
+
+    if [ $? != 0 ]
+    then
+	ERR_CODE=$ERR_CREATE_IN_USE_HEAD_FAILED
+	return $RET_ERR
+    fi
+
+    ERR_CODE=$RET_OK
+    return $RET_OK
+}
+switch_in_use_head()
+{
+    has_in_use_head_p
+
+    if [ $? = 0 -a $ERR_CODE != $ERR_HEAD_NOT_IN_USE ]
+    then
+	git checkout "$IN_USE_HEAD" 1>/dev/null 2>&1
+    else
+	return $RET_ERR
+    fi
+
+    if [ $? != 0 ]
+    then
+	ERR_CODE=$ERR_SWITCH_IN_USE_HEAD_FAILED
+	return $RET_ERR
+    fi
+
+    ERR_CODE=$RET_OK
+    return $RET_OK
+}
+remove_in_use_head()
+{
+    has_in_use_head_p
+    if [ $? != 0 -a $ERR_CODE = $ERR_HEAD_NOT_IN_USE ]
+    then
+	return $RET_ERR
+    fi
+    
+    git checkout master 1>/dev/null 2>&1\
+	    && git branch -d "$IN_USE_HEAD" 1>/dev/null 2>&1
+
+    if [ $? != 0 ]
+    then
+	ERR_CODE=$ERR_REMOVE_IN_USE_HEAD_FAILED 
+	return $RET_ERR
+    fi
+
+    ERR_CODE=$RET_OK
+    return $RET_OK
+}
+create_dot_links()
+{
+    if [ -z $TARGET_DOT_FILE -o -z $TARGET_DOT_DIR -o -z $SRC_DOT_FILE -o -z $SRC_DOT_DIR ]
+    then
+	RET_CODE=$ERR_DOT_LINK_TARGET_OR_SRC_EMPTY
+	return $RET_ERR
+    fi
+
+    if [ -f $TARGET_DOT_FILE -a -d $TARGET_DOT_DIR ]
+    then
+	RET_CODE=$ERR_OTHER_CONFIGURATION_METHOD_CONFLICT
+	return $RET_ERR
+    fi
+
+    if [ -L $TARGET_DOT_FILE -o -L $TARGET_DOT_DIR ]
+    then
+	RET_CODE=$RET_DOT_EMACS_TARGET_LINK_EXIST_ERR
+	return $RET_ERR
+    fi
+    
+    ln -s $TARGET_DOT_FILE $SRC_DOT_FILE && ln -s $TARGET_DOT_DIR $SRC_DOT_DIR
+    
+    if [ $? != 0 ]		# When failed, ensure no partly created actions
+    then
+	rm -f $TARGET_DOT_FILE
+	rm -f $TARGET_DOT_DIR
+	RET_CODE=$ERR_DOT_LINK_CREATE_FAILED
+	return $RET_ERR
+    fi
+
+    RET_CODE=$RET_OK
+    return $RET_OK
+}
+remove_dot_links()
+{
+    if [ -z $TARGET_DOT_FILE -o -z $TARGET_DOT_DIR ]
+    then
+	RET_CODE=$ERR_DOT_LINK_TARGET_EMPTY
+	return $RET_ERR
+    fi
+
+    if [ -L $TARGET_DOT_FILE ]
+    then
+	rm -f $TARGET_DOT_FILE
+    fi
+
+    if [ -L $TARGET_DOT_DIR ]
+    then
+	rm -f $TARGET_DOT_DIR
+    fi
+
+    RET_CODE=$RET_OK
+    return $RET_OK
+}
+usage()
+{
+    echo "Usage: $(basename $0) [OPTION]"
+    echo "Install/Uninstall dot-emacs (links) to user's home directory"
+    echo "    -i [commit], --install[=commit]     Install links and use commit-specified dot-emacs"
+    echo "    -f, --force                         Force to install even when links already exist"
+    echo "    -u, --uninstall                     Remove links from home directory"
+    echo "    -h, --help                          Output this help"
+    exit 1
+}
+#args=`getopt -o "ifuh" -l"install,force,uninstall,help" $* 2>/dev/null` # process long options
+#[ $? != 0 ] && usage
+#set -- $args
+#Kludge: I need optional argument for install!
+set -- "$@" --
+while [ $# -gt 0 ]
+do
+    case $1 in
+	-i|--install)
+	    echo "$2" | grep -E '^-.?$|^--.*$' 1>/dev/null 2>&1
+	    if [ $? != 0 ]
+	    then
+		shift
+		DOT_EMACS_VERSION="$1"
+	    fi
+	    if [ -z $ACTION ]
+	    then
+		ACTION="INSTALL"
+	    else
+		usage
+	    fi
+	    ;;
+	-f|--force)
+	    FORCEP=yes
+	    ;;
+	-u|--uninstall)
+	    if [ -z $ACTION ]
+	    then
+		ACTION="UNINSTALL"
+	    else
+		usage
+	    fi
+	    ;;
+	-h|--help|'?'|':')
+	    usage
+	    ;;
+    esac
+    shift
+done
+
+case $ACTION in
+    INSTALL)
+	;;
+    UNINSTALL)
+	;;
+    *)
+	usage
+	;;
+esac
+
+#Kludge: Test goes here, maybe a suite of test cases should be more appropriate :)
+#repository_ok_p
+#commit_ok_p
+#calc_short_sha1sum 'asdf asdf'
+#has_in_use_head_p
+#create_in_use_head
+#remove_in_use_head
+#switch_in_use_head
