@@ -653,7 +653,8 @@ The advice call MODE-push-curpos by current major-mode"
 		   isearch-current-word-forward
 		   mouse-set-point
 		   semantic-complete-jump-local
-		   semantic-ia-fast-jump)
+		   semantic-ia-fast-jump
+		   find-tag)
 
 (mode-local-curpos lisp-mode		;lisp-mode itself is a mode and stands for other two lisp mode as mode-group
 		   end-of-buffer 
@@ -778,11 +779,16 @@ The advice call MODE-push-curpos by current major-mode"
   (interactive)
   (shell-command "gnome-terminal --working-directory=$(pwd)" "*Messages*" "*Messages*"))
 
+(defun etags ()
+  (interactive)
+  (shell-command "find ./ -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
+
 (mapc (lambda (mode-hook)
 	(add-hook mode-hook (lambda ()
 			      (progn
 				(define-key dired-mode-map (kbd "N") 'nautilus)
 				(define-key dired-mode-map (kbd "b") 'xterm)
+				(define-key dired-mode-map (kbd "E") 'etags)
 				(tool-bar-add-item "nautilus" 'nautilus 'nautilus :visible '(memq major-mode '(dired-mode)))
 				(tool-bar-add-item "xterm" 'xterm 'xterm :visible '(memq major-mode '(dired-mode)))))))
       '(dired-mode-hook))
@@ -805,7 +811,7 @@ The advice call MODE-push-curpos by current major-mode"
 
 (mapc (lambda (mode-hook)
 	(add-hook mode-hook 'linum-on))
-      '(c-mode-hook c++-mode-hook sh-mode-hook lisp-mode-hook emacs-lisp-mode-hook lisp-interaction-mode-hook))
+      '(c-mode-hook c++-mode-hook sh-mode-hook lisp-mode-hook emacs-lisp-mode-hook lisp-interaction-mode-hook asm-mode-hook))
 
 (with-current-buffer "*Messages*"
   (linum-on))
@@ -841,6 +847,8 @@ The advice call MODE-push-curpos by current major-mode"
 	    (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
 	    (with-current-buffer (slime-events-buffer) ; Enable easy-buffer-window for slime-event
 	      (easy-buffer-window-mode 1))))
+
+
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
 (defun ielm-quit-sentinel (proc change)
@@ -906,9 +914,7 @@ This command assumes point is not in a string or comment."
 	    (eldoc-mode)))
 
 (mapc (lambda (map)
-	(define-key map (kbd "<f12>") (lambda ()
-					(interactive)
-					(semantic-ia-fast-jump (point))))
+	(define-key map (kbd "<f12>") 'semantic-ia-fast-jump)
 	(define-key map (kbd "C-S-r") 'replace-sexp-at-point)
 	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug)
 	(define-key map (kbd "C-S-o") 'rip-sexp-a-hug))
@@ -941,9 +947,7 @@ This command assumes point is not in a string or comment."
 (define-key c-mode-base-map (kbd "C-M-S-c") 'kill-c-comment)
 (define-key c-mode-base-map (kbd "C-M-S-b") 'kill-c-blank-line)
 
-(define-key c-mode-base-map (kbd "<f12>") (lambda ()
-					    (interactive)
-					    (semantic-ia-fast-jump (point))))
+(define-key c-mode-base-map (kbd "<f12>") 'semantic-ia-fast-jump)
 (define-key c-mode-base-map (kbd "M-<f12>") 'eassist-switch-h-cpp)
 (define-key c-mode-base-map (kbd "M-S-<f12>") 'semantic-analyze-proto-impl-toggle)
 
@@ -1108,10 +1112,11 @@ This command assumes point is not in a string or comment."
 		      (toggle-truncate-lines -1)
 		    (toggle-truncate-lines 1))))
 
-(global-set-key (kbd "C-<f12>") 
-		(lambda ()
-		  (interactive)
-		  (call-interactively #'find-file-at-point)))
+(global-set-key (kbd "C-<f12>")
+		#'find-file-at-point)
+
+(global-set-key (kbd "C-S-f")
+		#'find-grep)
 
 (define-key easy-buffer-window-mode-map (kbd "C-`") 
   (lambda ()
