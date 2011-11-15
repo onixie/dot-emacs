@@ -1,15 +1,16 @@
-#! /bin/sh -x
+#! /bin/sh -
 
 ACTION=
 FORCEP=false
 DOT_EMACS_VERSION="master"	# Commit/Branch/Tag for the in-used dot-emacs, using latest version by default.
 
-IN_USE_HEAD="dot-emacs-in-use" 	# A branch to track the in-used dot-emacs.
+IN_USE_HEAD="dot-emacs-in-use" 	# A branch to track the in-used dot-emacs. Why not make a list of heads, and allow switching between them? Maybe next task:)
 
-TARGET_DOT_FILE="~/.emacs"
-TARGET_DOT_DIR="~/.emacs.d"
-SRC_DOT_FILE=".emacs"
-SRC_DOT_DIR=".emacs.d"
+TARGET_DOT_FILE=~/.emacs
+TARGET_DOT_DIR=~/.emacs.d
+
+SRC_DOT_FILE=.emacs
+SRC_DOT_DIR=.emacs.d
 
 RET_OK=0
 RET_ERR=1
@@ -27,7 +28,66 @@ ERR_HEAD_NOT_IN_USE=10
 ERR_CREATE_IN_USE_HEAD_FAILED=11
 ERR_REMOVE_IN_USE_HEAD_FAILED=12
 ERR_SWITCH_IN_USE_HEAD_FAILED=13
+ERR_EMPTY_ERROR_CODE=14
+errorp()
+{
+    local errno=
+    if [ -z $1 ]
+    then
+	errno=$ERR_EMPTY_ERROR_CODE
+    else
+	errno=$1
+    fi
 
+    echo -n "ERROR:"
+    case $errno in 
+	$ERR_DOT_LINK_TARGET_OR_SRC_EMPTY)
+	    echo "Specified target links or src files are empty"
+	    ;;
+	$ERR_DOT_LINK_TARGET_EMPTY)
+	    echo "Specified target links are empty"
+	    ;;
+	$ERR_OTHER_CONFIGURATION_METHOD_CONFLICT)
+	    echo "Other configuration method in use"
+	    ;;
+	$ERR_DOT_EMACS_TARGET_LINK_EXIST)
+	    echo "Specified target links exist, use -force to forcibly install"
+	    ;;
+	$ERR_DOT_LINK_CREATE_FAILED)
+	    echo "Link can not be created"
+	    ;;
+	$ERR_GIT_REPOSITORY_INVALID)
+	    echo "Specified repository of dot-emacs invalid"
+	    ;;
+	$ERR_GIT_COMMIT_INVALID)
+	    echo "Specified commit of dot-emacs invalid"
+	    ;;
+	$ERR_INVALID_PARAMETER)
+	    echo "Invalid parameter"
+	    ;;
+	$ERR_CALC_SHA1SUM_FAILED)
+	    echo "Calculate sha1sum failed"
+	    ;;
+	$ERR_HEAD_NOT_IN_USE)
+	    echo "Specified commit for head is not in use"
+	    ;;
+	$ERR_CREATE_IN_USE_HEAD_FAILED)
+	    echo "In use head can not be created"
+	    ;;
+	$ERR_REMOVE_IN_USE_HEAD_FAILED)
+	    echo "In use head can not be removed"
+	    ;;
+	$ERR_SWITCH_IN_USE_HEAD_FAILED)
+	    echo "In use head can not be switched"
+	    ;;
+	$ERR_EMPTY_ERROR_CODE)
+	    echo "Empty Error Code"
+	    ;;
+	*)
+	    echo "Unknown error"
+	    ;;
+    esac
+}
 repository_ok_p()
 {
     git rev-parse master 1>/dev/null 2>&1
@@ -164,7 +224,7 @@ create_dot_links()
 	return $RET_ERR
     fi
     
-    ln -s $TARGET_DOT_FILE $SRC_DOT_FILE && ln -s $TARGET_DOT_DIR $SRC_DOT_DIR
+    ln -s $SRC_DOT_FILE $TARGET_DOT_FILE && ln -s $SRC_DOT_DIR $TARGET_DOT_DIR
     
     if [ $? != 0 ]		# When failed, ensure no partly created actions
     then
@@ -185,6 +245,12 @@ remove_dot_links()
 	return $RET_ERR
     fi
 
+    if [ -f $TARGET_DOT_FILE -a -d $TARGET_DOT_DIR ]
+    then
+	RET_CODE=$ERR_OTHER_CONFIGURATION_METHOD_CONFLICT
+	return $RET_ERR
+    fi
+
     if [ -L $TARGET_DOT_FILE ]
     then
 	rm -f $TARGET_DOT_FILE
@@ -193,6 +259,61 @@ remove_dot_links()
     if [ -L $TARGET_DOT_DIR ]
     then
 	rm -f $TARGET_DOT_DIR
+    fi
+
+    RET_CODE=$RET_OK
+    return $RET_OK
+}
+install()
+{
+    repository_ok_p
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+
+    commit_ok_p
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+
+    if [ x$FORCEP = xtrue ]
+    then
+	remove_dot_links
+	if [ $? = $RET_ERR ]
+	then
+	    return $RET_ERR
+	fi
+    fi
+    
+    create_dot_links
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+
+    create_in_use_head
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+    
+    RET_CODE=$RET_OK
+    return $RET_OK
+}
+uninstall()
+{
+    remove_dot_links
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+
+    remove_in_use_head
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
     fi
 
     RET_CODE=$RET_OK
@@ -250,8 +371,18 @@ done
 
 case $ACTION in
     INSTALL)
+	install
+	if [ $? != 0 ]
+	then
+	    errorp $RET_CODE
+	fi
 	;;
     UNINSTALL)
+	uninstall
+	if [ $? != 0 ]
+	then
+	    errorp $RET_CODE
+	fi
 	;;
     *)
 	usage
