@@ -112,6 +112,84 @@ Jul 26, 2011 Git (v1.6.6 above) SMART HTTP PROXY
 1. use http_proxy environment variables and http as the clone protocol
 2. use GIT_CURL_VERBOSE to output verbose information
 
+Jul 27, 2011 SSH 通过公私钥代替密码登录认证
+1. 在.ssh/config文件中，通过IdentityFile使得ssh客户端能够自动选择与登录服务端相匹配的密钥
+如：
+IdentityFile ~/.ssh/ids/%h/id_rsa
+IdentityFile ~/.ssh/id_rsa
+2. 创建目录，将私钥按照主机或者用户进行分类存放
+3. 在服务器端，.ssh/authorized_keys文件中，每一行记录一个允许通过公私钥登录的客户端对应的公钥
+
+Jul 27, 2011 SSH 常见用法
+1. 创建隧道
+ssh -N -L2011:localhost:80 somemachine 创建从本地2011到远端80端口的隧道, localhost部分其实指的是服务端
+ssh -N -R2011:localhost:80 somemachine 创建从远端2011端口到本地80端口的隧道, localhost指的是本地客户端
+可以用nc来进行测试，如：
+nc -l -p 80 在某一端监听
+nc localhost 2011 发送消息到隧道里
+
+2. 比较远程和本地文件
+ssh user@remote cat /path/to/somefile1 | diff /path/to/somefile2 -
+
+3. 将远程的内容复制到粘帖版
+ssh user@remote cat /path/to/somefile | xclip
+
+Jul 27, 2011 DBUS的概念
+DBUS称为消息总线，分为系统总线和会话总线。
+用于实现进程间的1对1通信，连接到总线上的进程通过提供服务和获取服务来交换信息。
+服务连接有一个BUS全局名称，而每个连接都有个唯一私有名称，
+通过全局名称琐定服务后，指定服务的对象，接口，以及方法来进行信息获取。
+dbus-send和dbus-monitor是两个实用的调试工具
+
+Jul 29, 2011 CRON计划任务之at
+通过at命令可以进行简单的计划任务
+1. at now+1minutes -f <command>
+2. at -t "MMDDmmss" -f <command>
+如果没有f指定作业文件，则从标准输入中读取
+
+Jul 29, 2011 DBUS的Session地址
+在dbus-send的参数里除了--system和--session还有一个--address
+这个参数没有很好的文档说明，它实际上就是dbus进行消息传递的文件的地址(socket方式)
+另外，还有一个环境变量叫做DBUS_SESSION_BUS_ADDRESS是表示当前session的dbus的地址
+
+最后通过dbus-daemon --print-address也可以显示当前开启的dbus对应的地址
+
+有关session bus address的信息其实存放在~/.dbus/session-bus/$(dbus-uuidgen --get)-[$HOST]-$(DISPLAY)
+这个文件里面。
+
+发现一个奇怪的现象，
+通过ssh remote dbus-send --sesion ..bla.bla.bla的方式
+在ubuntu9.10上返回一个错误，提示说session dbus是null的，
+这是由于在ssh运行dbus-send的时候，环境变量可能还没有准备好，
+因此，可以通过读取上面的文件来获取dbus
+
+Jul 29, 2011 GIT获取revision和commit信息的相关的命令
+git log 获取commit的log信息，通过-p -2可以对最近两个版本进行比较， --since与--until可以对日期进行过滤
+git rev-list 获取从某个commit回溯可以到达的revisions的历史列表， 通过--not可以指定过滤显示到达不了的那些历史列表
+git rev-parse 显示一个commit的全局唯一哈希码, --short可以仅显示部分这个码
+git describe 显示一个revision的tag名，可以是轻量级的，使用--tags, --all, --dirty可以显示各种不同级别的tag, 一般情况下显示离当前签入的commit最近的过去时间中的revision， 如果使用--contain则显示最近的未来时间的revision, --abbrev=0使用短格式显示revision tag
+
+Aug 3, 2011 Send message to users on unix
+command:
+wall       send all user a message
+mesg       disable/enable message receiving
+write user [tty]  send a message to a user
+
+Aug 4, 2011 Echo KnowHow
+Echo has two options very useful
+-n  stop output trailing newline
+-e  enable escape character
+
+e.g. echo -ne '\032\032'
+
+Aug 19, 2011 X开发中 Display的指定
+OpenDisplay的时候，
+host为空的情况，会打开本地默认的0号display，
+不管是否指定display，也不管本地默认Xserver是否监听网络，还是限制访问
+host为localhost或者本机ip的时候，需要指定display,
+并可以在指定display上显示，但前提是该display上的Xserver监听网络，并且无网络限制。
+
+
 Aug 27, 2011 Emacs Tramp for SSH
 C-x C-f and then type /ssh:<user>@<host>:<files>
 it can open remote files by ssh.
