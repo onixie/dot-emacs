@@ -1,7 +1,7 @@
 #! /bin/sh -
 
 ACTION=
-FORCEP=false
+FORCEP="NO"
 DOT_EMACS_VERSION="master"	# Commit/Branch/Tag for the in-used dot-emacs, using latest version by default.
 
 IN_USE_HEAD="dot-emacs-in-use" 	# A branch to track the in-used dot-emacs. Why not make a list of heads, and allow switching between them? Maybe next task:)
@@ -9,8 +9,8 @@ IN_USE_HEAD="dot-emacs-in-use" 	# A branch to track the in-used dot-emacs. Why n
 TARGET_DOT_FILE=~/.emacs
 TARGET_DOT_DIR=~/.emacs.d
 
-SRC_DOT_FILE=.emacs
-SRC_DOT_DIR=.emacs.d
+SRC_DOT_FILE=$(pwd)/.emacs
+SRC_DOT_DIR=$(pwd)/.emacs.d
 
 RET_OK=0
 RET_ERR=1
@@ -39,7 +39,7 @@ errorp()
 	errno=$1
     fi
 
-    echo -n "ERROR:"
+    echo -n "ERROR: "
     case $errno in 
 	$ERR_DOT_LINK_TARGET_OR_SRC_EMPTY)
 	    echo "Specified target links or src files are empty"
@@ -93,11 +93,11 @@ repository_ok_p()
     git rev-parse master 1>/dev/null 2>&1
     if [ $? != 0 ]
     then
-	ERR_CODE=$ERR_GIT_REPOSITORY_INVALID
+	RET_CODE=$ERR_GIT_REPOSITORY_INVALID
 	return $RET_ERR
     fi
 
-    ERR_CODE=$RET_OK
+    RET_CODE=$RET_OK
     return $RET_OK
 }
 commit_ok_p()
@@ -105,11 +105,11 @@ commit_ok_p()
     git rev-parse $DOT_EMACS_VERSION 1>/dev/null 2>&1
     if [ $? != 0 ]
     then
-	ERR_CODE=$ERR_GIT_COMMIT_INVALID
+	RET_CODE=$ERR_GIT_COMMIT_INVALID
 	return $RET_ERR
     fi
 
-    ERR_CODE=$RET_OK
+    RET_CODE=$RET_OK
     return $RET_OK
 }
 calc_short_sha1sum()
@@ -123,11 +123,11 @@ calc_short_sha1sum()
     
     if [ $? != 0 ]
     then
-	ERR_CODE=$ERR_CALC_SHA1SUM_FAILED
+	RET_CODE=$ERR_CALC_SHA1SUM_FAILED
 	return $RET_ERR
     fi
 
-    ERR_CODE=$RET_OK
+    RET_CODE=$RET_OK
     return $RET_OK
 }
 IN_USE_HEAD=$IN_USE_HEAD-$(calc_short_sha1sum $IN_USE_HEAD)
@@ -136,17 +136,17 @@ has_in_use_head_p()
     git branch -a | grep "$IN_USE_HEAD" 1>/dev/null 2>&1
     if [ $? != 0 ]
     then
-	ERR_CODE=$ERR_HEAD_NOT_IN_USE
+	RET_CODE=$ERR_HEAD_NOT_IN_USE
 	return $RET_ERR
     fi
-    ERR_CODE=$RET_OK
+    RET_CODE=$RET_OK
     return $RET_OK
 }
 create_in_use_head()
 {
     has_in_use_head_p
 
-    if [ $? != 0 -a $ERR_CODE = $ERR_HEAD_NOT_IN_USE ]
+    if [ $? != 0 -a $RET_CODE = $ERR_HEAD_NOT_IN_USE ]
     then
 	git checkout -b "$IN_USE_HEAD" "$DOT_EMACS_VERSION" 1>/dev/null 2>&1
     else
@@ -157,18 +157,18 @@ create_in_use_head()
 
     if [ $? != 0 ]
     then
-	ERR_CODE=$ERR_CREATE_IN_USE_HEAD_FAILED
+	RET_CODE=$ERR_CREATE_IN_USE_HEAD_FAILED
 	return $RET_ERR
     fi
 
-    ERR_CODE=$RET_OK
+    RET_CODE=$RET_OK
     return $RET_OK
 }
 switch_in_use_head()
 {
     has_in_use_head_p
 
-    if [ $? = 0 -a $ERR_CODE != $ERR_HEAD_NOT_IN_USE ]
+    if [ $? = 0 -a $RET_CODE != $ERR_HEAD_NOT_IN_USE ]
     then
 	git checkout "$IN_USE_HEAD" 1>/dev/null 2>&1
     else
@@ -177,17 +177,17 @@ switch_in_use_head()
 
     if [ $? != 0 ]
     then
-	ERR_CODE=$ERR_SWITCH_IN_USE_HEAD_FAILED
+	RET_CODE=$ERR_SWITCH_IN_USE_HEAD_FAILED
 	return $RET_ERR
     fi
 
-    ERR_CODE=$RET_OK
+    RET_CODE=$RET_OK
     return $RET_OK
 }
 remove_in_use_head()
 {
     has_in_use_head_p
-    if [ $? != 0 -a $ERR_CODE = $ERR_HEAD_NOT_IN_USE ]
+    if [ $? != 0 -a $RET_CODE = $ERR_HEAD_NOT_IN_USE ]
     then
 	return $RET_ERR
     fi
@@ -197,11 +197,11 @@ remove_in_use_head()
 
     if [ $? != 0 ]
     then
-	ERR_CODE=$ERR_REMOVE_IN_USE_HEAD_FAILED 
+	RET_CODE=$ERR_REMOVE_IN_USE_HEAD_FAILED 
 	return $RET_ERR
     fi
 
-    ERR_CODE=$RET_OK
+    RET_CODE=$RET_OK
     return $RET_OK
 }
 create_dot_links()
@@ -212,15 +212,15 @@ create_dot_links()
 	return $RET_ERR
     fi
 
-    if [ -f $TARGET_DOT_FILE -a -d $TARGET_DOT_DIR ]
+    if [ -L $TARGET_DOT_FILE -o -L $TARGET_DOT_DIR ]
     then
-	RET_CODE=$ERR_OTHER_CONFIGURATION_METHOD_CONFLICT
+	RET_CODE=$ERR_DOT_EMACS_TARGET_LINK_EXIST
 	return $RET_ERR
     fi
 
-    if [ -L $TARGET_DOT_FILE -o -L $TARGET_DOT_DIR ]
+    if [ -f $TARGET_DOT_FILE -a ! -L $TARGET_DOT_FILE ] || [ -d $TARGET_DOT_DIR -a ! -L $TARGET_DOT_DIR ]
     then
-	RET_CODE=$RET_DOT_EMACS_TARGET_LINK_EXIST_ERR
+	RET_CODE=$ERR_OTHER_CONFIGURATION_METHOD_CONFLICT
 	return $RET_ERR
     fi
     
@@ -245,7 +245,7 @@ remove_dot_links()
 	return $RET_ERR
     fi
 
-    if [ -f $TARGET_DOT_FILE -a -d $TARGET_DOT_DIR ]
+    if [ -f $TARGET_DOT_FILE -a ! -L $TARGET_DOT_FILE ] || [ -d $TARGET_DOT_DIR -a ! -L $TARGET_DOT_DIR ]
     then
 	RET_CODE=$ERR_OTHER_CONFIGURATION_METHOD_CONFLICT
 	return $RET_ERR
@@ -266,55 +266,69 @@ remove_dot_links()
 }
 install()
 {
+    echo -n "Checking repository: "
     repository_ok_p
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
     fi
+    echo "OK"
 
+    echo -n "Checking specified commit: "
     commit_ok_p
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
     fi
+    echo "OK"
 
-    if [ x$FORCEP = xtrue ]
+    if [ x$FORCEP = x"YES" ]
     then
+	echo -n "Forcibly remove original links: "
 	remove_dot_links
 	if [ $? = $RET_ERR ]
 	then
 	    return $RET_ERR
 	fi
+	echo "OK"
     fi
     
+    echo -n "Create links: "
     create_dot_links
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
     fi
+    echo "OK"
 
+    echo -n "Checkout specified commit as dot-emacs-in-use-head: "
     create_in_use_head
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
     fi
+    echo "OK"
     
     RET_CODE=$RET_OK
     return $RET_OK
 }
 uninstall()
 {
+    echo -n "Remove links: "
     remove_dot_links
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
     fi
+    echo "OK"
 
+    echo -n "Remove dot-emacs-in-use-head branch(restore to master): "
     remove_in_use_head
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
     fi
+    echo "OK"
 
     RET_CODE=$RET_OK
     return $RET_OK
@@ -352,7 +366,7 @@ do
 	    fi
 	    ;;
 	-f|--force)
-	    FORCEP=yes
+	    FORCEP="YES"
 	    ;;
 	-u|--uninstall)
 	    if [ -z $ACTION ]
