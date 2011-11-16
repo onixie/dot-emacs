@@ -193,3 +193,20 @@ host为localhost或者本机ip的时候，需要指定display,
 Aug 27, 2011 Emacs Tramp for SSH
 C-x C-f and then type /ssh:<user>@<host>:<files>
 it can open remote files by ssh.
+
+Nov 16, 2011 
+最近的一些经验：
+1. dd_rescue 可以用来从坏扇区恢复一些数据
+
+2. 在1.7以后git可以通过ssl代替ssh推送数据，具体的是在url中指定用户名，git会询问passwd
+   如 ：git clone https://myname@github.com/XXX/XXX.git
+   这样就等同于使用ssh，可以进行推送了。
+
+3. 使用https协议穿过代理的时候，可以设定http.proxy, http.sslCAInfo, http.sslCAPath等变量
+   后两个是指定认证根文件，和目录的所在位置
+
+4. 可以使用--track在本地创建一个跟踪本地upstream的分支，以使用push/pull，这默认只对远程分支有用
+   使用git branch -vv，两个v可以看到upstream
+
+5. 当使用--amend重新commit的时候，切记仅在本地操作，如果已经推送到远程源，那么只能在push的时候--force
+   但是这样实际改变了之前的commit
