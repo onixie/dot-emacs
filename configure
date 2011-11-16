@@ -230,15 +230,15 @@ create_dot_links()
 	return $RET_ERR
     fi
 
-    if [ -L $TARGET_DOT_FILE -o -L $TARGET_DOT_DIR ]
-    then
-	RET_CODE=$ERR_DOT_EMACS_TARGET_LINK_EXIST
-	return $RET_ERR
-    fi
-
     if [ -f $TARGET_DOT_FILE -a ! -L $TARGET_DOT_FILE ] || [ -d $TARGET_DOT_DIR -a ! -L $TARGET_DOT_DIR ]
     then
 	RET_CODE=$ERR_OTHER_CONFIGURATION_METHOD_CONFLICT
+	return $RET_ERR
+    fi
+
+    if [ -L $TARGET_DOT_FILE -o -L $TARGET_DOT_DIR ]
+    then
+	RET_CODE=$ERR_DOT_EMACS_TARGET_LINK_EXIST
 	return $RET_ERR
     fi
     
@@ -405,13 +405,25 @@ set -- "$@" --
 while [ $# -gt 0 ]
 do
     case $1 in
-	-i|--install)
-	    echo "$2" | grep -E '^-.?$|^--.*$' 1>/dev/null 2>&1
+	-i|--install*)
+	    if echo "$1" | grep "^--install=" 1>/dev/null 2>&1 # CASE1: --option=argument
+	    then
+		DOT_EMACS_VERSION=$(echo "$1" | sed -r s/--[^-=]+=//)
+	    fi
+
+	    echo "$2" | grep -E '^=$' 1>/dev/null 2>&1 # CASE2: --option = argument
+	    if [ $? = 0 ]
+	    then
+		shift
+	    fi
+
+	    echo "$2" | grep -E '^-.?$|^--.*$' 1>/dev/null 2>&1 # CASE3: --option =argument
 	    if [ $? != 0 ]
 	    then
 		shift
 		DOT_EMACS_VERSION=$(echo -n "$1" | tr -d "=")
 	    fi
+
 	    if [ -z $ACTION ]
 	    then
 		ACTION="INSTALL"
@@ -419,13 +431,25 @@ do
 		usage
 	    fi
 	    ;;
-	-s|--switch)
+	-s|--switch*)
+	    if echo "$1" | grep "^--switch=" 1>/dev/null 2>&1
+	    then
+		DOT_EMACS_VERSION=$(echo "$1" | sed -r s/--[^-=]+=//)
+	    fi
+
+	    echo "$2" | grep -E '^=$' 1>/dev/null 2>&1
+	    if [ $? = 0 ]
+	    then
+		shift
+	    fi
+
 	    echo "$2" | grep -E '^-.?$|^--.*$' 1>/dev/null 2>&1
 	    if [ $? != 0 ]
 	    then
 		shift
 		DOT_EMACS_VERSION=$(echo -n "$1" | tr -d "=")
 	    fi
+
 	    if [ -z $ACTION ]
 	    then
 		ACTION="SWITCH"
