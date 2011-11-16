@@ -30,6 +30,9 @@ ERR_REMOVE_IN_USE_HEAD_FAILED=12
 ERR_SWITCH_IN_USE_HEAD_FAILED=13
 ERR_EMPTY_ERROR_CODE=14
 ERR_CREATEE_IN_USE_HEAD_FAILED_TRY_FORCE=15
+ERR_NO_VALID_TRACKING_BRANCH=16
+ERR_CURRENT_BRANCH_NOT_FOUND=17
+ERR_CANNOT_BRANCH_FROM_MYSELF=18
 
 errorp()
 {
@@ -88,6 +91,15 @@ errorp()
 	$ERR_CREATEE_IN_USE_HEAD_FAILED_TRY_FORCE)
 	    echo "In use head can not be created, use -force to forcibly create"
 	    ;;
+	$ERR_NO_VALID_TRACKING_BRANCH)
+	    echo "No valid local upstream"
+	    ;;
+	$ERR_CURRENT_BRANCH_NOT_FOUND)
+	    echo "Current branch not found"
+	    ;;
+	$ERR_CANNOT_BRANCH_FROM_MYSELF)
+	    echo "Cannot branch from myself"
+	    ;;
 	*)
 	    echo "Unknown error"
 	    ;;
@@ -107,7 +119,13 @@ repository_ok_p()
 }
 commit_ok_p()
 {
-    git rev-parse $DOT_EMACS_VERSION 1>/dev/null 2>&1
+    if [ -z $1 ]
+    then
+	RET_CODE=$ERR_INVALID_PARAMETER
+	return $RET_ERR
+    fi
+
+    git rev-parse $1 1>/dev/null 2>&1
     if [ $? != 0 ]
     then
 	RET_CODE=$ERR_GIT_COMMIT_INVALID
@@ -116,6 +134,71 @@ commit_ok_p()
 
     RET_CODE=$RET_OK
     return $RET_OK
+}
+current_branch()
+{
+    repository_ok_p
+    if [ $? != 0 ]
+    then
+	return $RET_ERR
+    fi
+
+    local current=
+    current=$(git branch \
+	| grep -o -E "^\*[[:space:]]+[^[:space:]]+[[:space:]]*$" \
+	| sed "s/^\*[[:space:]]*//")
+
+    validp=$(git branch \
+	| grep -o -E $current)
+    
+    if [ -z "$current" -o -z "$validp" -o x$current != x$validp ]
+    then 
+	echo "master"
+	RET_CODE=$ERR_CURRENT_BRANCH_NOT_FOUND
+	return $RET_ERR
+    else 
+	echo $current
+
+	RET_CODE=$RET_OK
+	return $RET_OK
+    fi
+
+}
+DOT_EMACS_VERSION=$(current_branch)
+branch_local_upstream()		# Use branch --track to for local upstream
+{
+    if [ -z $1 ]
+    then
+	RET_CODE=$ERR_INVALID_PARAMETER
+	return $RET_ERR
+    fi
+    
+    commit_ok_p $1
+    if [ $? != 0 ]
+    then
+	return $RET_ERR
+    fi
+
+    local upstream=
+    upstream=$(git branch -vv \
+	| grep -E "^\*?[[:space:]]+$1[[:space:]]+" \
+	| grep -o "\\[\([^][]*\)\\]" \
+	| sed "s/\\[\([^][]*\)\\]/\1/" \
+	| cut -d ':' -f1)
+    
+    validp=$(git branch \
+	| grep -o -E $upstream)
+    
+    if [ -z "$upstream" -o -z "$validp" -o x$upstream != x$validp ]
+    then 
+	RET_CODE=$ERR_NO_VALID_TRACKING_BRANCH
+	return $RET_ERR
+    else 
+	echo $upstream
+
+	RET_CODE=$RET_OK
+	return $RET_OK
+    fi
 }
 calc_short_sha1sum()
 {
@@ -138,7 +221,7 @@ calc_short_sha1sum()
 IN_USE_HEAD=$IN_USE_HEAD-$(calc_short_sha1sum $IN_USE_HEAD)
 has_in_use_head_p()
 {
-    git branch -a | grep "$IN_USE_HEAD" 1>/dev/null 2>&1
+    git branch -a | grep $IN_USE_HEAD 1>/dev/null 2>&1
     if [ $? != 0 ]
     then
 	RET_CODE=$ERR_HEAD_NOT_IN_USE
@@ -161,11 +244,11 @@ create_in_use_head()
 
     if [ $? != 0 -a $RET_CODE = $ERR_HEAD_NOT_IN_USE ]
     then
-	git checkout -b $discardp "$IN_USE_HEAD" "$DOT_EMACS_VERSION" 1>/dev/null 2>&1
+	git checkout -tb $discardp $IN_USE_HEAD $DOT_EMACS_VERSION 1>/dev/null 2>&1
     else
-	git checkout $discardp master 1>/dev/null 2>&1\
-	    && git branch -D "$IN_USE_HEAD" 1>/dev/null 2>&1\
-	    && git checkout -b $discardp "$IN_USE_HEAD" "$DOT_EMACS_VERSION" 1>/dev/null 2>&1
+	git checkout $discardp master 1>/dev/null 2>&1 \
+	    && git branch -D $IN_USE_HEAD 1>/dev/null 2>&1 \
+	    && git checkout -tb $discardp $IN_USE_HEAD $DOT_EMACS_VERSION 1>/dev/null 2>&1
     fi
 
     if [ $? != 0 ]
@@ -188,7 +271,7 @@ switch_in_use_head()
 
     if [ $? = 0 -a $RET_CODE != $ERR_HEAD_NOT_IN_USE ]
     then
-	git checkout "$IN_USE_HEAD" 1>/dev/null 2>&1
+	git checkout $IN_USE_HEAD 1>/dev/null 2>&1
     else
 	return $RET_ERR
     fi
@@ -210,8 +293,14 @@ remove_in_use_head()
 	return $RET_ERR
     fi
     
-    git checkout master 1>/dev/null 2>&1\
-	    && git branch -D "$IN_USE_HEAD" 1>/dev/null 2>&1
+    local upstream=$(branch_local_upstream $IN_USE_HEAD)
+    if [ -z "$upstream" -o $? != 0 ]
+    then 
+	upstream=master
+    fi
+
+    git checkout $upstream 1>/dev/null 2>&1 \
+	    && git branch -D $IN_USE_HEAD 1>/dev/null 2>&1
 
     if [ $? != 0 ]
     then
@@ -284,6 +373,15 @@ remove_dot_links()
 }
 install()
 {
+    echo -n "Branching $IN_USE_HEAD from "
+    echo "Upstream $DOT_EMACS_VERSION"
+
+    if [ x$IN_USE_HEAD = x$DOT_EMACS_VERSION ]
+    then
+	RET_CODE=$ERR_CANNOT_BRANCH_FROM_MYSELF
+	return $RET_ERR
+    fi
+
     echo -n "Checking repository: "
     repository_ok_p
     if [ $? = $RET_ERR ]
@@ -293,7 +391,7 @@ install()
     echo "OK"
 
     echo -n "Checking specified commit: "
-    commit_ok_p
+    commit_ok_p $DOT_EMACS_VERSION
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
@@ -332,6 +430,15 @@ install()
 }
 switch()
 {
+    echo -n "Branching $IN_USE_HEAD from "
+    echo "Upstream $DOT_EMACS_VERSION"
+
+    if [ x$IN_USE_HEAD = x$DOT_EMACS_VERSION ]
+    then
+	RET_CODE=$ERR_CANNOT_BRANCH_FROM_MYSELF
+	return $RET_ERR
+    fi
+
     echo -n "Checking repository: "
     repository_ok_p
     if [ $? = $RET_ERR ]
@@ -341,7 +448,7 @@ switch()
     echo "OK"
 
     echo -n "Checking specified commit: "
-    commit_ok_p
+    commit_ok_p $DOT_EMACS_VERSION
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
@@ -375,7 +482,7 @@ uninstall()
     fi
     echo "OK"
 
-    echo -n "Remove dot-emacs-in-use-head branch(restore to master): "
+    echo -n "Remove dot-emacs-in-use-head branch(restore to upstream): "
     remove_in_use_head
     if [ $? = $RET_ERR ]
     then
@@ -503,10 +610,12 @@ case $ACTION in
 esac
 
 #Kludge: Test goes here, maybe a suite of test cases should be more appropriate :)
-#repository_ok_p
-#commit_ok_p
-#calc_short_sha1sum 'asdf asdf'
-#has_in_use_head_p
-#create_in_use_head
-#remove_in_use_head
-#switch_in_use_head
+# repository_ok_p
+# commit_ok_p
+# calc_short_sha1sum 'asdf asdf'
+# has_in_use_head_p
+# create_in_use_head
+# remove_in_use_head
+# switch_in_use_head
+# branch_local_upstream "master"
+# current_branch
