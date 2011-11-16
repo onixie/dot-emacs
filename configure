@@ -2,7 +2,7 @@
 
 ACTION=
 FORCEP="NO"
-DOT_EMACS_VERSION="master"	# Commit/Branch/Tag for the in-used dot-emacs, using latest version by default.
+DOT_EMACS_VERSION="master"	# Commit/Branch/Tag for the in-used dot-emacs, will be override by current branch
 
 IN_USE_HEAD="dot-emacs-in-use" 	# A branch to track the in-used dot-emacs. Why not make a list of heads, and allow switching between them? Maybe next task:)
 
@@ -43,67 +43,69 @@ errorp()
     else
 	errno=$1
     fi
-
-    echo -n "ERROR: "
+    
+    echo "ERROR"
+    echo -n "  - ["
     case $errno in 
 	$ERR_DOT_LINK_TARGET_OR_SRC_EMPTY)
-	    echo "Specified target links or src files are empty"
+	    echo -n "Specified target links or src files are empty"
 	    ;;
 	$ERR_DOT_LINK_TARGET_EMPTY)
-	    echo "Specified target links are empty"
+	    echo -n "Specified target links are empty"
 	    ;;
 	$ERR_OTHER_CONFIGURATION_METHOD_CONFLICT)
-	    echo "Other configuration method in use"
+	    echo -n "Other configuration method in use"
 	    ;;
 	$ERR_DOT_EMACS_TARGET_LINK_EXIST)
-	    echo "Specified target links exist, use -force to forcibly install"
+	    echo -n "Specified target links exist, use -force to forcibly install"
 	    ;;
 	$ERR_DOT_LINK_CREATE_FAILED)
-	    echo "Link can not be created"
+	    echo -n "Link can not be created"
 	    ;;
 	$ERR_GIT_REPOSITORY_INVALID)
-	    echo "Specified repository of dot-emacs invalid"
+	    echo -n "Specified repository of dot-emacs invalid"
 	    ;;
 	$ERR_GIT_COMMIT_INVALID)
-	    echo "Specified commit of dot-emacs invalid"
+	    echo -n "Specified commit of dot-emacs invalid"
 	    ;;
 	$ERR_INVALID_PARAMETER)
-	    echo "Invalid parameter"
+	    echo -n "Invalid parameter"
 	    ;;
 	$ERR_CALC_SHA1SUM_FAILED)
-	    echo "Calculate sha1sum failed"
+	    echo -n "Calculate sha1sum failed"
 	    ;;
 	$ERR_HEAD_NOT_IN_USE)
-	    echo "Specified commit for head is not in use"
+	    echo -n "Specified commit for branch is not in use"
 	    ;;
 	$ERR_CREATE_IN_USE_HEAD_FAILED)
-	    echo "In use head can not be created"
+	    echo -n "dot-emacs branch can not be created"
 	    ;;
 	$ERR_REMOVE_IN_USE_HEAD_FAILED)
-	    echo "In use head can not be removed"
+	    echo -n "dot-emacs branch can not be removed"
 	    ;;
 	$ERR_SWITCH_IN_USE_HEAD_FAILED)
-	    echo "In use head can not be switched"
+	    echo -n "dot-emacs branch can not be switched"
 	    ;;
 	$ERR_EMPTY_ERROR_CODE)
-	    echo "Empty Error Code"
+	    echo -n "Empty error code"
 	    ;;
 	$ERR_CREATEE_IN_USE_HEAD_FAILED_TRY_FORCE)
-	    echo "In use head can not be created, use -force to forcibly create"
+	    echo -n "dot-emacs branch can not be created, use -force to forcibly create"
 	    ;;
 	$ERR_NO_VALID_TRACKING_BRANCH)
-	    echo "No valid local upstream"
+	    echo -n "No valid local upstream"
 	    ;;
 	$ERR_CURRENT_BRANCH_NOT_FOUND)
-	    echo "Current branch not found"
+	    echo -n "Current branch not found"
 	    ;;
 	$ERR_CANNOT_BRANCH_FROM_MYSELF)
-	    echo "Cannot branch from myself"
+	    echo -n "Cannot branch from myself"
 	    ;;
 	*)
-	    echo "Unknown error"
+	    echo -n "Unknown error"
 	    ;;
     esac
+    echo "]"
 }
 repository_ok_p()
 {
@@ -371,10 +373,10 @@ remove_dot_links()
     RET_CODE=$RET_OK
     return $RET_OK
 }
-install()
+switch()
 {
-    echo -n "Branching $IN_USE_HEAD from "
-    echo "Upstream $DOT_EMACS_VERSION"
+    echo -n "Branch $IN_USE_HEAD from "
+    echo "upstream $DOT_EMACS_VERSION"
 
     if [ x$IN_USE_HEAD = x$DOT_EMACS_VERSION ]
     then
@@ -382,7 +384,7 @@ install()
 	return $RET_ERR
     fi
 
-    echo -n "Checking repository: "
+    echo -n "Check repository: "
     repository_ok_p
     if [ $? = $RET_ERR ]
     then
@@ -390,13 +392,36 @@ install()
     fi
     echo "OK"
 
-    echo -n "Checking specified commit: "
+    echo -n "Check specified commit: "
     commit_ok_p $DOT_EMACS_VERSION
     if [ $? = $RET_ERR ]
     then
 	return $RET_ERR
     fi
     echo "OK"
+
+    if [ x$FORCEP = x"YES" ]
+    then 
+	echo -n "Forcibly checkout"
+    else
+	echo -n "Checkout"
+    fi
+    echo -n " specified commit as branch in use: "
+
+    create_in_use_head $FORCEP
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+    echo "OK"
+    
+    RET_CODE=$RET_OK
+    return $RET_OK
+}
+install()
+{
+    echo "Make links from $TARGET_DOT_FILE to $SRC_DOT_FILE"
+    echo "     links from $TARGET_DOT_DIR to $SRC_DOT_DIR"
 
     if [ x$FORCEP = x"YES" ]
     then
@@ -416,59 +441,16 @@ install()
 	return $RET_ERR
     fi
     echo "OK"
-
-    echo -n "Checkout specified commit as dot-emacs-in-use-head: "
-    create_in_use_head
-    if [ $? = $RET_ERR ]
-    then
-	return $RET_ERR
-    fi
-    echo "OK"
     
-    RET_CODE=$RET_OK
-    return $RET_OK
-}
-switch()
-{
-    echo -n "Branching $IN_USE_HEAD from "
-    echo "Upstream $DOT_EMACS_VERSION"
-
-    if [ x$IN_USE_HEAD = x$DOT_EMACS_VERSION ]
+    switch
+    if [ $? != 0 ]
     then
-	RET_CODE=$ERR_CANNOT_BRANCH_FROM_MYSELF
+	local tmp_code=$RET_CODE
+	remove_dot_links
+	RET_CODE=$tmp_code
 	return $RET_ERR
     fi
 
-    echo -n "Checking repository: "
-    repository_ok_p
-    if [ $? = $RET_ERR ]
-    then
-	return $RET_ERR
-    fi
-    echo "OK"
-
-    echo -n "Checking specified commit: "
-    commit_ok_p $DOT_EMACS_VERSION
-    if [ $? = $RET_ERR ]
-    then
-	return $RET_ERR
-    fi
-    echo "OK"
-
-    if [ x$FORCEP = x"YES" ]
-    then 
-	echo -n "Forcibly checkout"
-    else
-	echo -n "Checkout"
-    fi
-    echo -n " specified commit as dot-emacs-in-use-head: "
-    create_in_use_head $FORCEP
-    if [ $? = $RET_ERR ]
-    then
-	return $RET_ERR
-    fi
-    echo "OK"
-    
     RET_CODE=$RET_OK
     return $RET_OK
 }
@@ -478,11 +460,12 @@ uninstall()
     remove_dot_links
     if [ $? = $RET_ERR ]
     then
-	return $RET_ERR
+	errorp $RET_CODE
+    else
+	echo "OK"
     fi
-    echo "OK"
 
-    echo -n "Remove dot-emacs-in-use-head branch(restore to upstream): "
+    echo -n "Remove dot-emacs branch in use (back to upstream): "
     remove_in_use_head
     if [ $? = $RET_ERR ]
     then
@@ -496,11 +479,11 @@ uninstall()
 usage()
 {
     echo "Usage: $(basename $0) [OPTION]"
-    echo "Install/Uninstall dot-emacs (links) to user's home directory"
-    echo "    -i [commit], --install[=commit]     Install links and use commit-specified dot-emacs"
-    echo "    -s [commit], --switch[=commit]      Switch to commit-specified dot-emacs"
-    echo "    -f, --force                         Force to install even when links already exist"
-    echo "    -u, --uninstall                     Remove links from home directory"
+    echo "Install/Uninstall dot-emacs branch (links) to user's home directory"
+    echo "    -i [commit], --install[=commit]     Create links and commit-specified (current by default) dot-emacs branch"
+    echo "    -s [commit], --switch[=commit]      Switch to commit-specified (current by default) dot-emacs branch"
+    echo "    -f, --force                         Force to install"
+    echo "    -u, --uninstall                     Remove links and dot-emacs branch"
     echo "    -h, --help                          Output this help"
     exit 1
 }
