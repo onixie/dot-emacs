@@ -9,6 +9,7 @@
 ;;;;;;;;;;;;;;;; Load Packages ;;;;;;;;;;;;;;;;
 
 (require 'cc-mode)
+(require 'asm-mode)
 (require 'gud)
 (require 'ido)
 (require 'linum)
@@ -632,13 +633,14 @@ The advice call MODE-push-curpos by current major-mode"
 
 (setq group-mode-alist '((c++-mode . c-mode-base) ;C/C++ as a group
 			 (c-mode . c-mode-base)
+			 (asm-mode . c-mode-base)
 			 (lisp-interaction-mode . lisp-mode) ;Lisps as a group
 			 (emacs-lisp-mode . lisp-mode)))
 
 (mode-local-curpos c-mode-base		;Notice c-mode-base is a mode-goup instead of mode
-		   end-of-buffer 
-		   beginning-of-buffer 
-		   goto-line 
+		   end-of-buffer
+		   beginning-of-buffer
+		   goto-line
 		   move-beginning-of-line
 		   move-end-of-line
 		   isearch-repeat-backward
@@ -648,7 +650,9 @@ The advice call MODE-push-curpos by current major-mode"
 		   mouse-set-point
 		   semantic-complete-jump-local
 		   semantic-ia-fast-jump
-		   find-tag)
+		   find-tag
+		   scroll-up
+		   scroll-down)
 
 (mode-local-curpos lisp-mode		;lisp-mode itself is a mode and stands for other two lisp mode as mode-group
 		   end-of-buffer 
@@ -667,89 +671,23 @@ The advice call MODE-push-curpos by current major-mode"
 		   isearch-current-word-forward
 		   mouse-set-point 
 		   semantic-complete-jump-local 
-		   semantic-ia-fast-jump)
+		   semantic-ia-fast-jump
+		   scroll-up
+		   scroll-down)
 
 (mode-local-curpos text-mode 
 		   end-of-buffer
 		   beginning-of-buffer 
 		   goto-line 
-		   mouse-set-point)
-
-;; Prototype-1
-;; mode-local-binding may come to the same solution as above? need confirm
-;; (defconst curpos-max-record 512
-;;   "Maximum count of history records")
-
-;; (defvar curpos-history nil
-;;   "Record the positions of the cursor in the form of (buffer . point)")
-
-;; (defun curpos-record-count ()
-;;   "Return the count of the record in curpos-history"
-;;   (let ((count 0))
-;;     (dolist (curpos curpos-history)
-;;       (setq count (1+ count)))
-;;     count))
-
-;; (defun push-curpos ()
-;;   "Push current cursor position in curpose-history"
-;;   (setq curpos-history 
-;; 	(remove nil (remove-duplicates (push (cons (current-buffer) (point)) curpos-history) 
-;; 				       :test (lambda (arg1 arg2)
-;; 					       (and (equal (car arg1) (car arg2))
-;; 						    (equal (cdr arg1) (cdr arg2)))))))
-;;   (if (< curpos-max-record (curpos-record-count))
-;;       (setq curpos-history (butlast curpos-history))))
-
-;; (defun empty-curpos ()
-;;   "Empty curpos-history"
-;;   (setq curpos-history nil))
-
-;; (defun pop-curpos ()
-;;   "Pop up the top curpos in curpos-history"
-;;   (if (null curpos-history)
-;;       nil
-;;     (prog1 (car curpos-history)
-;;       (setq curpos-history (cdr curpos-history)))))
-
-;; (defun backtrace-curpos ()
-;;   "Backtrace the curpos-history stack"
-;;   (interactive)
-;;   (let ((current-buffer (current-buffer))
-;; 	(current-point (point)))
-;;     (if (null (position (cons current-buffer current-point) 
-;; 			curpos-history
-;; 			:test (lambda (arg1 arg2)
-;; 				(and (equal (car arg1) (car arg2))
-;; 				     (equal (cdr arg1) (cdr arg2))))))
-;; 	(push-curpos))
-;;     (let* ((target-curpos (car curpos-history))
-;; 	   (target-buffer (car target-curpos))
-;; 	   (target-point (cdr target-curpos)))
-;;       (if (and (equal target-buffer current-buffer)
-;; 	       (equal target-point current-point))
-;; 	  (setq curpos-history (remove nil (append (cdr curpos-history) (list (pop-curpos)))))))
-;;     (let* ((target-curpos (pop-curpos))
-;; 	   (target-buffer (car target-curpos))
-;; 	   (target-point (cdr target-curpos)))
-;;       (setq curpos-history (remove nil (append curpos-history (list target-curpos))))
-;;       (if (and (bufferp target-buffer)
-;; 	       (integer-or-marker-p target-point))
-;; 	  (progn
-;; 	    (switch-to-buffer target-buffer)
-;; 	    (goto-char target-point))))))
-
-;; (defadvice semantic-ia-fast-jump (before push-curpos activate)
-;;   (push-curpos))
-;; (defadvice semantic-complete-jump-local (before push-curpos activate)
-;;   (push-curpos))
-;; (defadvice mouse-set-point (before push-curpos activate)
-;;   (push-curpos))
-;; (defadvice goto-line (before push-curpos activate)
-;;   (push-curpos))
-;; (defadvice beginning-of-buffer (before push-curpos activate)
-;;   (push-curpos))
-;; (defadvice end-of-buffer (before push-curpos activate)
-;;   (push-curpos))
+		   move-beginning-of-line
+		   move-end-of-line
+		   isearch-repeat-backward
+		   isearch-repeat-forward
+		   isearch-current-word-backward
+		   isearch-current-word-forward
+		   mouse-set-point
+		   scroll-up
+		   scroll-down)
 
 ;;;;;;;;;;;;;;;; Org ;;;;;;;;;;;;;;;;
 (defun org-summary-todo (n-done n-not-done)
