@@ -1,11 +1,10 @@
-;;; .emacs --- emacs dot emacs configuration
+;;; .emacs --- dot emacs configuration
 
 ;; Copyright (C) 2010, 2011
 ;;   Nixie Shen
 
 ;; Author: Nixie Shen <onixie@gmail.com>
 ;; Keywords: emacs configuration
-
 
 ;;;;;;;;;;;;;;;; Load Packages ;;;;;;;;;;;;;;;;
 
@@ -38,18 +37,15 @@
 (require 'muse-publish)
 (require 'muse-html)
 (require 'emacs-wiki)
-;;(require 'slime) ;Use quicklisp-slime-helper instead
 (require 'w3m-load)
 ;;(require 'session)
 (require 'cups-dif)
 (require 'erc)
 
 ;; Use emacs-goodies-el packages
-;;(add-to-list 'load-path "/usr/share/emacs/site-lisp/emacs-goodies-el/" t) ;; copied into ~/.emacs.d/contrib
 (require 'tabbar)
 (require 'highlight-current-line)
 (require 'pack-windows)
-
 
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
@@ -129,7 +125,7 @@
  '(scroll-margin 3)
  '(scroll-preserve-screen-position nil)
  '(scroll-step 1)
- '(semantic-c-dependency-system-include-path (quote ("/usr/include" "/usr/local/include/opencv")))
+ '(semantic-c-dependency-system-include-path (quote ("/usr/include" "/usr/local/include")))
  '(semantic-idle-scheduler-idle-time 0.5)
  '(semantic-inhibit-functions (quote ((lambda nil (eq major-mode (quote lisp-mode))) (lambda nil (eq major-mode (quote emacs-lisp-mode))))))
  '(show-paren-mode t)
@@ -206,6 +202,8 @@
 
 (setq help-xref-following nil) ;Prevent quick-help yields warning and destroy the C-h function
 
+;;;;;;;;;;;;;;;; IDO ;;;;;;;;;;;;;;;;
+(ido-mode 1)
 
 ;;;;;;;;;;;;;;;; Maxframe ;;;;;;;;;;;;;;;;
 (defvar maxframe-mode-map
@@ -218,26 +216,16 @@
   "Minor Mode for maximze-frame
    \{KEYMAP}"
   :init-value nil
-  :lighter "MaxFrame"
+  :lighter " MaxFrame "
   :keymap maxframe-mode-map
   :require 'maxframe
   :group 'maxframe
+  :global t
   )
 
-(define-globalized-minor-mode global-maxframe-mode maxframe-mode 
-  (lambda ()
-    (maxframe-mode 1))
-  :require 'maxframe
-  ;; Because it is outside maxframe, it is invalid through customization to enable
-  ;; :group 'maxframe
-  )
-
-(global-maxframe-mode 1)
+(maxframe-mode 1)
 (maximize-frame)
 (add-hook 'window-setup-hook 'maximize-frame)
-;;;;;;;;;;;;;;;; IDO ;;;;;;;;;;;;;;;;
-(ido-mode 1)
-
 ;;;;;;;;;;;;;;;;  Buffer and Window Management ;;;;;;;;;;;;;;;;
 (defun kill-other-buffers (&rest buffers-not-to-kill)
   "Kill buffers not listed in arguements. 
@@ -299,35 +287,35 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (define-key map (kbd "<C-right>") 'windmove-right)
     (define-key map (kbd "<C-up>") 'windmove-up)
     (define-key map (kbd "<C-down>") 'windmove-down)
-    (define-key map (kbd "<C-kp-4>") 'windmove-left)
-    (define-key map (kbd "<C-kp-6>") 'windmove-right)
-    (define-key map (kbd "<C-kp-8>") 'windmove-up)
-    (define-key map (kbd "<C-kp-2>") 'windmove-down)
-    (define-key map (kbd "<C-kp-7>")
+    (define-key map (kbd "<C-kp-left>") 'windmove-left)
+    (define-key map (kbd "<C-kp-right>") 'windmove-right)
+    (define-key map (kbd "<C-kp-up>") 'windmove-up)
+    (define-key map (kbd "<C-kp-down>") 'windmove-down)
+    (define-key map (kbd "<C-kp-home>")
       (lambda ()
 	(interactive) 
-	(mapc 'call-interactively '(windmove-left windmove-up))))
-    (define-key map (kbd "<C-kp-9>") 
+	(mapc 'call-interactively '(windmove-up windmove-left))))
+    (define-key map (kbd "<C-kp-prior>") 
       (lambda () 
 	(interactive) 
-	(mapc 'call-interactively '(windmove-right windmove-up))))
-    (define-key map (kbd "<C-kp-1>") 
+	(mapc 'call-interactively '(windmove-up windmove-right))))
+    (define-key map (kbd "<C-kp-end>") 
       (lambda () 
 	(interactive)
-	(mapc 'call-interactively '(windmove-left windmove-down))))
-    (define-key map (kbd "<C-kp-3>") 
+	(mapc 'call-interactively '(windmove-down windmove-left))))
+    (define-key map (kbd "<C-kp-next>") 
       (lambda ()
 	(interactive)
-	(mapc 'call-interactively '(windmove-right windmove-down))))
+	(mapc 'call-interactively '(windmove-down windmove-right))))
     (define-key map (kbd "<delete>") 'kill-buffer-and-window)
     (define-key map (kbd "S-<delete>")
       (lambda ()
 	(interactive)
-	(kill-other-buffers (current-buffer) 
+	(kill-other-buffers (current-buffer)
 			    (get-buffer "*scratch*") 
 			    (get-buffer "*Messages*")
 			    (get-buffer "*ielm*"))
-	(call-interactively 'delete-other-windows)))    
+	(call-interactively 'delete-other-windows)))
     map))
 
 (kill-window-along-direction left easy-buffer-window-mode-map)
@@ -337,15 +325,21 @@ If the arguements are nil, all buffers except current buffer will be killed"
 
 (define-minor-mode easy-buffer-window-mode
   "Make buffer and window management easier by special keymap."
-  :init-value nil
-  :lighter "Easy-B&W"
-  :keymap easy-buffer-window-mode-map)
+  :lighter " Easy-B&W "
+  :keymap easy-buffer-window-mode-map
+  :group 'easy-buffer-window
+  :global t
+)
 
-(define-globalized-minor-mode global-easy-buffer-window-mode easy-buffer-window-mode
-  (lambda ()
-    (easy-buffer-window-mode 1)))
+(defun easy-buffer-window-mode-on ()
+  (interactive)
+  (easy-buffer-window-mode 1))
 
-(global-easy-buffer-window-mode 1)
+(defun easy-buffer-window-mode-off ()
+  (interactive)
+  (easy-buffer-window-mode 0))
+
+(easy-buffer-window-mode 1)
 
 ;;;;;;;;;;;;;;;; Tabbar ;;;;;;;;;;;;;;;;
 (defun tabbar-buffer-groups ()
@@ -845,10 +839,10 @@ The advice call MODE-push-curpos by current major-mode"
 (add-hook 'slime-connected-hook
 	  (lambda ()
 	    (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
-	    (with-current-buffer (slime-events-buffer) ; Enable easy-buffer-window for slime-event
-	      (easy-buffer-window-mode 1))))
-
-
+	    (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
+	    (define-key easy-buffer-window-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
+	    (define-key easy-buffer-window-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
+	    ))
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
 (defun ielm-quit-sentinel (proc change)
@@ -961,6 +955,7 @@ This command assumes point is not in a string or comment."
 (define-key c-mode-base-map (kbd "M-S-<f5>") (lambda ()
 					       (interactive)
 					       (mapc 'call-interactively '(compile gdb gdb-many-windows))))
+
 ;;;;;;;;;;;;;;;; Compiler ;;;;;;;;;;;;;;;;
 (defvar compile-output-time 3.0)
 
@@ -1112,11 +1107,8 @@ This command assumes point is not in a string or comment."
 		      (toggle-truncate-lines -1)
 		    (toggle-truncate-lines 1))))
 
-(global-set-key (kbd "C-<f12>")
-		#'find-file-at-point)
-
-(global-set-key (kbd "C-S-f")
-		#'find-grep)
+(global-set-key (kbd "C-<f12>") 'find-file-at-point)
+(global-set-key (kbd "C-S-f") 'find-grep)
 
 (define-key easy-buffer-window-mode-map (kbd "C-`") 
   (lambda ()
@@ -1127,34 +1119,29 @@ This command assumes point is not in a string or comment."
 
 (define-key easy-buffer-window-mode-map (kbd "<f10>") nil) ;Conflict with GDB's key binding for gud-step
 (define-key easy-buffer-window-mode-map (kbd "<f1> <f10>") 'menu-bar-open)
-(define-key easy-buffer-window-mode-map (kbd "<kp-0>") 'ielm)
+
 (define-key easy-buffer-window-mode-map (kbd "<home>") 'ielm) ; Very crazy thing ^^!
-(define-key easy-buffer-window-mode-map (kbd "<kp-1>") 
+(define-key easy-buffer-window-mode-map (kbd "<kp-home>") (kbd "<home>"))
+(define-key easy-buffer-window-mode-map (kbd "<kp-left>") 
   (lambda ()
     (interactive)
     (switch-to-buffer "*scratch*")))
-(define-key easy-buffer-window-mode-map (kbd "<kp-2>") 
+(define-key easy-buffer-window-mode-map (kbd "<kp-end>") 
   (lambda ()
     (interactive)
     (find-file "~/.emacs")))
-(define-key easy-buffer-window-mode-map (kbd "<kp-3>") 'eshell)
-(define-key easy-buffer-window-mode-map (kbd "<kp-4>") 'w3m)
-(define-key easy-buffer-window-mode-map (kbd "<kp-5>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
-(define-key easy-buffer-window-mode-map (kbd "<kp-6>") (kbd "C-c s i"))
 
-(define-key easy-buffer-window-mode-map (kbd "<kp-7>") (lambda () (interactive)
-			   (erc :server "irc.freenode.net" :port "6667"
-				:nick "onixie" :password "eixino")))
-
-(define-key easy-buffer-window-mode-map (kbd "<kp-8>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
-(define-key easy-buffer-window-mode-map (kbd "<kp-9>")
-  (lambda () 
-    (interactive)
-    (switch-to-buffer "*Messages*")))
-(define-key easy-buffer-window-mode-map (kbd "<end>") ; Very crazy thing ^^!
+(define-key easy-buffer-window-mode-map (kbd "<insert>") ; Very crazy thing ^^!
   (lambda ()
     (interactive)
     (switch-to-buffer "*Messages*")))
+(define-key easy-buffer-window-mode-map (kbd "<kp-insert>")
+  (kbd "<insert>"))
+
+(define-key easy-buffer-window-mode-map (kbd "<kp-up>") 'eshell)
+(define-key easy-buffer-window-mode-map (kbd "<kp-begin>") 'w3m)
+(define-key easy-buffer-window-mode-map (kbd "<kp-down>") 'erc)
+
 (put 'set-goal-column 'disabled nil)
 
 ;;;;;;;;;;;;;;;; ibus  ;;;;;;;;;;;;;;;;
