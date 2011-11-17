@@ -814,35 +814,28 @@ The advice call MODE-push-curpos by current major-mode"
 (global-set-key (kbd "M-<mouse-5>") 'text-scale-decrease)
 
 ;;;;;;;;;;;;;;;; Slime ;;;;;;;;;;;;;;;;
-(load (file-truename "~/quicklisp/slime-helper.el"))
+(if (load (file-truename "~/quicklisp/slime-helper.el") t) ;Only when quicklisp-slime-helper exist
+    (progn
+      (setq slime-lisp-implementations
+	    `((sbcl ("sbcl" "--noinform" "--no-linedit")
+		    :coding-system utf-8-unix)))
 
-;; (setq slime-lisp-implementations
-;;       `((sbcl ("~/.emacs.d/contrib/sbcl/bin/sbcl" 
-;; 	       "--core"
-;; 	       ,(file-truename "~/.emacs.d/contrib/sbcl/lib/sbcl/sbcl.core"))
-;; 	      :env ,(list (format "SBCL_HOME=%s" (file-truename "~/.emacs.d/contrib/sbcl/lib/sbcl/")))
-;; 	      :coding-system utf-8-unix)))
+      (slime-setup '(slime-fancy slime-repl slime-scratch slime-editing-commands slime-autodoc))
 
-(setq slime-lisp-implementations
-      `((sbcl ("sbcl" "--dynamic-space-size 10485760000" "--noinform" "--no-linedit")
-	      :coding-system utf-8-unix)))
+      (setq common-lisp-hyperspec-root "file:///usr/share/doc/hyperspec/")
 
-(slime-setup '(slime-fancy slime-repl slime-scratch slime-editing-commands slime-autodoc))
+      (add-hook 'slime-mode-hook
+		(lambda ()
+		  (unless (slime-connected-p)
+		    (save-selected-window (save-excursion (slime)))))) ; Enable slime when a file open
 
-(setq common-lisp-hyperspec-root "file:/usr/share/doc/hyperspec/")
-
-(add-hook 'slime-mode-hook
-	  (lambda ()
-	    (unless (slime-connected-p)
-	      (save-selected-window (save-excursion (slime)))))) ; Enable slime when a file open
-
-(add-hook 'slime-connected-hook
-	  (lambda ()
-	    (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
-	    (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
-	    (define-key easy-buffer-window-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
-	    (define-key easy-buffer-window-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
-	    ))
+      (add-hook 'slime-connected-hook
+		(lambda ()
+		  (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
+		  (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
+		  (define-key easy-buffer-window-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
+		  (define-key easy-buffer-window-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
+		  ))))
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
 (defun ielm-quit-sentinel (proc change)
