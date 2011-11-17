@@ -310,6 +310,9 @@ If the arguements are nil, all buffers except current buffer will be killed"
 	(interactive)
 	(mapc 'call-interactively '(windmove-down windmove-right))))
     (define-key map (kbd "<delete>") 'kill-buffer-and-window)
+    (define-key map (kbd "<kp-delete>") (kbd "<delete>"))
+    (if (not window-system)
+	(define-key map (kbd "<deletechar>") (kbd "<delete>")))
     (define-key map (kbd "S-<delete>")
       (lambda ()
 	(interactive)
@@ -828,6 +831,8 @@ The advice call MODE-push-curpos by current major-mode"
 		  (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
 		  (define-key easy-buffer-window-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
 		  (define-key easy-buffer-window-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
+		  (define-key easy-buffer-window-mode-map (kbd "<prior>") (kbd "<kp-prior>"))
+		  (define-key easy-buffer-window-mode-map (kbd "<next>") (kbd "<kp-next>"))
 		  ))))
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
@@ -1078,6 +1083,21 @@ This command assumes point is not in a string or comment."
   (interactive)
   (insert-string (shell-command-to-string "date")))
 
+(defun switch-to-scratch ()
+    (interactive)
+    (switch-to-buffer "*scratch*"))
+(defun switch-to-message ()
+    (interactive)
+    (switch-to-buffer "*Messages*"))
+(defun switch-to-dot-emacs ()
+    (interactive)
+    (find-file "~/.emacs"))
+(defun switch-to-calender ()
+  (interactive)
+  (if (or (not (fboundp 'calendar-exit)) 
+	  (null (calendar-exit)))
+      (calendar)))
+
 (eshell)
 (ielm)
 
@@ -1096,33 +1116,25 @@ This command assumes point is not in a string or comment."
 (global-set-key (kbd "C-<f12>") 'find-file-at-point)
 (global-set-key (kbd "C-S-f") 'find-grep)
 
-(define-key easy-buffer-window-mode-map (kbd "C-`") 
-  (lambda ()
-    (interactive)
-    (if (or (not (fboundp 'calendar-exit)) 
-	    (null (calendar-exit)))
-	(calendar))))
+(define-key easy-buffer-window-mode-map (kbd "C-`") 'switch-to-calender)
 
 (define-key easy-buffer-window-mode-map (kbd "<f10>") nil) ;Conflict with GDB's key binding for gud-step
 (define-key easy-buffer-window-mode-map (kbd "<f1> <f10>") 'menu-bar-open)
 
-(define-key easy-buffer-window-mode-map (kbd "<home>") 'ielm) ; Very crazy thing ^^!
+(define-key easy-buffer-window-mode-map (kbd "<home>") 'ielm)
 (define-key easy-buffer-window-mode-map (kbd "<kp-home>") (kbd "<home>"))
-(define-key easy-buffer-window-mode-map (kbd "<kp-left>") 
-  (lambda ()
-    (interactive)
-    (switch-to-buffer "*scratch*")))
-(define-key easy-buffer-window-mode-map (kbd "<kp-end>") 
-  (lambda ()
-    (interactive)
-    (find-file "~/.emacs")))
 
-(define-key easy-buffer-window-mode-map (kbd "<insert>") ; Very crazy thing ^^!
-  (lambda ()
-    (interactive)
-    (switch-to-buffer "*Messages*")))
-(define-key easy-buffer-window-mode-map (kbd "<kp-insert>")
-  (kbd "<insert>"))
+(define-key easy-buffer-window-mode-map (kbd "<kp-left>") 'switch-to-scratch)
+
+(define-key easy-buffer-window-mode-map (kbd "<end>") 'switch-to-dot-emacs)
+(define-key easy-buffer-window-mode-map (kbd "<kp-end>") 'switch-to-dot-emacs)
+(if (not window-system)
+    (define-key easy-buffer-window-mode-map (kbd "<select>") 'switch-to-dot-emacs))
+
+(define-key easy-buffer-window-mode-map (kbd "<insert>") 'switch-to-message)
+(define-key easy-buffer-window-mode-map (kbd "<kp-insert>") 'switch-to-message)
+(when (not window-system)
+  (define-key easy-buffer-window-mode-map (kbd "<insertchar>") 'switch-to-message))
 
 (define-key easy-buffer-window-mode-map (kbd "<kp-up>") 'eshell)
 (define-key easy-buffer-window-mode-map (kbd "<kp-begin>") 'w3m)
