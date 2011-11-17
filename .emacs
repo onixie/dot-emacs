@@ -10,6 +10,7 @@
 
 (require 'cc-mode)
 (require 'asm-mode)
+(require 'sh-script)
 (require 'gud)
 (require 'ido)
 (require 'linum)
@@ -524,6 +525,14 @@ Return the the first group where the current buffer is."
   (symbol-name (or (cdr (assoc mode group-mode-alist))
 		   mode)))
 
+(defvar mode-map-alist nil
+  "A replacement for the default mode map naming scheme")
+
+(defun mode-map-name (mode-map)
+  "Make a name replacement for mode-map"
+  (symbol-name (or (cdr (assoc mode-map mode-map-alist))
+		   mode-map)))
+
 (defun current-mode-curpos-push ()
   "Return the symbol of which function definition is MODE-push-curpos"
   (name-combinator (symbol-name major-mode) "-push-curpos"))
@@ -622,7 +631,7 @@ The advice call MODE-push-curpos by current major-mode"
      (add-curpos-advice ,mode ,@adviced-function) ; Define each advice function for push-curpos
 
      ,@(mapcar (lambda (group)
-		 `(define-key ,(name-combinator (symbol-name group) "-map") (kbd "S-<f12>") ; Define each keymap for curpos-backtrace
+		 `(define-key ,(name-combinator (mode-map-name group) "-map") (kbd "S-<f12>") ; Define each keymap for curpos-backtrace
 		    ',(name-combinator (symbol-name mode) "-backtrace-curpos")))
 	       `(,mode			;All keymaps in group-mode-alist as a group
 		 ,@(or (remove nil (mapcar (lambda (pair)
@@ -637,7 +646,15 @@ The advice call MODE-push-curpos by current major-mode"
 			 (lisp-interaction-mode . lisp-mode) ;Lisps as a group
 			 (emacs-lisp-mode . lisp-mode)))
 
+(setq mode-map-alist '((shell-script-mode . sh-mode)))
+
 (mode-local-curpos c-mode-base		;Notice c-mode-base is a mode-goup instead of mode
+		   forward-word
+		   backward-word
+		   forward-paragraph
+		   backward-paragraph
+		   forward-sentence
+		   backward-sentence
 		   end-of-buffer
 		   beginning-of-buffer
 		   goto-line
@@ -652,9 +669,21 @@ The advice call MODE-push-curpos by current major-mode"
 		   semantic-ia-fast-jump
 		   find-tag
 		   scroll-up
-		   scroll-down)
+		   scroll-down
+		   c-beginning-of-statement
+		   c-end-of-statement
+		   c-up-conditional
+		   c-backward-conditional
+		   c-forward-conditional
+		   )
 
 (mode-local-curpos lisp-mode		;lisp-mode itself is a mode and stands for other two lisp mode as mode-group
+		   forward-word
+		   backward-word
+		   forward-paragraph
+		   backward-paragraph
+		   forward-sentence
+		   backward-sentence
 		   end-of-buffer 
 		   beginning-of-buffer
 		   beginning-of-sexp
@@ -676,6 +705,32 @@ The advice call MODE-push-curpos by current major-mode"
 		   scroll-down)
 
 (mode-local-curpos text-mode 
+		   forward-word
+		   backward-word
+		   forward-paragraph
+		   backward-paragraph
+		   forward-sentence
+		   backward-sentence
+		   end-of-buffer
+		   beginning-of-buffer 
+		   goto-line 
+		   move-beginning-of-line
+		   move-end-of-line
+		   isearch-repeat-backward
+		   isearch-repeat-forward
+		   isearch-current-word-backward
+		   isearch-current-word-forward
+		   mouse-set-point
+		   scroll-up
+		   scroll-down)
+
+(mode-local-curpos shell-script-mode
+		   forward-word
+		   backward-word
+		   forward-paragraph
+		   backward-paragraph
+		   forward-sentence
+		   backward-sentence
 		   end-of-buffer
 		   beginning-of-buffer 
 		   goto-line 
