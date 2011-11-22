@@ -210,3 +210,17 @@ Nov 16, 2011
 
 5. 当使用--amend重新commit的时候，切记仅在本地操作，如果已经推送到远程源，那么只能在push的时候--force
    但是这样实际改变了之前的commit
+
+Nov 22, 2011 
+SBCL中关于IR2之后的一些文件
+system.lisp定义了一些vop操作, 用于访问vm层的对象和信息
+objdef.lisp中定义了在vm层中支持的原生C结构的对象
+meta-vmdef.lisp定义了vm.lisp中用于定义SB,SC的操作
+vm.lisp定义了SB,SC具体有哪些内容
+vop.lisp定义了IR2转换时候的结构对象，SB, SC, TN, Template, VOP-Info等对象结构
+assem.lisp和insts.lisp定义了80x86指令结构，具体的操作指令inst，以及对应的op code等信息
+
+一些碰到的名词 
+Storage Base, Storage Class, Temporary Name, Template, TN-Ref, Effective Address
+Virtual Operation, Primitive types, Instruction
+emitter, printer, prefilter, generator

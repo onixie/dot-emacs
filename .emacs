@@ -701,11 +701,12 @@ The advice call MODE-push-curpos by current major-mode"
 		   isearch-repeat-forward
 		   isearch-current-word-backward
 		   isearch-current-word-forward
-		   mouse-set-point 
-		   semantic-complete-jump-local 
+		   mouse-set-point
+		   semantic-complete-jump-local
 		   semantic-ia-fast-jump
 		   scroll-up
-		   scroll-down)
+		   scroll-down
+		   slime-edit-definition)
 
 (mode-local-curpos text-mode 
 		   forward-word
@@ -876,8 +877,7 @@ This command assumes point is not in a string or comment."
   (backward-delete-char 1)
   (backward-up-list)
   (delete-char 1)
-  (kill-sexp)
-  )
+  (kill-sexp))
 
 (defun replace-sexp-at-point ()
   (interactive)
@@ -904,6 +904,10 @@ This command assumes point is not in a string or comment."
 	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug)
 	(define-key map (kbd "C-S-o") 'rip-sexp-a-hug))
       (list lisp-mode-map emacs-lisp-mode-map lisp-interaction-mode-map))
+
+(mapc (lambda (map)
+	(define-key map (kbd "TAB") 'slime-indent-and-complete-symbol))
+      (list lisp-mode-map))
 
 ;;;;;;;;;;;;;;;; C/C++ Programming ;;;;;;;;;;;;;;;;
 (fset 'kill-c-comment
