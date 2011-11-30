@@ -68,7 +68,7 @@ IANA divides port numbers into three ranges:
 49152~65535  for services not officially designated, such as ephemeral ports, FFFF
 
 Mar 16, 2011 Pipeline subshell: Bash vs Ksh
-When doing pipelines, ksh will run each pipeline in current process, 
+When doing pipelines, ksh will run each pipeline in current process,
 in contrary, bash will run each pipeline in a subshell environment.
 
 This difference direct consequnce is when setting some variable in a pipeline in bash,
@@ -194,7 +194,7 @@ Aug 27, 2011 Emacs Tramp for SSH
 C-x C-f and then type /ssh:<user>@<host>:<files>
 it can open remote files by ssh.
 
-Nov 16, 2011 
+Nov 16, 2011 LINUX GIT
 最近的一些经验：
 1. dd_rescue 可以用来从坏扇区恢复一些数据
 
@@ -205,13 +205,13 @@ Nov 16, 2011
 3. 使用https协议穿过代理的时候，可以设定http.proxy, http.sslCAInfo, http.sslCAPath等变量
    后两个是指定认证根文件，和目录的所在位置
 
-4. 可以使用--track在本地创建一个跟踪本地upstream的分支，以使用push/pull，这默认只对远程分支有用
+4. 可以使用--track在本地创建一个跟踪本地upstream的分支，以使用pull，这默认只对远程分支有用
    使用git branch -vv，两个v可以看到upstream
 
 5. 当使用--amend重新commit的时候，切记仅在本地操作，如果已经推送到远程源，那么只能在push的时候--force
    但是这样实际改变了之前的commit
 
-Nov 22, 2011 
+Nov 22, 2011 SBCL
 SBCL中关于IR2之后的一些文件
 system.lisp定义了一些vop操作, 用于访问vm层的对象和信息
 objdef.lisp中定义了在vm层中支持的原生C结构的对象
@@ -220,7 +220,138 @@ vm.lisp定义了SB,SC具体有哪些内容
 vop.lisp定义了IR2转换时候的结构对象，SB, SC, TN, Template, VOP-Info等对象结构
 assem.lisp和insts.lisp定义了80x86指令结构，具体的操作指令inst，以及对应的op code等信息
 
-一些碰到的名词 
+一些碰到的名词
 Storage Base, Storage Class, Temporary Name, Template, TN-Ref, Effective Address
 Virtual Operation, Primitive types, Instruction
 emitter, printer, prefilter, generator
+
+Nov 24, 2011 SBCL
+在SBCL中定义新的VOP的方法
+在SB-VM包中，
+首先调用defknown声明该VOP是一个已知的操作
+通过define-vop定义新的操作，然后通过defun定义上层函数
+
+如：
+声明我的VOP接受一个系统区域指针，返回一个系统区域指针
+(defknown myvop (system-area-pointer) system-area-pointer (flushable movable))
+定义我的操作，意思是接受线程的系统区域指针，并且返回它 (相当没意义的操作)
+(define-vop (myvop)
+	 (:args (thread :scs (sap-reg) :target int))
+	 (:arg-types system-area-pointer)
+	 (:results (int :scs (sap-reg)))
+	 (:result-types system-area-pointer)
+	 (:translate myvop)
+	 (:policy :fast-safe)
+	 (:generator 1
+		     (move int thread)))
+声明高层函数
+(defun myvop (thread)
+	     (myvop thread))
+
+不明白的是什么是flushable, movable, foldable属性？
+
+Nov 24, 2011 SBCL
+SAP相关操作
+可以通过SAP-REF-*之类的，来读取某个SAP指针偏移处的内存的内容
+另外，对于在C空间中的变量，可以通过alien-sap和extern-alien
+来获取它的地址， extern-alien对于类型的要求可以在sb-alien包
+中找到，或者使用(* t)，另外还支持对函数的获取，指定函数类型
+
+如对于函数：
+(extern-alien "getcwd" (function (* char) (* char) size-t))
+如对于变量：
+(alien-sap (extern-alien "all_threads"  (* t)))
+
+Nov 28, 2011 SBCL
+SBCL编译器叫做Python compiler(和python语言可没关系哦)
+编译分为两个阶段phase，分别处理两种不同的中间语言IR:
+IR1 (Implicit Continuation Representation)
+IR2 (Virtual Machine Representation)
+
+编译器前端frontend主要负责IR1变换，后端backend则负责IR2变换
+ICR相当于一个CL的子集，以流程图flow graph的形式描述被编译代码的语法\语义
+VMR则是一些虚拟机操作码 (不同体系的汇编)的模板，将代码翻译成虚拟机的语言
+
+================================================================
+具体的语言变换过程：
+
+     IR1                    IR2
+  /------\    /--------------------------------\
+ / 	  \  /   			        \
+CL -> ICR -> VMR -> assembly instruction -> OP code
+
+IR1 phase
+1. ICR conversion - 进行宏展开和代码到代码的变换，将被编译代码转换为ICR形式 （解决命名冲突问题） - ir1tran, srctran, typetran
+2. Local call analysis - 寻找对本地函数的调用，分析关键字参数，将仅调用一次的函数识别为let，创建XEP - locall
+3. Find components - 寻找flow graph中的组块component，区分top level和run time代码，确定top level的components - dfo
+4. ICR optimization - ir1opt, ir1tran, typetran, seqtran, vm/vm-tran
+5. Type constraint propagation - 使用global flow analysis传播lexical 变量的类型信息，取消不必要的类型检查 - constraint
+6. Type check generation - 对在后端中比较难检查的类型，产生检查这些类型的ICR代码 - checkgen
+7. Event driven operation - 重新计算一些ICR部分 - ir1util, ir1opt
+8. ICR finalize - 在所有components都被编译后，寻找全局变量引用中的未定义的变量和不兼容的函数定义 - ir1final, main
+9. Environment analysis - 分析需要创建的不同环境以及其上下文， 探测非本地退出以及设置闭包变量 - envanal
+
+IR2 phase
+10. Global TN allocation - 遍历所有定义的函数，确定调用规约，给本地变量分配TN - gtn
+11. Local TN allocation - 根据类型和policy决定对已知函数使用什么VMR翻译，创建表达式评估时需要的TN - ltn
+12. Control analysis - 线性化flow graph，尽量减少其分支。block级的flow graph在这确定下来。 -  control
+13. Stack analysis - 针对unknown-values continuation维护堆栈？ - stack
+14. Entry analysis - 搜集外部函数调用的信息
+15. VMR conversion - 通过将flow graph中的节点转换为VOP将ICR转换为VMR - ir2tran, vmdef
+16. Copy propagation - 通过flow analysis删除不需要的TN
+17. Representation selection - 根据对TN的引用，确定哪个表示的cost最低。选择相应的VOP
+18. Lifetime analysis - 通过flow analysis找到生命期重叠的TN的集合，标注那些需要存储TN的VOP调用 - life
+19. Pack - 寻找合适的寄存器分配 - pack
+20. Code generation - 调用VOP产生器生成代码 - codegen
+21. Pipeline reorganization - assem-opt
+22. Assembly - 解决分支，转化为object code以及fixup信息 - assembler
+23. Dump - 将编译后的内容输出到object file或者in-core函数 - debug-dump, dump, vm/core
+=================================================================
+
+Nov 28, 2011 Compiler, SBCL
+- Peephole optimization的意思是针对一段产生的代码中的一小部分指令进行优化，这一小部分指令常称为peephole。
+  通常优化是指，识别无效的指令以及选择轻量级的等价指令。
+
+- Partial evaluation是一种在编译期将常量表达式替换掉constant folding的优化方法，该方法不仅优化完整的常量表达式，还根据
+  任何代码（表达式）中常量部分对这部分代码整体进行优化，主要表现为常量（值，函数都可）替换，无用表达式的删除，常量条件分支删除等
+
+- Inline expansion是指函数在调用除展开为代码的优化。
+
+- Meta-programming是指通过开发一种语言的特定领域扩展 Domain-specific extension来编程的方法。 (我猜lisp里就是特别指macro编程了吧)
+
+- Block compilation就是在假定全局函数global function不会重定义的情况下，优化掉函数边界。把defuned的函数编译成如flet, labels定义的
+  函数块。该优化可以将函数调用转化为本地jump跳转，取消参数检查。另外，也将partial evaluation和type inference的边界扩展到block而不是函数。
+
+Nov 29, 2011 Compiler, Type system
+- Type checking是检验类型规则限制的过程，可以发生在编译期，或者运行时。
+  - Static typing静态类型，是指在编译器进行类型检查的类型，与之相关的类型检查错误是compile time type error。
+  - Dynamic typing动态类型，是指在绝大多数类型检查在运行期间完成，与之相关的类型检查错误是runtime type error。
+    动态类型中，一般变量是没有类型的，有类型的是值。
+    - Duck typing是OO编程中，源于duck test的概念，即不管是什么对象，只要它走起来，叫起来，游起来像个鸭子，就叫它鸭子。
+      是一种动态类型检查，即由当前对象的行为和属性来决定值语义，而不是继承。
+  - Strong typing与weak typing是类型系统的另外一个纬度关注的问题。
+
+- Type inference是一种编译期自动对表达式的类型进行部分或者完全推导的功能。编译器通过推导使得显示的类型声明type annotation可以省略掉。一般类型推导用于静态类型语言。
+
+- Polymorpism是OO编程中，指同一个操作可以应用于多个类型的对象，或者同一个数据结构可以包含多个类型的元素。
+
+Nov 29, 2011 SBCL
+可以通过enable-debugger, disable-debugger, invoke-debugger显示的启用调试 (默认)，禁止调试，以及调用调试
+另外通过(define-alien-routine ("ldb_monitor" ldb_monitor) void)定义一个调用low level debugger的函数
+可以引起low level debugger.
+
+Nov 29, 2011 Programming, Compiler
+First Class Object
+
+在程序语言中，如果一个对象支持以下内容，它就是一级的：
+1. 能够存储到变量或数据结构中
+2. 能够作为参数传递给子过程
+3. 能够作为子过程的返回值
+4. 能够在运行时创建
+5. 具备intrinsic identity（唯一的标示？）
+
+具体到特定的程序元素，有
+first class function
+first class value
+first class continuation
+first class data type
