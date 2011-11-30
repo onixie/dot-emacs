@@ -45,6 +45,7 @@
 (require 'erc)
 (require 'paredit)
 (require 'parenface)
+(require 'ibus)
 
 ;; Use emacs-goodies-el packages
 (require 'tabbar)
@@ -162,6 +163,11 @@
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 (fset 'yes-or-no-p 'y-or-n-p)
+(put 'set-goal-column 'disabled nil)
+(setq ielm-header "")
+
+(eshell)
+(ielm)
 
 ;;;;;;;;;;;;;;;; Common ;;;;;;;;;;;;;;;;
 (defun name-combinator (&rest names)
@@ -173,10 +179,21 @@
   (define-key key-translation-map key1 key2)
   (define-key key-translation-map key2 key1))
 
-;;;;;;;;;;;;;;;; Color-Theme ;;;;;;;;;;;;;;;;
+(defun insert-date ()
+  (interactive)
+  (insert-string (shell-command-to-string "date")))
+
+;;;;;;;;;;;;;;;; Color-Theme ;;;;;;;;;;
 (eval-after-load "color-theme"
   '(progn (color-theme-initialize)
 	  (color-theme-calm-forest)))
+
+;;;;;;;;;;;;;;;; ibus  ;;;;;;;;;;;;;;;;
+(add-hook 'after-init-hook 'ibus-mode-on)
+(global-set-key (kbd "C-|") 'ibus-toggle)
+
+;;;;;;;;;;;;;;;; IDO ;;;;;;;;;;;;;;;;
+(ido-mode 1)
 
 ;;;;;;;;;;;;;;;; CEDET ;;;;;;;;;;;;;;;;
 (global-ede-mode 1)
@@ -211,9 +228,6 @@
 
 (setq help-xref-following nil) ;Prevent quick-help yields warning and destroy the C-h function
 
-;;;;;;;;;;;;;;;; IDO ;;;;;;;;;;;;;;;;
-(ido-mode 1)
-
 ;;;;;;;;;;;;;;;; Maxframe ;;;;;;;;;;;;;;;;
 (defvar maxframe-mode-map
   (let ((map (make-sparse-keymap)))
@@ -235,6 +249,7 @@
 (maxframe-mode 1)
 (maximize-frame)
 (add-hook 'window-setup-hook 'maximize-frame)
+
 ;;;;;;;;;;;;;;;;  Buffer and Window Management ;;;;;;;;;;;;;;;;
 (defun kill-other-buffers (&rest buffers-not-to-kill)
   "Kill buffers not listed in arguements. 
@@ -290,16 +305,46 @@ If the arguements are nil, all buffers except current buffer will be killed"
       (if (eq next current)
 	  (setq run nil)))))
 
+(defun switch-to-scratch ()
+    (interactive)
+    (switch-to-buffer "*scratch*"))
+
+(defun switch-to-message ()
+    (interactive)
+    (switch-to-buffer "*Messages*"))
+
+(defun switch-to-dot-emacs ()
+    (interactive)
+    (find-file "~/.emacs"))
+
+(defun switch-to-calender ()
+  (interactive)
+  (if (or (not (fboundp 'calendar-exit)) 
+	  (null (calendar-exit)))
+      (calendar)))
+
 (defvar easy-buffer-window-mode-map
   (let ((map (make-sparse-keymap)))
+    (kill-window-along-direction left map)
+    (kill-window-along-direction right map)
+    (kill-window-along-direction up map)
+    (kill-window-along-direction down map)
+
+    (define-key map (kbd "S-<left>") 'tabbar-backward)
+    (define-key map (kbd "S-<right>") 'tabbar-forward)
+    (define-key map (kbd "S-<up>") 'tabbar-press-home)
+    (define-key map (kbd "S-<down>") 'tabbar-press-home)
+
     (define-key map (kbd "<C-left>") 'windmove-left)
     (define-key map (kbd "<C-right>") 'windmove-right)
     (define-key map (kbd "<C-up>") 'windmove-up)
     (define-key map (kbd "<C-down>") 'windmove-down)
+
     (define-key map (kbd "<C-kp-left>") 'windmove-left)
     (define-key map (kbd "<C-kp-right>") 'windmove-right)
     (define-key map (kbd "<C-kp-up>") 'windmove-up)
     (define-key map (kbd "<C-kp-down>") 'windmove-down)
+
     (define-key map (kbd "<C-kp-home>")
       (lambda ()
 	(interactive) 
@@ -316,10 +361,12 @@ If the arguements are nil, all buffers except current buffer will be killed"
       (lambda ()
 	(interactive)
 	(mapc 'call-interactively '(windmove-down windmove-right))))
+
     (define-key map (kbd "<delete>") 'kill-buffer-and-window)
     (define-key map (kbd "<kp-delete>") (kbd "<delete>"))
     (if (not window-system)
 	(define-key map (kbd "<deletechar>") (kbd "<delete>")))
+
     (define-key map (kbd "S-<delete>")
       (lambda ()
 	(interactive)
@@ -328,20 +375,40 @@ If the arguements are nil, all buffers except current buffer will be killed"
 			    (get-buffer "*Messages*")
 			    (get-buffer "*ielm*"))
 	(call-interactively 'delete-other-windows)))
-    map))
 
-(kill-window-along-direction left easy-buffer-window-mode-map)
-(kill-window-along-direction right easy-buffer-window-mode-map)
-(kill-window-along-direction up easy-buffer-window-mode-map)
-(kill-window-along-direction down easy-buffer-window-mode-map)
+    (define-key map (kbd "C-x C-b") 'windmove-list-buffer)
+
+    (define-key map (kbd "<f10>") nil) ;Conflict with GDB's key binding for gud-step
+    (define-key map (kbd "<f1> <f10>") 'menu-bar-open)
+
+    (define-key map (kbd "C-`") 'switch-to-calender)
+
+    (define-key map (kbd "<home>") 'ielm)
+    (define-key map (kbd "<kp-home>") 'ielm)
+
+    (define-key map (kbd "<end>") 'switch-to-dot-emacs)
+    (define-key map (kbd "<kp-end>") 'switch-to-dot-emacs)
+    (when (not window-system)
+	(define-key map (kbd "<select>") 'switch-to-dot-emacs))
+
+    (define-key map (kbd "<insert>") 'switch-to-message)
+    (define-key map (kbd "<kp-insert>") 'switch-to-message)
+    (when (not window-system)
+      (define-key map (kbd "<insertchar>") 'switch-to-message))
+
+    (define-key map (kbd "<kp-left>") 'switch-to-scratch)
+    (define-key map (kbd "<kp-up>") 'eshell)
+    (define-key map (kbd "<kp-begin>") 'w3m)
+    (define-key map (kbd "<kp-down>") 'erc)
+
+    map))
 
 (define-minor-mode easy-buffer-window-mode
   "Make buffer and window management easier by special keymap."
   :lighter " Easy-B&W "
   :keymap easy-buffer-window-mode-map
   :group 'easy-buffer-window
-  :global t
-)
+  :global t)
 
 (defun easy-buffer-window-mode-on ()
   (interactive)
@@ -351,7 +418,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
   (interactive)
   (easy-buffer-window-mode 0))
 
-(easy-buffer-window-mode 1)
+(easy-buffer-window-mode-on)
 
 ;;;;;;;;;;;;;;;; Tabbar ;;;;;;;;;;;;;;;;
 (defun tabbar-buffer-groups ()
@@ -444,18 +511,11 @@ Return the the first group where the current buffer is."
   ;; Return the first group the current buffer belongs to.
   (car (nth 2 (assq (current-buffer) tabbar--buffers))))
 
-(define-key easy-buffer-window-mode-map (kbd "S-<left>") 'tabbar-backward)
-(define-key easy-buffer-window-mode-map (kbd "S-<right>") 'tabbar-forward)
-(define-key easy-buffer-window-mode-map (kbd "S-<up>") 'tabbar-press-home)
-(define-key easy-buffer-window-mode-map (kbd "S-<down>") 'tabbar-press-home)
-
 ;;;;;;;;;;;;;;;; Buffer List ;;;;;;;;;;;;;;;;
 (defun windmove-list-buffer ()
   (interactive)
   (call-interactively 'list-buffers)
   (other-window-by-name "*Buffer List*"))
-
-(define-key easy-buffer-window-mode-map (kbd "C-x C-b") 'windmove-list-buffer)
 
 (define-key Buffer-menu-mode-map (kbd "e") 
   (lambda ()
@@ -904,8 +964,6 @@ This command assumes point is not in a string or comment."
     (yank 1)
     (delete-sexp 1)))
 
-(setq ielm-header "")
-
 (mapc (lambda (hook)
 	(add-hook hook 
 		  (lambda ()
@@ -1055,8 +1113,7 @@ This command assumes point is not in a string or comment."
 	  (switch-to-buffer src-buffer)
 	  (gdb-many-windows -1)	;Disable GDB Many windows
 	  (gud-reset)
-	  (gdb-reset) 
-	  )
+	  (gdb-reset))
       (error nil))))
 
 (defun kill-gdb-process ()
@@ -1114,28 +1171,6 @@ This command assumes point is not in a string or comment."
 (setq erc-kill-server-buffer-on-quit t)
 
 ;;;;;;;;;;;;;;;; Misc ;;;;;;;;;;;;;;;;
-(defun insert-date ()
-  (interactive)
-  (insert-string (shell-command-to-string "date")))
-
-(defun switch-to-scratch ()
-    (interactive)
-    (switch-to-buffer "*scratch*"))
-(defun switch-to-message ()
-    (interactive)
-    (switch-to-buffer "*Messages*"))
-(defun switch-to-dot-emacs ()
-    (interactive)
-    (find-file "~/.emacs"))
-(defun switch-to-calender ()
-  (interactive)
-  (if (or (not (fboundp 'calendar-exit)) 
-	  (null (calendar-exit)))
-      (calendar)))
-
-(eshell)
-(ielm)
-
 ;;(set-process-query-on-exit-flag (get-buffer-process (get-buffer "*shell*")) nil)
 
 (global-set-key (kbd "C-x M-v") 
@@ -1150,34 +1185,3 @@ This command assumes point is not in a string or comment."
 
 (global-set-key (kbd "C-<f12>") 'find-file-at-point)
 (global-set-key (kbd "C-S-f") 'find-grep)
-
-(define-key easy-buffer-window-mode-map (kbd "C-`") 'switch-to-calender)
-
-(define-key easy-buffer-window-mode-map (kbd "<f10>") nil) ;Conflict with GDB's key binding for gud-step
-(define-key easy-buffer-window-mode-map (kbd "<f1> <f10>") 'menu-bar-open)
-
-(define-key easy-buffer-window-mode-map (kbd "<home>") 'ielm)
-(define-key easy-buffer-window-mode-map (kbd "<kp-home>") (kbd "<home>"))
-
-(define-key easy-buffer-window-mode-map (kbd "<kp-left>") 'switch-to-scratch)
-
-(define-key easy-buffer-window-mode-map (kbd "<end>") 'switch-to-dot-emacs)
-(define-key easy-buffer-window-mode-map (kbd "<kp-end>") 'switch-to-dot-emacs)
-(if (not window-system)
-    (define-key easy-buffer-window-mode-map (kbd "<select>") 'switch-to-dot-emacs))
-
-(define-key easy-buffer-window-mode-map (kbd "<insert>") 'switch-to-message)
-(define-key easy-buffer-window-mode-map (kbd "<kp-insert>") 'switch-to-message)
-(when (not window-system)
-  (define-key easy-buffer-window-mode-map (kbd "<insertchar>") 'switch-to-message))
-
-(define-key easy-buffer-window-mode-map (kbd "<kp-up>") 'eshell)
-(define-key easy-buffer-window-mode-map (kbd "<kp-begin>") 'w3m)
-(define-key easy-buffer-window-mode-map (kbd "<kp-down>") 'erc)
-
-(put 'set-goal-column 'disabled nil)
-
-;;;;;;;;;;;;;;;; ibus  ;;;;;;;;;;;;;;;;
-(require 'ibus)
-(add-hook 'after-init-hook 'ibus-mode-on)
-(global-set-key (kbd "C-|") 'ibus-toggle)
