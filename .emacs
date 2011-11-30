@@ -43,6 +43,8 @@
 ;;(require 'session)
 (require 'cups-dif)
 (require 'erc)
+(require 'paredit)
+(require 'parenface)
 
 ;; Use emacs-goodies-el packages
 (require 'tabbar)
@@ -165,6 +167,11 @@
 (defun name-combinator (&rest names)
   "Make a symbol by combining the strings as its name"
   (intern (mapconcat 'concat names "")))
+
+(defun swap-key-translation (key1 key2)
+  "Swap key bindings in key-translation-map"
+  (define-key key-translation-map key1 key2)
+  (define-key key-translation-map key2 key1))
 
 ;;;;;;;;;;;;;;;; Color-Theme ;;;;;;;;;;;;;;;;
 (eval-after-load "color-theme"
@@ -811,30 +818,42 @@ The advice call MODE-push-curpos by current major-mode"
 (global-set-key (kbd "M-<mouse-5>") 'text-scale-decrease)
 
 ;;;;;;;;;;;;;;;; Slime ;;;;;;;;;;;;;;;;
-(if (load (file-truename "~/quicklisp/slime-helper.el") t) ;Only when quicklisp-slime-helper exist
-    (progn
-      (setq slime-lisp-implementations
-	    `((sbcl ("sbcl" "--noinform" "--no-linedit")
-		    :coding-system utf-8-unix)))
+(when (load (file-truename "~/quicklisp/slime-helper.el") t) ;Only when quicklisp-slime-helper exist
+  (setq slime-lisp-implementations
+	`((sbcl ("sbcl" "--noinform" "--no-linedit")
+		:coding-system utf-8-unix)))
 
-      (slime-setup '(slime-fancy slime-repl slime-scratch slime-editing-commands slime-autodoc))
+  (slime-setup '(slime-fancy slime-repl slime-scratch slime-editing-commands slime-autodoc))
 
-      (setq common-lisp-hyperspec-root "file:///usr/share/doc/hyperspec/")
+  (setq common-lisp-hyperspec-root "file:///usr/share/doc/hyperspec/")
+  (setq slime-autodoc-use-multiline-p t)
 
-      (add-hook 'slime-mode-hook
-		(lambda ()
-		  (unless (slime-connected-p)
-		    (save-selected-window (save-excursion (slime)))))) ; Enable slime when a file open
+  (add-hook 'slime-mode-hook
+	    (lambda ()
+	      (unless (slime-connected-p)
+		(save-selected-window (save-excursion (slime)))))) ; Enable slime when a file open
 
-      (add-hook 'slime-connected-hook
-		(lambda ()
-		  (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
-		  (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
-		  (define-key easy-buffer-window-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
-		  (define-key easy-buffer-window-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
-		  (define-key easy-buffer-window-mode-map (kbd "<prior>") (kbd "<kp-prior>"))
-		  (define-key easy-buffer-window-mode-map (kbd "<next>") (kbd "<kp-next>"))
-		  ))))
+  (add-hook 'slime-connected-hook
+	    (lambda ()
+	      (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
+	      (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
+	      (define-key easy-buffer-window-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
+	      (define-key easy-buffer-window-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
+	      (define-key easy-buffer-window-mode-map (kbd "<prior>") (kbd "<kp-prior>"))
+	      (define-key easy-buffer-window-mode-map (kbd "<next>") (kbd "<kp-next>"))))
+
+  (defadvice slime-kill-all-buffers (after restore-key-bindings activate)
+    (define-key easy-buffer-window-mode-map (kbd "C-c s") nil)
+    (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") 'scroll-down) ; Kludge: store then restore must be better than this.
+    (define-key easy-buffer-window-mode-map (kbd "<kp-right>") nil)
+    (define-key easy-buffer-window-mode-map (kbd "<kp-next>") 'scroll-up)
+    (define-key easy-buffer-window-mode-map (kbd "<prior>") 'scroll-down)
+    (define-key easy-buffer-window-mode-map (kbd "<next>") 'scroll-up)
+    ad-return-value)
+  
+  (let ((fasls-dir "/tmp/slime-fasls/"))
+    (setq slime-compie-file-options '(:fasl-directory fasls-dir))
+    (make-directory fasls-dir t)))
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
 (defun ielm-quit-sentinel (proc change)
@@ -887,6 +906,13 @@ This command assumes point is not in a string or comment."
 
 (setq ielm-header "")
 
+(mapc (lambda (hook)
+	(add-hook hook 
+		  (lambda ()
+		    (paredit-mode 1)
+		    (set-face-foreground 'paren-face "gray70"))))
+      (list 'emacs-lisp-mode-hook 'lisp-mode-hook 'lisp-interaction-mode-hook))
+
 (add-hook 'ielm-mode-hook 
 	  (lambda ()
 	    (eldoc-mode)
@@ -908,6 +934,11 @@ This command assumes point is not in a string or comment."
 (mapc (lambda (map)
 	(define-key map (kbd "TAB") 'slime-indent-and-complete-symbol))
       (list lisp-mode-map))
+
+; Switching () and [] keys, I don't like it. 
+; But it really relieves my fingers' wrick :P
+;; (swap-key-translation (kbd "(") (kbd "["))
+;; (swap-key-translation (kbd ")") (kbd "]"))
 
 ;;;;;;;;;;;;;;;; C/C++ Programming ;;;;;;;;;;;;;;;;
 (fset 'kill-c-comment
