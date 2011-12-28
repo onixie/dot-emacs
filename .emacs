@@ -377,6 +377,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
 	(call-interactively 'delete-other-windows)))
 
     (define-key map (kbd "C-x C-b") 'windmove-list-buffer)
+    (define-key map (kbd "C-S-M-g") 'revert-buffer)
 
     (define-key map (kbd "<f10>") nil) ;Conflict with GDB's key binding for gud-step
     (define-key map (kbd "<f1> <f10>") 'menu-bar-open)

@@ -10,17 +10,18 @@ add Control = Control_L
 2. edit /etc/rc.local; add:
 xmodmap ~/.xmodmap 2 > /dev/null
 
-Aug 21, 2010 rule for Software tool
-1. only do one thing at a time
-2. process text not binary
-3. use regular expression(POSIX support two form: BRE and ERE)
-4. use standard output/input as default
-5. don't bothering(no need interaction)
-6. make output format consistent with required input format
-7. let tool to do the most difficult thing
-8. before create specialized tool, think more
+Aug 21, 2010 Rule For Software Tool
+1. Only Do One Thing At A Time
+2. Process Text Not Binary
+3. Use Regular Expression(Posix Support Two Form: Bre And Ere)
+4. Use Standard Output/Input As Default
+5. Don'T Bothering(No Need Interaction)
+6. Make Output Format Consistent With Required Input Format
+7. Let Tool To Do The Most Difficult Thing
+8. Before Create Specialized Tool, Think More
 
-Aug 25, 2010 Emacs Regex Function
+Aug 25, 2010 Emacs Basics
+Emacs Regex Function
       (string-match REGEXP STRING &optional START)
       (match-string NUM &optional STRING)
       (match-end SUBEXP)
@@ -315,7 +316,7 @@ Nov 28, 2011 Compiler, SBCL
 - Partial evaluation是一种在编译期将常量表达式替换掉constant folding的优化方法，该方法不仅优化完整的常量表达式，还根据
   任何代码（表达式）中常量部分对这部分代码整体进行优化，主要表现为常量（值，函数都可）替换，无用表达式的删除，常量条件分支删除等
 
-- Inline expansion是指函数在调用除展开为代码的优化。
+- Inline expansion是指函数在调用处展开为代码的优化。
 
 - Meta-programming是指通过开发一种语言的特定领域扩展 Domain-specific extension来编程的方法。 (我猜lisp里就是特别指macro编程了吧)
 
@@ -335,12 +336,12 @@ Nov 29, 2011 Compiler, Type system
 
 - Polymorpism是OO编程中，指同一个操作可以应用于多个类型的对象，或者同一个数据结构可以包含多个类型的元素。
 
-Nov 29, 2011 SBCL
+Nov 29, 2011 SBCL调试
 可以通过enable-debugger, disable-debugger, invoke-debugger显示的启用调试 (默认)，禁止调试，以及调用调试
 另外通过(define-alien-routine ("ldb_monitor" ldb_monitor) void)定义一个调用low level debugger的函数
 可以引起low level debugger.
 
-Nov 29, 2011 Programming, Compiler
+Nov 29, 2011 Programming, Compiler, First Class
 First Class Object
 
 在程序语言中，如果一个对象支持以下内容，它就是一级的：
@@ -355,3 +356,212 @@ first class function
 first class value
 first class continuation
 first class data type
+
+Dec 27, 2011 从用户的角度控制SBCL编译器
+1. 控制编译时输出的信息Verbosity：
+基础知识：
+在SBCL中有四种编译时的检查输出compiler diagnostic severity: error, warning, style warning, note
+
+前三种都对应的是ANSI CL标准中的condition, 意思是报告编译时发生了错误级别error severity的严重问题。
+第四个note通常是编译器提示的一些提示信息hint, 如如何改善代码以达到期望的性能、编译器优化掉的无用代码信息等。
+
+note从condition继承，基类为sb-ext::compiler-note，其中有个子类是code-deletion-note。
+
+对于输出，一般分为6个部分
+1. file: 标示错误所在的文件
+2. in: 标示错误发生的top level的definition或者form
+3. 之后缩进两格的是错误发生的最直接的form的原始代码（未经过宏展开和代码变换的）
+   注：这个信息里form是包含错误的最小的form，所以错误只会发生在这个form上，而不会发生在其包含的form中。
+4. --> 处理路径processing path， 显示在编译过程中，进行宏展开的每步的动作，该行中的每一个单词是展开一次的最外层的头一个form
+5. ==> 展开后的实际出错的代码
+6. 错误的类型和错误信息
+
+方法：
+a. 通过在declare或者declaim中使用muffle-condition/unmuffle-condition来声明屏蔽输出哪些编译的diagnostics检查
+b. 通过修改*compiler-print-variable-alist*来绑定一些*print-xxx*变量来控制编译时的输出
+----------------------------------------------------------------------
+2. 控制类型检查
+默认的情况下，SBCL并不盲目相信声明的类型declared types，而是把他们当成需要在运行期检查的assertions（但因为一些原因，这个规则是有出入的）, 对这些类型声明，将使用如同typep一样的严格精准的检查策略，如果一个对象有多个类型声明，那么每个都必须符合。
+
+类型检查有三类，
+全类型检查Full Type Checks, 条件：当优化级别safety>=2 或 safety>=speed>=1时（默认的方式）
+弱类型检查Weak Type Checks（简化为检查更宽泛的类型限制）, 条件：当优化级别safety<2并且safety<speed时
+无检查No Type Checks, 条件：safety=0
+----------------------------------------------------------------------
+3. 控制编译器策略
+知识：
+使用optimize优化声明，可以控制ANSI CL标准定义的四种不同的优化策略：safety, speed, space, debug
+通常speed优化策略过高时，编译器会提示用户一些它无法进行的优化提示，以告知修改代码来实现期望的优化。
+通常space优化策略影响内联函数的展开，将会增大编译后的代码大小。小心使用space=0，因为编译器会不分情况的进行内联，可能减慢程序执行速度。
+
+方法：
+1. 通过declare\declaim声明优化策略
+2. 通过declare-compiler-policy输出当前上下文的优化策略
+3. 通过restrict-compiler-policy限定指定的策略类型的最小级别。 如果没有指定，将会取消先前的指定（即设定为0），否则设定为1~3中的一个。
+4. 通过with-compilation-unit将编译策略声明的影响限定到它的上下文中。
+   使用:override有两个作用，其一，延迟其内部的警告的发生，并且当它为false时，未定义的警告会传播到外层的with-compilation-unit，
+   它为true时，就会在该层被处理。
+   使用:policy可以将其内部的策略绑定到当前的with-compilation-unit环境而不影响全局的策略。
+
+   例子：
+   除了safety其他都使用全局的策略，而在该单元内使用safety为2的策略，该策略不影响全局的safety
+   (with-compilation-unit (:policy '(optimize））
+	   (declaim (optimize (safety 2)))
+	   (load "/home/nixie/workspace/source/workdir/lisp/sbclstudy.lisp"))   
+   除了safety其他都使用全局策略，safety在该单元内为3 
+   (with-compilation-unit (:policy '(optimize safety))
+	   (load "/home/nixie/workspace/source/workdir/lisp/sbclstudy.lisp"))
+   都使用全局策略，包括safety的改变，会影像全局策略
+   (with-compilation-unit (:policy nil)
+	   (declaim (optimize (safety 2)))
+	   (load "/home/nixie/workspace/source/workdir/lisp/sbclstudy.lisp"))
+   都不使用全局策略而使用默认策略，safety在该单元内为3
+   (with-compilation-unit (:policy '(optimize safety) :override t)
+	   (load "/home/nixie/workspace/source/workdir/lisp/sbclstudy.lisp"))
+
+   注：restrict-compiler-policy并不受with-compilation-unit的影响，因此即便它在其内部，也会对全局起作用
+
+Dec 27, 2011 Open coded vs. Closed coded
+所谓Open coded就是指在函数调用的地方，用等价的内联代码（注意这里只是指代码，而不是其他等价的函数调用）替换掉该函数的调用。
+所谓Closed coded就是指在函数调用的地方，要么没有等价的替换，要么替换只是变成调用其他等价的函数。
+
+Dec 27, 2011 杂技巧搜集
+1. 使用Xephyr实现窗口化X服务
+使用Xephyr -ac -br -noreset -screen 800x600 :1&可以打开一个在:1的新的X服务在在当前X服务的一个窗口里。
+然后就可以让一些应用连上去看看了。
+2. Shell中的路径解析/的定义
+POSIX规定一个/代表root目录，多余两个的/如///也应该当成一个/。
+而两个/即//是可以由shell的实现决定其含义的。
+Bash把//显示为//当作/, Zsh把//显示并且当作/
+3. ping的mdev代表的是mean deviation, 是RTT的平均偏差，越大代表网速越不稳定。
+
+Dec 28, 2011 计算理论
+1. Turing Machine图灵机
+   根据一个表格的规则，读取磁带输入的信息，对符号进行操作的设备。 Universal Turing Machine是能够模拟其他图灵机的图灵机。
+
+   --------------------
+   Turing在1948年写了一个简介的定义：
+   被分割成一块一块square cell的无限长的磁带infinit tape提供了无限的内存容量，每个symbol都可以存储在一个cell上。
+   在一个特定的时刻，只有一个符号在机器中，该符号被称为被扫描的符号(scanned)。机器可以修改这个符号，并且它自己的行为
+   也依赖于这个符号，而磁带上的其他符号不能影响当前的机器。最后，磁带是可以前后移动来让机器读取的，这是机器的一个最基本的
+   操作。因此，所有的符号都可以被机器扫描。
+
+   对这段还的理解是，图灵机的构成是：
+   a. 无限长的磁带（分成cells，每个cells存储有限alphabet中的symbol）
+   b. 一个前后可移动的磁头（读写操作）
+   c. 一个状态寄存器（记录有限个状态中的一个）
+   d. 有限的指令表（迁移函数表）
+      根据当前状态和读入指令动作有：移动磁头，读写符号，修改状态。
+      deterministic的模型，前两个动作是二选一，最后一个动作是可以结合的；non-deterministic所有动作是可以结合的。
+      有些模型里，如果符号和状态的结合没有产生动作，那么机器是可以停止halt。
+   --------------------
+
+2. Computable Function可计算的函数
+   通过机械的计算设备可以在不限定时间和空间条件下被计算的函数。
+   或者说通俗点是有算法描述（一定的计算步骤序列）的函数就是可计算的，它可以用纸和笔在不限定时间和空间等资源的条件下被计算出来。
+
+   --------------------
+   在历史上，曾今使用Effectively calculable来代表可计算（但是它是形象的说法）
+   
+   Rosser在1939年对Effective的描述是：Effective Method是指计算的每一步都是预先确定好的，并且能够在有限步内产生答案的方法。
+   这里Effective有1. 能够产生确定的，准确的，期望的效果，2. 并且能够产生一个结果的意思。
+   
+   Turing在1939年中说:computable function的意思是可以被机器计算的函数，而使用effectively calculable来代表形象的意思在不需要特别
+   指明这些定义的情况下。即：
+   Every effectively calculable function is a computable function.
+
+   a function is effectively calculable if its value can be found by some purely mechanical process.
+   a purely mechanical process one which could be carried out by a machine.
+
+   而Effective calculable的意思就是能够不管什么effective的方法产生的， Effective computable是指被图灵机或等价设备产生的。
+   --------------------
+
+   P.S.
+3. total vs. partial （函数概念的扩展）
+   在数学中，如果一个函数它只能把X的子集X'映射到Y，我们说它是X到Y的一个partial function。
+   如果该函数X'就是X，那么它就是一个total function。
+
+   对于partial function来说，在recursion theorists那，domain就是X'；在category theorists那，domain还是X，X'被叫做domain of definition
+   
+   在可计算理论里面，如果一个可计算函数没有接受所有可能的参数，那么它是partial computable或叫做partial recursive
+   否则就是total computable或者叫total recursive
+
+4. Turing Complete图灵完备
+   通常说能够模拟turing Machine图灵机的一系列操作规则（系统）的集合是图灵完备的
+   （一般有上下文相关文法，递归函数，Lambda算子）。
+  
+   Turing Completeness
+   如果这套操作规则（或系统）可以计算每一个图灵机能够计算的可计算函数，那么他就是图灵完备的。
+
+5. Turing Equivalence
+   如果这套操作规则（或系统）是图灵完备的，且它能计算的每一个函数都可以被图灵机计算，那么它和图灵机是等价的。
+   
+6. University
+   所谓university是针对一类系统来说，如果这类系统里的每一个可计算函数都可以被某个系统计算，那么该系统就说是在该类系统中具有university.
+   
+7. Church-Turing Thesis
+   在可计算性上：
+     a. 图灵机(by Alan Turing)，
+     b. 递归函数(by Alonzo Church, Stephen Kleene, J.B. Rosser)，
+     c. Lambda算子(by Alonzo Church)是等价的。
+   这三种方法定义的函数是等价类。
+   Church-Turing Thesis中指明如果有一个算法被计算，那么使用任何这三种方法都是等价的， 这个性质是作为计算理论的本质存在的，也是一个假定。
+
+Dec 28, 2011 自动机理论
+1. Automata自动机
+   在离散的时间序列上接受给定的序列输入inputs，每个时间步骤上读取一个输入input（符号symbols或者是字符alphabets集合中的一个）。
+   而在任何给定的时间点，所有的输入构成了一串有限的符号或者字符串这个叫做word单词。
+   该状态机含有有限个状态state，每个时间步骤上它只处于一个状态。在一个时间点上，状态机读入输入后根据转移函数transition function转移状态
+  （转移函数的输入是当前状态和当前输入）
+   当输入串处理完后，状态机停止下来，它所处的最后的状态叫final state，有accept和reject两类。
+   如果所有的word都被accept，那么也说language被accept了。
+
+2. 根据输入、状态、转移函数和接受条件的不同可以分为不同的状态机
+   输入：Finit Input, Infinit Input, Tree word Input（一次读入树的所有输入）, Infinite Tree Input
+   状态：Finit States, Infinite States（不可数或者数不尽）, Stack MEmory(pushdown automaton符号可以存入栈中)
+   转移：Deterministic, Non-deterministic, 
+                       Alternation（一种特别的non-deterministic，有existential（选择）和universal(并行)两种不同的非确定转移）
+       (这三种可以通过密集构造powerset construction相互转换)
+
+   接受：Acceptance of finite word, Acceptance of infinite word, Probabilistic acceptance
+   这些分类还可以相互结合形成更复杂的分类。
+
+  另外，1. 如果给pushdown automaton在增加一个堆栈（即两个），那么这个新的状态机将与图灵机等价。
+       2. Linear bounded automaton也是一类特殊的non-deterministic图灵机
+          它的意思是不能访问无限长的磁带的所有部分，而只能访问由线性函数决定的有限长度范围，
+	  每个读入的输入有上下两个marker，所有的指令的操作都在这个范围内进行。
+
+Dec 28, 2011 形式语言理论
+1. Formal grammar正规文法
+   由有限终结符terminal symbols, 有限非终结符non-terminal symbols, 有限的产生式集合set of production rules和开始符号构成。
+   正规文法定义了正规语言，即从开始符号开始，通过使用产生式产生的有限长度的终结符号序列。
+2. Chormsky Hierarchy
+   Type-0 grammar(Unrestricted Grammar)（文法中包含a->b的形式, a,b为字串)
+   产生能够被图灵机识别的语言，这些语言是recursively enumarable language
+
+   Type-1 grammar(Context-Sensitive Grammar)（文法中包含aAb->arb的形式, a,r（不能为空）,b为字串, A为非终结符）
+   产生能够被Linear bounded automaton识别的语言，这些语言是上下文相关语言
+
+   Type-2 grammar(Context-Free Grammar)（文法中包含A->r的形式, A为非终结符, r为字串)
+   产生能够被Non-deterministic pushdown automaton识别，这些语言是上下文无关语言
+
+   Type-3 grammar(Regular Grammar)(文法中包含A->aB and A->a, a为终结符, A,B为非终结符）
+   产生能够被Finite state automaton识别的语言，这些语言是正规语言regular language
+3. Recursive Language
+   I. Recursive Set
+   在计算理论里，如果有一个算法能够在有限的时间内正确的确定一个给定的自然数是否属于某个自然数集合，
+   那么称这个自然数集合是recursive, computable或者decidable。
+   换句话说，如果存在一个total computable函数，通过该函数可以确定任意给定的自然数是否是在该自然数集合中，那么该集合就是recursive的。
+
+   II. Recursively Enumerable Set
+   在计算理论里，如果存在一个computable函数f，针对该自然数集合中的每一个自然数n, f(n)都是有定义的，且它只定义了这些自然数，
+   那么称它是一个recursively enumerable, computably enumerable, 或者semidecidable的集合。
+   即只有它是某个可计算函数的domain的时候，它在可能是computably enumerable。
+
+   III. 对于Computable Language或者说Recursive Language
+   就是只要有一个total function能够确定字符集alphabet中的所有symbol要么属于要么不属于该语言，那么该语言就是可计算的。
+   这个感觉比Type-0还要大的语言，对应Decider(Always Halting Turing machine)
+   
+   对于Computably enumerable或者说Recursively enumerable Language
+   就是说只要是在该语言里定义的symbol，都存在一个可计算函数可以对它进行计算。
+   这个就是Type-0文法产生的语言
