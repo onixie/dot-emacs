@@ -40,12 +40,13 @@
 (require 'muse-html)
 (require 'emacs-wiki)
 (require 'w3m-load)
-;;(require 'session)
+;; (require 'session)
 (require 'cups-dif)
 (require 'erc)
 (require 'paredit)
 (require 'parenface)
 (require 'ibus)
+(require 'pp-c-l)
 
 ;; Use emacs-goodies-el packages
 (require 'tabbar)
@@ -125,6 +126,8 @@
  '(org-hide-leading-stars nil nil nil "Clean View is done by org-startup-indented, this variable has little usage in future.")
  '(org-hierarchical-todo-statistics nil)
  '(org-startup-indented t)
+ '(pp^L-^L-string "                              -* Next Page *-                              ")
+ '(pp^L-^L-string-pre "")
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)
@@ -158,6 +161,7 @@
   ;; If there is more than one, they won't work right.
  '(highlight-current-line-face ((t (:background "black" :slant italic :weight bold))))
  '(org-hide ((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
+ '(pp^L-highlight ((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
  '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75")))))
 
 (put 'upcase-region 'disabled nil)
@@ -755,6 +759,8 @@ The advice call MODE-push-curpos by current major-mode"
 		   backward-paragraph
 		   forward-sentence
 		   backward-sentence
+		   forward-page
+		   backward-page
 		   end-of-buffer 
 		   beginning-of-buffer
 		   beginning-of-sexp
@@ -1186,3 +1192,15 @@ This command assumes point is not in a string or comment."
 
 (global-set-key (kbd "C-<f12>") 'find-file-at-point)
 (global-set-key (kbd "C-S-f") 'find-grep)
+
+;;;;;;;;;;;;;;;; PP ControlL ;;;;;;;;;;;;;;;;
+(pretty-control-l-mode 1)
+
+(defun ^L-line-ocuppy ()
+  (interactive)
+  (beginning-of-line)
+  (open-line 1)
+  (insert ?\xC)
+  (next-line))
+
+(global-set-key (kbd "C-S-l") '^L-line-ocuppy)

@@ -1,0 +1,545 @@
+g|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Fundamental Mode                             |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-b                                          | (backward-char &optional N)                                                                                   |
+| C-f                                          | (forward-char &optional N)                                                                                    |
+| C-n                                          | (next-line &optional ARG TRY-VSCROLL)                                                                         |
+| C-p                                          | (previous-line &optional ARG TRY-VSCROLL)                                                                     |
+| C-a                                          | (move-beginning-of-line ARG)                                                                                  |
+| C-e                                          | (move-end-of-line ARG)                                                                                        |
+| C-l                                          | (recenter-top-bottom &optional ARG)                                                                           |
+| C-v                                          | (scroll-up &optional ARG)                                                                                     |
+| M-v                                          | (scroll-down &optional ARG)                                                                                   |
+| M->                                          | (end-of-buffer &optional ARG)                                                                                 |
+| M-<                                          | (beginning-of-buffer &optional ARG)                                                                           |
+| M-b                                          | (backward-word &optional ARG)                                                                                 |
+| M-f                                          | (forward-word &optional ARG)                                                                                  |
+| M-a                                          | (backward-sentence &optional ARG)                                                                             |
+| M-e                                          | (forward-sentence &optional ARG)                                                                              |
+| M-m                                          | (back-to-indentation)                                                                                         |
+| M-r                                          | (move-to-window-line-top-bottom &optional ARG)                                                                |
+| M-g g                                        | (goto-line LINE &optional BUFFER)                                                                             |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-q C-l                                      | insert formfeed                                                                                               |
+| C-x [                                        | (backward-page &optional COUNT)                                                                               |
+| C-x ]                                        | (forward-page &optional COUNT)                                                                                |
+| C-x C-p                                      | (mark-page &optional ARG)                                                                                     |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-s                                          | (isearch-forward &optional REGEXP-P NO-RECURSIVE-EDIT)                                                        |
+| C-r                                          | (isearch-backward &optional REGEXP-P NO-RECURSIVE-EDIT)                                                       |
+| C-M-s                                        | (isearch-forward-regexp &optional NOT-REGEXP NO-RECURSIVE-EDIT)                                               |
+| C-M-r                                        | (isearch-backward-regexp &optional NOT-REGEXP NO-RECURSIVE-EDIT)                                              |
+| M-%                                          | (query-replace FROM-STRING TO-STRING &optional DELIMITED START END)                                           |
+| C-M-%                                        | (query-replace-regexp REGEXP TO-STRING &optional DELIMITED START END)                                         |
+| M-,                                          | (tags-loop-continue &optional FIRST-TIME)                                                                     |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-d                                          | (delete-char N &optional KILLFLAG)                                                                            |
+| M-d                                          | (kill-word ARG)                                                                                               |
+| C-k                                          | (kill-line &optional ARG)                                                                                     |
+| M-k                                          | (kill-sentence &optional ARG)                                                                                 |
+| C-w                                          | (kill-region BEG END &optional YANK-HANDLER)                                                                  |
+| M-w                                          | (kill-ring-save BEG END)                                                                                      |
+| M-<Space>                                    | (just-one-space &optional N)                                                                                  |
+| <Backspace>                                  | (delete-backward-char N &optional KILLFLAG)                                                                   |
+| M-<Backspace>                                | (backward-kill-word ARG)                                                                                      |
+| C-y                                          | (yank &optional ARG)                                                                                          |
+| M-y                                          | (yank-pop &optional ARG)                                                                                      |
+| C-@ or C-<Space>                             | (set-mark-command ARG)                                                                                        |
+| C-x C-x                                      | (exchange-point-and-mark &optional ARG)                                                                       |
+| C-x h                                        | (mark-whole-buffer)                                                                                           |
+| C-m                                          | (newline &optional ARG)                                                                                       |
+| C-o                                          | (open-line N)                                                                                                 |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-x r c                                      | (clear-rectangle START END &optional FILL)                                                                    |
+| C-x r d                                      | (delete-rectangle START END &optional FILL)                                                                   |
+| C-x r k                                      | (kill-rectangle START END &optional FILL)                                                                     |
+| C-x r o                                      | (open-rectangle START END &optional FILL)                                                                     |
+| C-x r t                                      | (string-rectangle START END STRING)                                                                           |
+| C-x r y                                      | (yank-rectangle)                                                                                              |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-u                                          | (universal-argument)                                                                                          |
+| C-g                                          | (keyboard-quit)                                                                                               |
+| C-x u or C-_                                 | (undo &optional ARG)                                                                                          |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-x 0                                        | (delete-window &optional WINDOW)                                                                              |
+| C-x 1                                        | (delete-other-windows &optional WINDOW)                                                                       |
+| C-x 2                                        | (split-window-vertically &optional SIZE)                                                                      |
+| C-x 3                                        | (split-window-horizontally &optional SIZE)                                                                    |
+| C-x o                                        | (other-window COUNT &optional ALL-FRAMES)                                                                     |
+| C-x ^                                        | (enlarge-window SIZE &optional HORIZONTAL)                                                                    |
+| C-x {                                        | (shrink-window-horizontally COLUMNS)                                                                          |
+| C-x }                                        | (enlarge-window-horizontally COLUMNS)                                                                         |
+| C-z or C-x z                                 | (suspend-frame)                                                                                               |
+| C-x 4 0                                      | (kill-buffer-and-window)                                                                                      |
+| C-x 5 2                                      | (make-frame-command)                                                                                          |
+| C-x 5 0                                      | (delete-frame &optional FRAME FORCE)                                                                          |
+| C-x 5 o                                      | (other-frame ARG)                                                                                             |
+| C-M-v                                        | (scroll-other-window &optional ARG)                                                                           |
+| C-x C-c                                      | (save-buffers-kill-terminal &optional ARG)                                                                    |
+| C-x b                                        | (switch-to-buffer BUFFER-OR-NAME &optional NORECORD)                                                          |
+| C-x C-b                                      | (list-buffers &optional FILES-ONLY)                                                                           |
+| C-x C-<left>                                 | (previous-buffer)                                                                                             |
+| C-x C-<right>                                | (next-buffer)                                                                                                 |
+| C-x k                                        | (kill-buffer &optional BUFFER-OR-NAME)                                                                        |
+| C-x C-s                                      | (save-buffer &optional ARGS)                                                                                  |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| M-c                                          | (capitalize-word ARG)                                                                                         |
+| M-u                                          | (upcase-word ARG)                                                                                             |
+| M-l                                          | (downcase-word ARG)                                                                                           |
+| C-x C-l                                      | (downcase-region BEG END)                                                                                     |
+| C-x C-u                                      | (upcase-region BEG END)                                                                                       |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-x C-+                                      | (text-scale-adjust INC)                                                                                       |
+| C-x C--                                      | (text-scale-adjust INC)                                                                                       |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-t                                          | (transpose-chars ARG)                                                                                         |
+| M-t                                          | (transpose-words ARG)                                                                                         |
+| C-x C-t                                      | (transpose-lines ARG)                                                                                         |
+| C-x C-o                                      | (delete-blank-lines)                                                                                          |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-x f                                        | (set-fill-column ARG)                                                                                         |
+| M-q                                          | (fill-paragraph &optional JUSTIFY REGION)                                                                     |
+| C-M-\                                        | (indent-region START END &optional COLUMN)                                                                    |
+| <Tab>                                        | (indent-for-tab-command &optional ARG)                                                                        |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-x d                                        | (dired DIRNAME &optional SWITCHES)                                                                            |
+| m                                            | (dired-mark ARG)                                                                                              |
+| u                                            | (dired-unmark ARG)                                                                                            |
+| M-}                                          | (dired-next-marked-file ARG &optional WRAP OPOINT)                                                            |
+| M-{                                          | (dired-prev-marked-file ARG &optional WRAP)                                                                   |
+| D                                            | (dired-do-delete &optional ARG)                                                                               |
+| d                                            | (dired-flag-file-deletion ARG)                                                                                |
+| x                                            | (dired-do-flagged-delete &optional NOMESSAGE)                                                                 |
+| R                                            | (dired-do-rename &optional ARG)                                                                               |
+| Z                                            | (dired-do-compress &optional ARG)                                                                             |
+| M                                            | (dired-do-chmod &optional ARG)                                                                                |
+| T                                            | (dired-do-touch &optional ARG)                                                                                |
+| G                                            | (dired-do-chgrp &optional ARG)                                                                                |
+| O                                            | (dired-do-chown &optional ARG)                                                                                |
+| H                                            | (dired-do-hardlink &optional ARG)                                                                             |
+| S                                            | (dired-do-symlink &optional ARG)                                                                              |
+| +                                            | (dired-create-directory DIRECTORY)                                                                            |
+| v                                            | (dired-view-file)                                                                                             |
+| f                                            | (dired-find-file)                                                                                             |
+| g                                            | (revert-buffer &optional IGNORE-AUTO NOCONFIRM PRESERVE-MODES)                                                |
+| s                                            | (dired-sort-toggle-or-edit &optional ARG)                                                                     |
+| n                                            | (dired-next-line ARG)                                                                                         |
+| p                                            | (dired-previous-line ARG                                                                                      |
+| \^                                           | (dired-up-directory &optional OTHER-WINDOW)                                                                   |
+| %g                                           | (dired-mark-files-containing-regexp REGEXP &optional MARKER-CHAR)                                             |
+| %d                                           | (dired-flag-files-regexp REGEXP)                                                                              |
+| %C                                           | (dired-do-copy-regexp REGEXP NEWNAME &optional ARG WHOLE-NAME)                                                |
+| %u                                           | (dired-upcase &optional ARG)                                                                                  |
+| %d                                           | (dired-downcase &optional ARG)                                                                                |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-x C-f                                      | (find-file FILENAME &optional WILDCARDS)                                                                      |
+| C-x C-v                                      | (find-alternate-file FILENAME &optional WILDCARDS)                                                            |
+| C-x i                                        | (insert-file FILENAME)                                                                                        |
+| C-x C-w                                      | (write-file FILENAME &optional CONFIRM)                                                                       |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| M-!                                          | (shell-command COMMAND &optional OUTPUT-BUFFER ERROR-BUFFER)                                                  |
+| M-S-\                                        | (shell-command-on-region START END COMMAND &optional OUTPUT-BUFFER REPLACE ERROR-BUFFER DISPLAY-ERROR-BUFFER) |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| M-x bookmark-rename                          |                                                                                                               |
+| M-x bookmark-delete                          |                                                                                                               |
+| M-x bookmark-write                           |                                                                                                               |
+| M-x bookmark-load                            |                                                                                                               |
+| C-x r m                                      | (bookmark-set &optional NAME NO-OVERWRITE)                                                                    |
+| C-x r b                                      | (bookmark-jump BOOKMARK &optional DISPLAY-FUNC)                                                               |
+| C-x r l                                      | (bookmark-bmenu-list)                                                                                         |
+| d                                            | (bookmark-bmenu-delete)                                                                                       |
+| x                                            | (bookmark-bmenu-execute-deletions)                                                                            |
+| r                                            | (bookmark-bmenu-rename)                                                                                       |
+| w                                            | (bookmark-bmenu-locate)                                                                                       |
+| M-g s                                        | (bookmark-bmenu-search)                                                                                       |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-x (                                        | (kmacro-start-macro ARG)                                                                                      |
+| C-x )                                        | (kmacro-end-macro ARG)                                                                                        |
+| <f3>                                         | (kmacro-start-macro-or-insert-counter ARG)                                                                    |
+| <f4>                                         | (kmacro-end-or-call-macro ARG &optional NO-REPEAT)                                                            |
+| C-x e                                        | (kmacro-end-and-call-macro ARG &optional NO-REPEAT)                                                           |
+| C-x C-k n                                    | (kmacro-name-last-macro SYMBOL)                                                                               |
+| M-x name-last-kbd-macro                      |                                                                                                               |
+| M-x insert-kbd-macro                         |                                                                                                               |
+| M-x load-file                                |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-h c                                        | (describe-key-briefly &optional KEY INSERT UNTRANSLATED)                                                      |
+| C-h k                                        | (describe-key &optional KEY UNTRANSLATED UP-EVENT)                                                            |
+| C-h l                                        | (view-lossage)                                                                                                |
+| C-h w                                        | (where-is DEFINITION &optional INSERT)                                                                        |
+| C-h f                                        | (describe-function FUNCTION)                                                                                  |
+| C-h v                                        | (describe-variable VARIABLE &optional BUFFER FRAME)                                                           |
+| C-h b                                        | (describe-bindings &optional PREFIX BUFFER)                                                                   |
+| C-h p                                        | (finder-by-keyword)                                                                                           |
+| C-h m                                        | (describe-mode &optional BUFFER)                                                                              |
+| C-h i                                        | (info &optional FILE-OR-NODE BUFFER)                                                                          |
+| C-h t                                        | (help-with-tutorial &optional ARG DONT-ASK-FOR-REVERT)                                                        |
+| C-h C-f                                      | (view-emacs-FAQ)                                                                                              |
+| F10                                          | (menu-bar-open &optional FRAME)                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| CVS Mode                                     |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| M-x cvs-update                               |                                                                                                               |
+| M-x cvs-examine                              |                                                                                                               |
+| M-x cvs-quickdir                             |                                                                                                               |
+| M-x cvs-status                               |                                                                                                               |
+| M-x cvs-checkout                             |                                                                                                               |
+| O                                            | (cvs-mode-update)                                                                                             |
+| a                                            | (cvs-mode-add FLAGS)                                                                                          |
+| c                                            | (cvs-mode-commit SETUP)                                                                                       |
+| l                                            | (cvs-mode-log)                                                                                                |
+| s                                            | (cvs-mode-status FLAGS)                                                                                       |
+| e                                            | (cvs-mode-examine)                                                                                            |
+| r                                            | (cvs-mode-remove FLAGS)                                                                                       |
+| U                                            | (cvs-mode-undo FLAGS)                                                                                         |
+| i                                            | (cvs-mode-ignore &optional PATTERN)                                                                           |
+| d                                            | (cvs-mode-diff)                                                                                               |
+| t                                            | (cvs-mode-tag TAG &optional FLAGS)                                                                            |
+| o                                            | (cvs-mode-find-file-other-window E)                                                                           |
+| C-o                                          | (cvs-mode-display-file E)                                                                                     |
+| m                                            | (cvs-mode-mark &optional ARG)                                                                                 |
+| M                                            | (cvs-mode-mark-all-files)                                                                                     |
+| u                                            | (cvs-mode-unmark)                                                                                             |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| LISP Mode                                    |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-M-a                                        | (beginning-of-defun &optional ARG)                                                                            |
+| C-M-e                                        | (end-of-defun &optional ARG)                                                                                  |
+| C-M-f                                        | (forward-sexp &optional ARG)                                                                                  |
+| C-M-b                                        | (backward-sexp &optional ARG)                                                                                 |
+| C-M-u                                        | (backward-up-list &optional ARG)                                                                              |
+| C-M-x                                        | (eval-defun EDEBUG-IT)                                                                                        |
+| C-M-q                                        | (indent-pp-sexp &optional ARG)                                                                                |
+| C-M-@                                        | (mark-sexp &optional ARG ALLOW-EXTEND)                                                                        |
+| C-j                                          | (eval-print-last-sexp)                                                                                        |
+| C-M-k                                        | (kill-sexp &optional ARG)                                                                                     |
+| <ESC> C-<Delete>                             | (backward-kill-sexp &optional ARG)                                                                            |
+| M-(                                          | (insert-parentheses &optional ARG)                                                                            |
+| M-)                                          | (move-past-close-and-reindent)                                                                                |
+| M-^                                          | (delete-indentation &optional ARG)                                                                            |
+| M-:                                          | (eval-expression EVAL-EXPRESSION-ARG &optional EVAL-EXPRESSION-INSERT-VALUE)                                  |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C/l Mode                                     |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-c C-c                                      | (comment-region BEG END &optional ARG)                                                                        |
+| C-u C-c C-c                                  |                                                                                                               |
+| M-;                                          | (comment-dwim ARG)                                                                                            |
+| M-a                                          | (c-beginning-of-statement &optional COUNT LIM SENTENCE-FLAG)                                                  |
+| M-e                                          | (c-end-of-statement &optional COUNT LIM SENTENCE-FLAG)                                                        |
+| C-M-a                                        | (c-beginning-of-defun &optional ARG)                                                                          |
+| C-M-e                                        | (c-end-of-defun &optional ARG)                                                                                |
+| C-c C-q                                      | (c-indent-defun)                                                                                              |
+| C-c C-a                                      | (c-toggle-auto-newline &optional ARG)                                                                         |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Comint Mode                                  |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| M-x shell                                    |                                                                                                               |
+| M-x telnet                                   |                                                                                                               |
+| C-c C-c                                      | (comint-interrupt-subjob)                                                                                     |
+| C-c C-d                                      | (comint-send-eof)                                                                                             |
+| C-c C-z                                      | (comint-stop-subjob)                                                                                          |
+| C-c C-u                                      | (comint-kill-input)                                                                                           |
+| C-c C-o                                      | (comint-delete-output)                                                                                        |
+| C-c C-r                                      | (comint-show-output)                                                                                          |
+| C-c C-l                                      | (comint-dynamic-list-input-ring)                                                                              |
+| C-c C-s                                      | (comint-write-output FILENAME &optional APPEND MUSTBENEW)                                                     |
+| M-p                                          | (comint-previous-input ARG)                                                                                   |
+| M-n                                          | (comint-next-input ARG)                                                                                       |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| GDB Mode                                     |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| M-x gdb                                      |                                                                                                               |
+| M-x gdb-many-windows                         |                                                                                                               |
+| M-x gdb-restore-windows                      |                                                                                                               |
+| M-x gud-go                                   |                                                                                                               |
+| C-x C-a C-n                                  | (gud-next ARG)                                                                                                |
+| C-x C-a C-s                                  | (gud-step ARG)                                                                                                |
+| C-x C-a C-f                                  | (gud-finish ARG)                                                                                              |
+| C-x C-a C-u                                  | (gud-until ARG)                                                                                               |
+| C-x C-a C-r                                  | (gud-cont ARG)                                                                                                |
+| C-x C-a C-b                                  | (gud-break ARG)                                                                                               |
+| C-x C-a C-d                                  | (gud-remove ARG)                                                                                              |
+| C-x C-a C-w                                  | (gud-watch &optional ARG EVENT)                                                                               |
+| C-x C-a C-t                                  | (gud-tbreak ARG)                                                                                              |
+| C-x C-a C-p                                  | (gud-print ARG)                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Input Method                                 |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| M-x set-input-method                         |                                                                                                               |
+| C-\                                          | (toggle-input-method &optional ARG INTERACTIVE)                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Org Mode                                     |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| S-left                                       | (org-shiftleft &optional ARG)                                                                                 |
+| S-right                                      | (org-shiftright &optional ARG)                                                                                |
+| S-up                                         | (org-shiftup &optional ARG)                                                                                   |
+| S-down                                       | (org-shiftdown &optional ARG)                                                                                 |
+| C-c C-n                                      | (outline-next-visible-heading ARG)                                                                            |
+| C-c C-p                                      | (outline-previous-visible-heading ARG)                                                                        |
+| C-c C-u                                      | (outline-up-heading ARG &optional INVISIBLE-OK)                                                               |
+| C-c C-f                                      | (org-forward-same-level ARG &optional INVISIBLE-OK)                                                           |
+| C-c C-b                                      | (org-backward-same-level ARG &optional INVISIBLE-OK)                                                          |
+| C-c C-c                                      | (org-ctrl-c-ctrl-c &optional ARG)                                                                             |
+| TAB                                          | (org-cycle &optional ARG)                                                                                     |
+| C-c C-o                                      | (org-open-at-point &optional IN-EMACS REFERENCE-BUFFER)                                                       |
+| M-RET                                        | (org-meta-return &optional ARG)                                                                               |
+| M-right                                      | (org-metaright &optional ARG)                                                                                 |
+| M-left                                       | (org-metaleft &optional ARG)                                                                                  |
+| S-M-left                                     | (org-shiftmetaleft)                                                                                           |
+| S-M-right                                    | (org-shiftmetaright)                                                                                          |
+| C-c C-x M-w                                  | (org-copy-special)                                                                                            |
+| C-c C-x C-y                                  | (org-paste-special ARG)                                                                                       |
+| C-c C-x C-w                                  | (org-cut-special)                                                                                             |
+| C-c C-x C-f                                  | (org-emphasize &optional CHAR)                                                                                |
+| C-c *                                        | (org-ctrl-c-star)                                                                                             |
+| C-c ^                                        | (org-sort WITH-CASE)                                                                                          |
+| C-c C-x b                                    | (org-tree-to-indirect-buffer &optional ARG)                                                                   |
+| C-c C-x f                                    | (org-footnote-action &optional SPECIAL)                                                                       |
+| C-c C-x C-p                                  | (org-previous-link)                                                                                           |
+| C-c C-x C-n                                  | (org-next-link)                                                                                               |
+| C-c C-l                                      | (org-insert-link &optional COMPLETE-FILE LINK-LOCATION)                                                       |
+| S-M-Ret                                      | (org-insert-todo-heading ARG &optional FORCE-HEADING)                                                         |
+| C-c C-t                                      | (org-todo &optional ARG)                                                                                      |
+| C-<number> C-c C-t                           |                                                                                                               |
+| C-u C-u C-c C-t or C-S-<right> or C-S-<left> |                                                                                                               |
+| C-c C-v                                      | (org-show-todo-tree ARG)                                                                                      |
+| C-c C-x o                                    | (org-toggle-ordered-property)                                                                                 |
+| C-c C-q                                      | (org-set-tags-command &optional ARG JUST-ALIGN)                                                               |
+| C-c C-x p                                    | (org-set-property PROPERTY VALUE)                                                                             |
+| C-c C-x C-c                                  | (org-columns)                                                                                                 |
+| C-c C-x i                                    | (org-insert-columns-dblock)                                                                                   |
+| C-c !                                        | (org-time-stamp-inactive &optional ARG)                                                                       |
+| C-c .                                        | (org-time-stamp ARG &optional INACTIVE)                                                                       |
+| C-c <                                        | (org-date-from-calendar)                                                                                      |
+| C-c >                                        | (org-goto-calendar &optional ARG)                                                                             |
+| C-c C-y                                      | (org-evaluate-time-range &optional TO-BUFFER)                                                                 |
+| C-c C-s                                      | (org-schedule &optional REMOVE TIME)                                                                          |
+| C-c C-d                                      | (org-deadline &optional REMOVE TIME)                                                                          |
+| C-c / d                                      | (org-sparse-tree &optional ARG)                                                                               |
+| C-c / b                                      | (org-sparse-tree &optional ARG)                                                                               |
+| C-c / a                                      | (org-sparse-tree &optional ARG)                                                                               |
+| C-c C-x C-i                                  | (org-clock-in &optional SELECT)                                                                               |
+| C-c C-x C-o                                  | (org-clock-out &optional FAIL-QUIETLY AT-TIME)                                                                |
+| C-c C-x C-e                                  | (org-clock-modify-effort-estimate &optional VALUE)                                                            |
+| C-c C-x C-x                                  | (org-clock-cancel)                                                                                            |
+| C-c C-x C-j                                  | (org-clock-goto &optional SELECT)                                                                             |
+| C-c C-x C-d                                  | (org-clock-display &optional TOTAL-ONLY)                                                                      |
+| C-c C-x C-r                                  | (org-clock-report &optional ARG)                                                                              |
+| C-c C-x C-u                                  | (org-dblock-update &optional ARG)                                                                             |
+| C-c C-x .                                    | (org-timer &optional RESTART)                                                                                 |
+| C-c C-x ,                                    | (org-timer-pause-or-continue &optional STOP)                                                                  |
+| C-u C-c C-x ,                                | (org-timer-pause-or-continue &optional STOP)                                                                  |
+| C-c C-x 0                                    | (org-timer-start &optional OFFSET)                                                                            |
+| C-c C-x -                                    | (org-timer-item &optional ARG)                                                                                |
+| C-c C-e                                      | (org-export &optional ARG)                                                                                    |
+| C-c S-\                                      | (org-table-create-or-convert-from-region ARG)                                                                 |
+| C-c -                                        | (org-ctrl-c-minus)                                                                                            |
+| C-c Ret                                      | (org-ctrl-c-ret)                                                                                              |
+| S-Ret                                        | (org-table-copy-down N)                                                                                       |
+| C-c +                                        | (org-table-sum &optional BEG END NLAST)                                                                       |
+| C-c }                                        | (org-table-toggle-coordinate-overlays)                                                                        |
+| C-c ?                                        | (org-table-field-info ARG)                                                                                    |
+| C-c =                                        | (org-table-eval-formula &optional ARG EQUATION SUPPRESS-ALIGN                                                 |
+| C-u C-c =                                    |                                                                                                               |
+| C-c {                                        | (org-table-toggle-formula-debugger)                                                                           |
+| C-c `                                        | (org-table-edit-field ARG)                                                                                    |
+| M-x org-plot/gnu-plot                        |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Calendar Mode                                |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| .                                            | (calendar-goto-today)                                                                                         |
+| C-f                                          | (calendar-forward-day ARG)                                                                                    |
+| C-b                                          | (calendar-backward-day ARG)                                                                                   |
+| C-n                                          | (calendar-forward-week ARG)                                                                                   |
+| C-p                                          | (calendar-backward-week ARG)                                                                                  |
+| M-{                                          | (calendar-backward-month ARG)                                                                                 |
+| M-}                                          | (calendar-forward-month ARG)                                                                                  |
+| C-x [                                        | (calendar-backward-year ARG)                                                                                  |
+| C-x ]                                        | (calendar-forward-year ARG)                                                                                   |
+| C-a                                          | (calendar-beginning-of-week ARG)                                                                              |
+| C-e                                          | (calendar-end-of-week ARG)                                                                                    |
+| M-a                                          | (calendar-beginning-of-month ARG)                                                                             |
+| M-e                                          | (calendar-end-of-month ARG)                                                                                   |
+| M-<                                          | (calendar-beginning-of-year ARG)                                                                              |
+| M->                                          | (calendar-end-of-year ARG)                                                                                    |
+| g d                                          | (calendar-goto-date DATE)                                                                                     |
+| g D                                          | (calendar-goto-day-of-year YEAR DAY &optional NOECHO)                                                         |
+| g w                                          | (calendar-iso-goto-week DATE &optional NOECHO)                                                                |
+| g c                                          | (calendar-iso-goto-date DATE &optional NOECHO)                                                                |
+| d                                            | (diary-view-entries &optional ARG)                                                                            |
+| i d                                          | (diary-insert-entry ARG &optional EVENT)                                                                      |
+| i w                                          | (diary-insert-weekly-entry ARG)                                                                               |
+| i m                                          | (diary-insert-monthly-entry ARG)                                                                              |
+| i y                                          | (diary-insert-yearly-entry ARG)                                                                               |
+| i a                                          | (diary-insert-anniversary-entry ARG)                                                                          |
+| i c                                          | (diary-insert-cyclic-entry ARG)                                                                               |
+| a                                            | (calendar-list-holidays &optional EVENT)                                                                      |
+| h                                            | (calendar-cursor-holidays &optional DATE EVENT)                                                               |
+| M                                            | (calendar-lunar-phases &optional EVENT)                                                                       |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| c                                            | (org-calendar-goto-agenda)                                                                                    |
+| w                                            | (week-graph-view-diary-entries)                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Org Agenda Mode                              |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| .                                            | (org-agenda-goto-today)                                                                                       |
+| f                                            | (org-agenda-later ARG)                                                                                        |
+| b                                            | (org-agenda-earlier ARG)                                                                                      |
+| n                                            | (org-agenda-next-line)                                                                                        |
+| p                                            | (org-agenda-previous-line)                                                                                    |
+| j                                            | (org-agenda-goto-date DATE)                                                                                   |
+| v d                                          | (org-agenda-view-mode-dispatch)                                                                               |
+| v w                                          | (org-agenda-view-mode-dispatch)                                                                               |
+| v m                                          | (org-agenda-view-mode-dispatch)                                                                               |
+| D                                            | (org-agenda-clock-out &optional ARG)                                                                          |
+| G                                            | (org-agenda-toggle-time-grid)                                                                                 |
+| c                                            | (org-agenda-goto-calendar)                                                                                    |
+| i                                            | (org-agenda-diary-entry)                                                                                      |
+| t                                            | (org-agenda-todo &optional ARG)                                                                               |
+| T                                            | (org-agenda-show-tags)                                                                                        |
+| :                                            | (org-agenda-set-tags &optional TAG ONOFF)                                                                     |
+| s                                            | (org-save-all-org-buffers)                                                                                    |
+| g                                            | (org-agenda-redo)                                                                                             |
+| F                                            | (org-agenda-follow-mode)                                                                                      |
+| <TAB>                                        | (org-agenda-goto &optional HIGHLIGHT)                                                                         |
+| q                                            | (org-agenda-quit)                                                                                             |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| DocView Mode                                 |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| n                                            | (doc-view-next-page &optional ARG)                                                                            |
+| p                                            | (doc-view-previous-page &optional ARG)                                                                        |
+| C-n                                          | (doc-view-next-line-or-next-page &optional ARG)                                                               |
+| C-p                                          | (doc-view-next-line-or-next-page &optional ARG)                                                               |
+| M-<                                          | (doc-view-first-page)                                                                                         |
+| M->                                          | (doc-view-last-page)                                                                                          |
+| M-g g                                        | (doc-view-goto-page PAGE)                                                                                     |
+| +                                            | (doc-view-enlarge FACTOR)                                                                                     |
+| -                                            | (doc-view-shrink FACTOR)                                                                                      |
+| C-c C-c                                      | (doc-view-toggle-display)                                                                                     |
+| C-c C-t                                      | (doc-view-open-text)                                                                                          |
+| C-t                                          | (doc-view-show-tooltip)                                                                                       |
+| g                                            | (doc-view-revert-buffer &optional IGNORE-AUTO NOCONFIRM)x                                                     |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| M-x speedbar                                 |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| HyperSpec and Slime                          |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Utilities                                    |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-c C-x c                                    | slime-list-connections                                                                                        |
+| C-c C-x n                                    | slime-cycle-connections                                                                                       |
+| C-c C-x t                                    | slime-list-threads                                                                                            |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Common Editing                               |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-c C-d h                                    | (slime-documentation-lookup)                                                                                  |
+| C-c C-d ~                                    | (common-lisp-hyperspec-format CHARACTER-NAME)                                                                 |
+| C-s r                                        | (slime-selector &optional OTHER-WINDOW)                                                                       |
+| C-c C-t                                      | (slime-toggle-trace-fdefinition SPEC)                                                                         |
+| C-c M-d                                      | (slime-disassemble-symbol SYMBOL-NAME)                                                                        |
+| C-c I                                        | (slime-inspect STRING)                                                                                        |
+| C-c C-b                                      | (slime-interrupt)                                                                                             |
+| C-c C-w C-c                                  | (slime-who-calls SYMBOL)                                                                                      |
+| C-c C-w C-r                                  | (slime-who-references SYMBOL)                                                                                 |
+| C-c C-w m                                    | (slime-who-macroexpands SYMBOL)                                                                               |
+| C-c C-v i                                    | slime-inspect-presentation-at-point                                                                           |
+| C-c C-v d                                    | slime-describe-presentation-at-point                                                                          |
+| C-c <                                        | (slime-list-callers SYMBOL-NAME)                                                                              |
+| C-c >                                        | (slime-list-callees SYMBOL-NAME)                                                                              |
+| M-.                                          | (slime-edit-definition NAME &optional WHERE)                                                                  |
+| C-c C-r                                      | (slime-eval-region START END)                                                                                 |
+| C-M-x                                        | (slime-eval-defun) or (lisp-eval-defun)                                                                       |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| REPL Editing                                 |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-c C-p                                      | (slime-repl-previous-prompt)                                                                                  |
+| C-c C-n                                      | (slime-repl-next-prompt)                                                                                      |
+| C-c C-u                                      | (slime-repl-kill-input)                                                                                       |
+| C-c C-o                                      | (slime-repl-clear-output)                                                                                     |
+| C-c M-o                                      | (slime-repl-clear-buffer)                                                                                     |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| File Editing                                 |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-c C-c                                      | (slime-compile-defun &optional RAW-PREFIX-ARG)                                                                |
+| C-c C-k                                      | (slime-compile-and-load-file &optional POLICY)                                                                |
+| C-c M-k                                      | (slime-compile-file &optional LOAD POLICY)                                                                    |
+| C-c M-m                                      | (slime-macroexpand-all)                                                                                       |
+| C-c C-m                                      | (slime-expand-1 &optional REPEATEDLY)                                                                         |
+| C-c ~                                        | (slime-sync-package-and-default-directory)                                                                    |
+| C-c C-y                                      | (slime-call-defun)                                                                                            |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Debugging                                    |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| <                                            | sldb-beginning-of-backtrace                                                                                   |
+| >                                            | sldb-end-of-backtrace                                                                                         |
+| n                                            | sldb-out                                                                                                      |
+| p                                            | sldb-up                                                                                                       |
+| q                                            | sldb-quit                                                                                                     |
+| a                                            | sldb-abort                                                                                                    |
+| c                                            | sldb-continue                                                                                                 |
+| r                                            | sldb-restart-frame                                                                                            |
+| s                                            | sldb-step                                                                                                     |
+| x                                            | sldb-next                                                                                                     |
+| v                                            | sldb-show-source                                                                                              |
+| t                                            | sldb-toggle-details                                                                                           |
+| i                                            | sldb-inspect-in-frame                                                                                         |
+| e                                            | sldb-eval-in-frame                                                                                            |
+| d                                            | sldb-pprint-eval-in-frame                                                                                     |
+| b                                            | sldb-break-on-return                                                                                          |
+| A                                            | sldb-break-with-system-debugger                                                                               |
+| P                                            | sldb-print-condition                                                                                          |
+| C                                            | sldb-inspect-condition                                                                                        |
+| D                                            | sldb-disassemble                                                                                              |
+| I                                            | sldb-invoke-restart-by-name                                                                                   |
+| h                                            |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Inspector                                    |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| TAB                                          | slime-inspector-next-inspectable-object                                                                       |
+| S-TAB                                        | slime-inspector-previous-inspectable-object                                                                   |
+| l                                            | slime-inspector-pop                                                                                           |
+| n, SPC                                       | slime-inspector-next                                                                                          |
+| RET                                          | slime-inspector-operate-on-point                                                                              |
+| M-RET                                        | slime-inspector-copy-down-to-repl                                                                             |
+| .                                            | slime-inspector-show-source                                                                                   |
+| >                                            | slime-inspector-fetch-all                                                                                     |
+| d                                            | slime-inspector-describe                                                                                      |
+| e                                            | slime-inspector-eval                                                                                          |
+| g                                            | slime-inspector-reinspect                                                                                     |
+| h                                            | slime-inspector-history                                                                                       |
+| p                                            | slime-inspector-pprint                                                                                        |
+| v                                            | slime-inspector-toggle-verbose                                                                                |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| Paredit                                      |                                                                                                               |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+| C-d                                          | paredit-forward-delete                                                                                        |
+| C-j                                          | paredit-newline                                                                                               |
+| C-k                                          | paredit-kill                                                                                                  |
+| M-d                                          | paredit-forward-kill-word                                                                                     |
+| C-(                                          | paredit-backward-slurp-sexp                                                                                   |
+| C-)                                          | paredit-forward-slurp-sexp                                                                                    |
+| C-{                                          | paredit-backward-barf-sexp                                                                                    |
+| C-}                                          | paredit-forward-barf-sexp                                                                                     |
+| C-M-b                                        | paredit-backward                                                                                              |
+| C-M-f                                        | paredit-forward                                                                                               |
+| C-M-d                                        | paredit-forward-down                                                                                          |
+| C-M-u                                        | paredit-backward-up                                                                                           |
+| C-M-n                                        | paredit-forward-up                                                                                            |
+| C-M-p                                        | paredit-backward-down                                                                                         |
+| M-"                                          | paredit-meta-doublequote                                                                                      |
+| M-(                                          | paredit-wrap-round                                                                                            |
+| M-)                                          | paredit-close-round-and-newline                                                                               |
+| M-;                                          | paredit-comment-dwim                                                                                          |
+| M-J                                          | paredit-join-sexps                                                                                            |
+| M-S                                          | paredit-split-sexp                                                                                            |
+| M-q                                          | paredit-reindent-defun                                                                                        |
+| M-r                                          | paredit-raise-sexp                                                                                            |
+| M-s                                          | paredit-splice-sexp                                                                                           |
+| M-DEL                                        | paredit-backward-kill-word                                                                                    |
+| ESC <C-left>                                 | paredit-backward-slurp-sexp                                                                                   |
+| ESC <C-right>                                | paredit-backward-barf-sexp                                                                                    |
+| ESC <down>                                   | paredit-splice-sexp-killing-forward                                                                           |
+| ESC <up>                                     | paredit-splice-sexp-killing-backward                                                                          |
+| C-c C-M-l                                    | paredit-recentre-on-sexp                                                                                      |
+|----------------------------------------------+---------------------------------------------------------------------------------------------------------------|
+|                                              |                                                                                                               |
