@@ -593,3 +593,140 @@ Dec 30, 2011 CL编译、调试
 通过该函数可以输出一个函数、或者lambda生成的本地代码 (SBCL中为汇编)
 (compile-file #p"path-to-src" :trace-output t)
 在编译的时候会生成编译过程的log (SBCL中输出IR1和IR2的信息）
+
+Jan 3, 2012 CL语言，生命周期
+Scope vs. Extent
+在CL中有Extent和Scope两个跟生命期（Reference引用的有效性）相关的概念
+Scope涉及的是空间的、代码文字范围上的范围概念
+Extent涉及的是时间范围的概念
+- Lexical Scope
+  对已经建立的实体的引用(reference to established entity)限制在与创建这个实体的构造相同的代码部分(program portions that are lexically contained within the establishing construct)。通常这个包含构造实体的代码部分构成叫做body, 而对该实体的引用就只能在这个body中。
+  例子：
+  函数的参数名
+  
+- Indefinite Scope
+  对实体的引用可以在任何代码部分进行，没有限制。
+
+- Dynamic Extent
+  对实体的访问限定在创建实体到销毁实体的时间范围内，通常dynamic extent都遵循类似于stack的规则。
+  例子：
+  1. 如with-open-file会建立一个访问文件的连接，并创建流来代表这个连接，虽然流对象是indefinite extent,但这个连接是dynamic extent的。
+  2. 在如用special声明的变量。
+
+- Indefinite Extent
+  实体一直存在到引用不存在为止的时间点。
+  例子：
+  1. 大多数的对象
+  2. 函数内lexical scoped的函数参数（这些变量使得构造闭包称为可能）
+
+除了以上这些概念，还有一个dynamic scope的概念，它indefinite scope + dynamic extent，虽然用此不当，但是已经称为传统和习惯。
+
+Jan 3, 2012 CL语言，控制转移
+1. normal return
+   在执行完form后的控制和值的自然转移(natrual transfer of control and values after the completen execuation of a form)
+2. non-local exit - NLX
+   由除了normal return以外的原因引起的到退出点(exit point)的控制和值的转移。（通常由go, throw, return-from引起的转移）
+3. exit point
+   在控制form中的一个点，可以通过主动的方式（通过转移form如go, throw）或者被动方式（即通常的evaluation的顺序）将控制和值转移到该点。
+   1. catch建立了个throw可以转移的退出点，该退出点名字是indefinite scope, dynamic extent即dynamic variable
+   2. block建立了个return-from可以转移的退出点,该退出点名字是lexical scope, dynamic extent
+   3. tagbody建立了个退出点可以用go跳转，退出点和block的退出点作用域相同
+   4. unwind-protect建立了个throw可以跳转的退出点
+
+Jan 5, 2012 CL语言，参数
+函数，宏的定义都涉及到参数，参数在CL中叫做lambda list。
+分为三种不同的lambda list
+- Ordinary Lambda List
+  即被普通的函数ordinary function使用的参数表，
+  一般defun, flet, labels, lambda, handler-case, restart-case等都使用的是ordinary lambda list
+  该参数表只包含如下的关键字
+  &key, &rest, &optional, &allow-other-keys, &aux
+
+- Extended Lambda List
+  就是扩展了Ordinary Lambda List的语法，增加了关键字的列表，通常defmacro使用的就是这种
+  包含诸如&body, &whole这样的关键字
+
+- Modified Lambda List
+  就是从Ordinary Lambda List修改或者继承而来的参数表，通常deftype使用的就是这种
+
+P.S.
+在SBCL中，编译前端会将lambda list参数表转换为IR1中的lambda-vars和arg-info结构(在make-lambda-vars函数中)，
+每一个参数都会有自己的lambda-vars，如果是&optional, &keyword诸如这类特殊的参数，还会有对应的arg-info记录它们的额外信息（如默认值、是否提供判断，关键字等）
+
+Jan 6, 2012 SBCL编译器，后端
+在SBCL编译器的后端中，Template, VOP, VOP-INFO, primitive指的都是同样的事情，就是VOP
+这些VOP定义在sb-c::*backend-template-names*哈希表中。并且可以通过%primitive访问。
+
+Jan 19, 2012 SBCL的回归测试
+文件结构
+在SBCL中，对系统的回归测试都放在/sbcl/tests/文件夹下，测试文件的结构一般是<pure or impure>.<function parts>.lisp
+首先测试分为pure和impure两大类，pure的测试是不产生副作用（即没有全局变量、函数、宏等的定义的）。
+相反impure一般都有全局的函数、变量、类、错误等定义。
+其次，根据功能，将测试分开成不同的小类，比如compiler, arith, alien, loop等不同的测试分在不同的文件中。
+
+定义测试
+定义测试需要使用with-test，它可以通过:name指定测试的名字
+在定义的测试中，可以使用assert等方式来判断，如果没有一个assert失败，那么with-test就会成功。
+而在assert里面，可以是任意的lisp代码。
+
+最后，在tests目录下，还有个assertoid.lisp文件，其中定义了帮助编写rt的常用的宏。
+如raise-error?用来测试代码是否产生某个错误，is测试某个op对两个输入的结果是否一致（我觉得一般op应该都是eq之类的东西）
+grab-condition类似于raise-error?返回捕获的错误，assertoid功能比较多，支持一个form在不同优化条件下，等于特定的期望值或者产生期望的错误。
+
+Jan 30, 2012 CL实现的名字，版本，机器的名字，版本，类型的获取
+(lisp-implementation-type)
+(lisp-implementation-version)
+(machine-instance)
+(machine-type)
+(machine-version)
+
+Jan 30, 2012 CL reader
+- Read Table
+    CL的语法是由reader的readtable决定的，readtable可分为，当前的*readtable*，标准的（默认的），和初始的三种。
+    同一个时间可以有很多个readtable, 但reader只使用其中一种。因此，CL的语法可以通过readtable切换。
+    以下是相关的一些函数：
+    copy-readtable
+    readtable-case
+    readtablep
+    set-dispatch-macro-character
+    get-dispatch-macro-character
+    make-dispatch-macro-character
+    set-syntax-from-char
+    set-macro-character
+    get-macro-character
+
+    readtable中每一个字符都有对应的语法类型(syntax type)，不同的类型影响reader对字符的处理。
+    + constituent类型表示字符是token（如符号，数字）的一部分；
+    + whitespace类型是token的分割符号；
+    + macro类型，当reader遇到的时候就会将其分派(dispatch)到相应的reader macro function来处理输入。
+      + non-terminating 在token中间出现时，它被当作constituent，否则是macro（如:#）。
+      + terminating 会中断正在分析的token
+    + escape类型，防止后续的字符被大小写转化，一般有single escape（如:\) 和multiple escape （如: |)
+
+    对于macro类型，CL默认的标准定义有如下：
+    ()'"`,#;
+    
+- 影响语法的dynamic variable
+  除了Read Table还有一些全局变量影响reader，如：
+  *read-base*
+  *read-suppress*
+  *package*
+  *read-default-float-format*
+  *read-eval*控制#这个macro char的启用与否
+  
+- 控制reader对大小写的处理
+  除了通过escape字符来控制大小写，还可以通过控制当前readtable的readtable case，可以达到如下的效果：
+  :upcase， 当使用此关键字值时，所有未被escape的符号都变成的大写
+  :downcase, 类似与上面，都被转成小写
+  :preserve， 所有的大小写都变化
+  :invert,  所有的未被escape的符号，如果在一个token中都是同样的case, 那么就会被转换成相反的case。换言之，
+            全是小写的token会被转换成大写，全是大写的会被转换成小写，有大小写混杂的则保持不变。
+
+Jan 31, 2012 Linux Shell-Script Invoking
+有三种方式可以执行一个脚本，他们的效果差别很大，
+1. 使用sh命令，或者./ (默认)
+   执行的脚本将会作为调用脚本进程的子进程执行，这将会影响环境变量 (父进程必须通过export传递给子进程，而子进程无法传递给父进程)
+2. 使用source，或者. ./
+   执行的脚本在原进程中执行，因此继承并且可以修改原进程中的所有环境变量
+3. 使用exec
+   执行的脚本将会替换原来执行的内容，在该命令后的原脚本的内容都将不再执行
