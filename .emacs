@@ -1,6 +1,6 @@
 ;;; .emacs --- dot emacs configuration
 
-;; Copyright (C) 2010, 2011
+;; Copyright (C) 2010, 2011, 2012
 ;;   Nixie Shen
 
 ;; Author: Nixie Shen <onixie@gmail.com>
@@ -108,7 +108,6 @@
  '(ido-mode (quote buffer) nil (ido))
  '(ido-record-commands nil)
  '(ielm-noisy nil)
- '(image-load-path (quote ("~/.emacs.d/" "/usr/local/share/emacs/23.2/etc/images/" data-directory load-path "")))
  '(inhibit-startup-buffer-menu t)
  '(inhibit-startup-echo-area-message "nixie")
  '(inhibit-startup-screen t)
@@ -133,7 +132,6 @@
  '(scroll-margin 3)
  '(scroll-preserve-screen-position nil)
  '(scroll-step 1)
- '(semantic-c-dependency-system-include-path (quote ("/usr/include" "/usr/local/include")))
  '(semantic-idle-scheduler-idle-time 0.5)
  '(semantic-inhibit-functions (quote ((lambda nil (eq major-mode (quote lisp-mode))) (lambda nil (eq major-mode (quote emacs-lisp-mode))))))
  '(show-paren-mode t)
@@ -148,6 +146,7 @@
  '(tabbar-background-color "yellow")
  '(tabbar-cycle-scope nil)
  '(tabbar-mode t nil (tabbar))
+ '(tabbar-separator (quote (0.2)))
  '(time-stamp-format "%:y-%02m-%02d %02H:%02M:%02S %u@%s")
  '(uniquify-buffer-name-style (quote forward) nil (uniquify))
  '(x-select-enable-clipboard t)
@@ -162,7 +161,11 @@
  '(highlight-current-line-face ((t (:background "black" :slant italic :weight bold))))
  '(org-hide ((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
  '(pp^L-highlight ((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
- '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75")))))
+ '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
+ '(tabbar-separator ((t (:inherit tabbar-default :height 0.1))))
+ '(tabbar-unselected ((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button))))))
+
+(pushnew "~/.emacs.d/" image-load-path :test #'string=)
 
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
@@ -203,15 +206,24 @@
 (global-ede-mode 1)
 (semantic-load-enable-minimum-features)
 (semantic-load-enable-code-helpers)
-;;(semantic-load-enable-guady-code-helpers)
-;;(semantic-load-enable-excessive-code-helpers)
+(semantic-load-enable-guady-code-helpers)
+(semantic-load-enable-excessive-code-helpers)
 (semantic-load-enable-semantic-debugging-helpers)
 (global-semantic-highlight-func-mode 1)
 (global-srecode-minor-mode 1)
+
 (if (fboundp #'which-func-mode)
     (add-hook 'semantic-init-hook 
 	      (lambda ()
 		(which-func-mode 1))))
+
+(add-hook 'semantic-init-hook
+	  (lambda ()
+	    (mapc (lambda (path)
+		      (pushnew path semantic-c-dependency-system-include-path :test #'string=))
+		    '("/usr/include"
+		      "/usr/local/include"))))
+
 (when (and (require 'semantic-tag-folding nil 'noerror))
   (global-semantic-tag-folding-mode 1)
   (global-set-key (kbd "C-?") 'global-semantic-tag-folding-mode)
@@ -247,8 +259,7 @@
   :keymap maxframe-mode-map
   :require 'maxframe
   :group 'maxframe
-  :global t
-  )
+  :global t)
 
 (maxframe-mode 1)
 (maximize-frame)
@@ -276,9 +287,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
 	     (name-combinator "kill-" (symbol-name direction) "-window")) 
 	   direction))))
   
-  `(defun ,((lambda (direction)
-	      (name-combinator "kill-" (symbol-name direction) "-window")) 
-	    direction) ()
+  `(defun ,(name-combinator "kill-" (symbol-name direction) "-window") ()
 	    (interactive)
 	    (save-selected-window
 	      (if (not (null (condition-case err 
@@ -288,8 +297,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
 		  ;; Do not kill buffer as such simple way, 
 		  ;; or you might lose origninal window.
 		  (delete-window)	; (kill-buffer-and-window)
-		))
-	    ))
+		))))
 
 (defun other-window-by-name (name &optional win)
   "Move cursor to the window with buffer named like NAME by other-window"
@@ -334,8 +342,19 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (kill-window-along-direction up map)
     (kill-window-along-direction down map)
 
-    (define-key map (kbd "S-<left>") 'tabbar-backward)
-    (define-key map (kbd "S-<right>") 'tabbar-forward)
+    (macrolet ((tabbar-dwim-move (direction)
+				 `(defun ,(name-combinator "tabbar-dwim-" (symbol-name direction)) ()
+				    (interactive)
+				    (if tabbar--buffer-show-groups
+					(progn
+					  (call-interactively #',(name-combinator "tabbar-"
+										  (symbol-name direction)
+										  "-group"))
+					  (call-interactively #'tabbar-press-home))
+				      (call-interactively #',(name-combinator "tabbar-"
+									      (symbol-name direction)))))))
+      (define-key map (kbd "S-<left>") (tabbar-dwim-move backward))
+      (define-key map (kbd "S-<right>") (tabbar-dwim-move forward)))
     (define-key map (kbd "S-<up>") 'tabbar-press-home)
     (define-key map (kbd "S-<down>") 'tabbar-press-home)
 
@@ -349,22 +368,19 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (define-key map (kbd "<C-kp-up>") 'windmove-up)
     (define-key map (kbd "<C-kp-down>") 'windmove-down)
 
-    (define-key map (kbd "<C-kp-home>")
-      (lambda ()
-	(interactive) 
-	(mapc 'call-interactively '(windmove-up windmove-left))))
-    (define-key map (kbd "<C-kp-prior>") 
-      (lambda () 
-	(interactive) 
-	(mapc 'call-interactively '(windmove-up windmove-right))))
-    (define-key map (kbd "<C-kp-end>") 
-      (lambda () 
-	(interactive)
-	(mapc 'call-interactively '(windmove-down windmove-left))))
-    (define-key map (kbd "<C-kp-next>") 
-      (lambda ()
-	(interactive)
-	(mapc 'call-interactively '(windmove-down windmove-right))))
+    (macrolet ((windmove-diagonal (hori vert)
+				  `(defun ,(name-combinator "windmove-" (symbol-name hori) "-" (symbol-name vert)) ()
+				     (interactive)
+				     (condition-case nil
+					 (windmove-do-window-select ',hori)
+				       (error
+					(mapc #'windmove-do-window-select '(,vert ,hori))
+					(return nil)))
+				     (windmove-do-window-select ',vert))))
+      (define-key map (kbd "<C-kp-home>") (windmove-diagonal left up))
+      (define-key map (kbd "<C-kp-prior>") (windmove-diagonal right up))
+      (define-key map (kbd "<C-kp-end>") (windmove-diagonal left down))
+      (define-key map (kbd "<C-kp-next>") (windmove-diagonal right down)))
 
     (define-key map (kbd "<delete>") 'kill-buffer-and-window)
     (define-key map (kbd "<kp-delete>") (kbd "<delete>"))
@@ -375,9 +391,10 @@ If the arguements are nil, all buffers except current buffer will be killed"
       (lambda ()
 	(interactive)
 	(kill-other-buffers (current-buffer)
-			    (get-buffer "*scratch*") 
+			    (get-buffer "*scratch*")
 			    (get-buffer "*Messages*")
-			    (get-buffer "*ielm*"))
+			    (get-buffer "*ielm*")
+			    (get-buffer "*eshell*"))
 	(call-interactively 'delete-other-windows)))
 
     (define-key map (kbd "C-x C-b") 'windmove-list-buffer)
@@ -430,42 +447,35 @@ If the arguements are nil, all buffers except current buffer will be killed"
   "Return the list of group names the current buffer belongs to.
 Return a list of one element based on major mode."
   (list
-   (cond
-    ((member (buffer-name)
-             '("*scratch*" "*Messages*" "*ielm*"))
-     "Emacs"
-     )
-    ((or (get-buffer-process (current-buffer))
-         ;; Check if the major mode derives from `comint-mode' or
-         ;; `compilation-mode'.
-         (tabbar-buffer-mode-derived-p
-          major-mode '(comint-mode compilation-mode)))
-     "Process"
-     )
-    ((eq major-mode 'dired-mode)
-     "Dired"
-     )
-    ((memq major-mode
-           '(help-mode apropos-mode Info-mode Man-mode))
-     "Help"
-     )
-    ((memq major-mode
-           '(rmail-mode
-             rmail-edit-mode vm-summary-mode vm-mode mail-mode
-             mh-letter-mode mh-show-mode mh-folder-mode
-             gnus-summary-mode message-mode gnus-group-mode
-             gnus-article-mode score-mode gnus-browse-killed-mode))
-     "Mail"
-     )
-    (t
-     ;; Return `mode-name' if not blank, `major-mode' otherwise.
-     (if (and (stringp mode-name)
-              ;; Take care of preserving the match-data because this
-              ;; function is called when updating the header line.
-              (save-match-data (string-match "[^ ]" mode-name)))
-         mode-name
-       (symbol-name major-mode))
-     ))))
+   (cond ((member (buffer-name) '("*scratch*" "*Messages*" "*ielm*" ".emacs"))
+	  "Emacs")
+	 ((or (get-buffer-process (current-buffer))
+	      ;; Check if the major mode derives from `comint-mode' or
+	      ;; `compilation-mode'.
+	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
+	  "Process")
+	 ((eq major-mode 'dired-mode)
+	  "Dired")
+	 ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
+	  "Help")
+	 ((or (memq major-mode '(slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode))
+	      (search "*lisp-inferior*" (buffer-name))
+	      (search "*slime-events*" (buffer-name)))
+	  "Slime")
+	 ((memq major-mode '(rmail-mode
+			     rmail-edit-mode vm-summary-mode vm-mode mail-mode
+			     mh-letter-mode mh-show-mode mh-folder-mode
+			     gnus-summary-mode message-mode gnus-group-mode
+			     gnus-article-mode score-mode gnus-browse-killed-mode))
+	  "Mail")
+	 (t
+	  ;; Return `mode-name' if not blank, `major-mode' otherwise.
+	  (if (and (stringp mode-name)
+		   ;; Take care of preserving the match-data because this
+		   ;; function is called when updating the header line.
+		   (save-match-data (string-match "[^ ]" mode-name)))
+	      mode-name
+	    (symbol-name major-mode))))))
 
 (defun tabbar-buffer-update-groups ()
   "Update tab sets from groups of existing buffers.
@@ -522,15 +532,12 @@ Return the the first group where the current buffer is."
   (call-interactively 'list-buffers)
   (other-window-by-name "*Buffer List*"))
 
-(define-key Buffer-menu-mode-map (kbd "e") 
-  (lambda ()
-    (interactive)
-    (mapc 'call-interactively '(Buffer-menu-this-window delete-other-windows))))
-
 (define-key Buffer-menu-mode-map (kbd "C-m") 
   (lambda ()
     (interactive)
     (mapc 'call-interactively '(Buffer-menu-this-window delete-other-windows))))
+
+(define-key Buffer-menu-mode-map (kbd "e") (kbd "C-m"))
 
 ;;;;;;;;;;;;;;;; SpeedBar Frame ;;;;;;;;;;;;;;;;
 (defvar *speedbar-main-frame* nil)
@@ -780,7 +787,13 @@ The advice call MODE-push-curpos by current major-mode"
 		   semantic-ia-fast-jump
 		   scroll-up
 		   scroll-down
-		   slime-edit-definition)
+		   slime-edit-definition
+		   paredit-forward
+		   paredit-backward
+		   paredit-forward-up
+		   paredit-forward-down
+		   paredit-backward-up
+		   paredit-backward-down)
 
 (mode-local-curpos text-mode 
 		   forward-word
@@ -848,14 +861,14 @@ The advice call MODE-push-curpos by current major-mode"
   (interactive)
   (shell-command "find ./ -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
 
+(tool-bar-add-item "nautilus" 'nautilus 'nautilus :visible '(memq major-mode '(dired-mode)))
+(tool-bar-add-item "xterm" 'xterm 'xterm :visible '(memq major-mode '(dired-mode)))
 (mapc (lambda (mode-hook)
 	(add-hook mode-hook (lambda ()
 			      (progn
 				(define-key dired-mode-map (kbd "N") 'nautilus)
 				(define-key dired-mode-map (kbd "b") 'xterm)
-				(define-key dired-mode-map (kbd "E") 'etags)
-				(tool-bar-add-item "nautilus" 'nautilus 'nautilus :visible '(memq major-mode '(dired-mode)))
-				(tool-bar-add-item "xterm" 'xterm 'xterm :visible '(memq major-mode '(dired-mode)))))))
+				(define-key dired-mode-map (kbd "E") 'etags)))))
       '(dired-mode-hook))
 
 ;;;;;;;;;;;;;;;; Linum and Text Rescaling ;;;;;;;;;;;;;;;;
@@ -888,11 +901,12 @@ The advice call MODE-push-curpos by current major-mode"
 (when (load (file-truename "~/quicklisp/slime-helper.el") t) ;Only when quicklisp-slime-helper exist
   (setq slime-lisp-implementations
 	`((sbcl ("sbcl" "--noinform" "--no-linedit")
-		:coding-system utf-8-unix)))
+		:coding-system utf-8-unix)
+	  (clisp ("clisp"))))
 
   (slime-setup '(slime-fancy slime-repl slime-scratch slime-editing-commands slime-autodoc))
 
-  (setq common-lisp-hyperspec-root "file:///usr/share/doc/hyperspec/")
+  (setq common-lisp-hyperspec-root (format "file://%s" (file-truename "~/.emacs.d/contrib/hyperspec/")))
   (setq slime-autodoc-use-multiline-p t)
 
   (add-hook 'slime-mode-hook
