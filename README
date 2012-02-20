@@ -1,6 +1,6 @@
 Tue Aug  2 23:48:47 CST 2011 <onixie@gmail.com>
-- Status: Initial upload to git repository
-- Version: 0.1
+- Status: Lots of improvement on window/buffer management
+- Version: 0.2
 - Content:
 	.emacs
 	.emacs.d
