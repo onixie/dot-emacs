@@ -11,17 +11,17 @@
 (require 'cc-mode)
 (require 'asm-mode)
 (require 'sh-script)
-(require 'gud)
+;; (require 'gud)
 (require 'ido)
 (require 'linum)
 (require 'org)
 
 ;; CEDET must be first loaded explicitly, otherwise the old version will mess up new version
-(load-file "~/.emacs.d/contrib/cedet/common/cedet.elc")
+;; (load-file "~/.emacs.d/contrib/cedet/common/cedet.elc")
 
-(require 'eassist)
-(require 'semantic-ia)
-(require 'semantic-gcc)
+;; (require 'eassist)
+;; (require 'semantic-ia)
+;; (require 'semantic-gcc)
 
 ;; Scan all directories under .emacs.d
 (let ((default-directory "~/.emacs.d/"))
@@ -39,13 +39,13 @@
 (require 'muse-publish)
 (require 'muse-html)
 (require 'emacs-wiki)
-(require 'w3m-load)
+;; (require 'w3m-load)
 ;; (require 'session)
 (require 'cups-dif)
 (require 'erc)
 (require 'paredit)
 (require 'parenface)
-(require 'ibus)
+;; (require 'ibus)
 (require 'pp-c-l)
 
 ;; Use emacs-goodies-el packages
@@ -68,7 +68,6 @@
  '(ac-use-menu-map nil)
  '(auto-image-file-mode t)
  '(before-save-hook (quote (copyright-update time-stamp)))
- '(browse-url-browser-function (quote w3m-browse-url))
  '(calendar-after-frame-setup-hook nil)
  '(calendar-mark-diary-entries-flag t)
  '(calendar-mark-holidays-flag t)
@@ -188,7 +187,7 @@
 
 (defun insert-date ()
   (interactive)
-  (insert-string (shell-command-to-string "date")))
+  (insert-string (shell-command-to-string "date /t")))
 
 ;;;;;;;;;;;;;;;; Color-Theme ;;;;;;;;;;
 (eval-after-load "color-theme"
@@ -196,21 +195,25 @@
 	  (color-theme-calm-forest)))
 
 ;;;;;;;;;;;;;;;; ibus  ;;;;;;;;;;;;;;;;
-(add-hook 'after-init-hook 'ibus-mode-on)
-(global-set-key (kbd "C-|") 'ibus-toggle)
+;; (add-hook 'after-init-hook 'ibus-mode-on)
+;; (global-set-key (kbd "C-|") 'ibus-toggle)
 
 ;;;;;;;;;;;;;;;; IDO ;;;;;;;;;;;;;;;;
 (ido-mode 1)
 
 ;;;;;;;;;;;;;;;; CEDET ;;;;;;;;;;;;;;;;
+(semantic-mode 1)
 (global-ede-mode 1)
-(semantic-load-enable-minimum-features)
-(semantic-load-enable-code-helpers)
-(semantic-load-enable-guady-code-helpers)
-(semantic-load-enable-excessive-code-helpers)
-(semantic-load-enable-semantic-debugging-helpers)
+;; (semantic-load-enable-minimum-features)
+;; (semantic-load-enable-code-helpers)
+;; (semantic-load-enable-guady-code-helpers)
+;; (semantic-load-enable-excessive-code-helpers)
+;; (semantic-load-enable-semantic-debugging-helpers)
 (global-semantic-highlight-func-mode 1)
-(global-srecode-minor-mode 1)
+(global-semantic-decoration-mode 1)
+(global-semantic-idle-summary-mode 1)
+(global-semantic-stickyfunc-mode 1)
+(global-semantic-idle-scheduler-mode 1)
 
 (if (fboundp #'which-func-mode)
     (add-hook 'semantic-init-hook 
@@ -218,21 +221,35 @@
 		(which-func-mode 1))))
 
 (add-hook 'semantic-init-hook
-	  (lambda ()
-	    (mapc (lambda (path)
-		      (pushnew path semantic-c-dependency-system-include-path :test #'string=))
-		    '("/usr/include"
-		      "/usr/local/include"))))
+	  (lambda () 
+	    (let ((semantic-user-local-include
+		   (list "include" "inc" "common" "public"
+			 "../include" "../inc" "../common" "../public"
+			 "../../include" "../../inc" "../../common" "../../public"))
+		  (semantic-sys-spec-include
+		   (list "C:/WinDDK/7600.16385.0/inc"
+			 "C:/WinDDK/6001.18002/inc"
+			 "C:/Program Files/Microsoft SDKs/Windows/v7.0/Include"
+			 "C:/Program Files/Microsoft SDKs/Windows/v6.0A/Include"
+			 "C:/Program Files/Microsoft SDKs/Windows/v5.0/Include"
+			 "C:/Program Files/Microsoft Visual Studio 9.0/VC/include"
+			 "C:/Program Files/Microsoft Visual Studio 8/VC/include")))
+	      (let ((includes (append semantic-user-local-include semantic-sys-spec-include)))
+		(dolist (dirname includes)
+		  (traverse-walk-directory dirname
+					   :dir-fn #'(lambda (include-path)
+						       (semantic-add-system-include include-path 'c-mode)
+						       (semantic-add-system-include include-path 'c++-mode))))))))
 
-(when (and (require 'semantic-tag-folding nil 'noerror))
-  (global-semantic-tag-folding-mode 1)
-  (global-set-key (kbd "C-?") 'global-semantic-tag-folding-mode)
-  (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
-  (define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
-  (define-key semantic-tag-folding-mode-map (kbd "C-c M--") 'semantic-tag-folding-fold-all)
-  (define-key semantic-tag-folding-mode-map (kbd "C-c M-=") 'semantic-tag-folding-show-all))
+;; (when (and (require 'semantic-tag-folding nil 'noerror))
+;;   (global-semantic-tag-folding-mode 1)
+;;   (global-set-key (kbd "C-?") 'global-semantic-tag-folding-mode)
+;;   (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
+;;   (define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
+;;   (define-key semantic-tag-folding-mode-map (kbd "C-c M--") 'semantic-tag-folding-fold-all)
+;;   (define-key semantic-tag-folding-mode-map (kbd "C-c M-=") 'semantic-tag-folding-show-all))
 
-(enable-visual-studio-bookmarks)
+;; (enable-visual-studio-bookmarks)
 
 ;;;;;;;;;;;;;;;; Yasnippet ;;;;;;;;;;;;;;;;
 (yas/initialize)
@@ -403,7 +420,8 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (define-key map (kbd "<f10>") nil) ;Conflict with GDB's key binding for gud-step
     (define-key map (kbd "<f1> <f10>") 'menu-bar-open)
 
-    (define-key map (kbd "C-`") 'switch-to-calender)
+    (define-key map (kbd "C-<auto>") 'switch-to-calender)
+    (define-key map (kbd "C-<enlw>") 'switch-to-calender)
 
     (define-key map (kbd "<home>") 'ielm)
     (define-key map (kbd "<kp-home>") 'ielm)
@@ -420,7 +438,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
 
     (define-key map (kbd "<kp-left>") 'switch-to-scratch)
     (define-key map (kbd "<kp-up>") 'eshell)
-    (define-key map (kbd "<kp-begin>") 'w3m)
+    (define-key map (kbd "<kp-space>") 'eshell)
     (define-key map (kbd "<kp-down>") 'erc)
 
     map))
@@ -849,26 +867,44 @@ The advice call MODE-push-curpos by current major-mode"
 (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 
 ;;;;;;;;;;;;;;;; Dired ;;;;;;;;;;;;;;;;
-(defun nautilus ()
+;; (defun nautilus ()
+;;   (interactive)
+;;   (shell-command "nautilus $(pwd)" "*Messages*" "*Messages*"))
+(defun w32-pathspec (pathspec)
+  (replace-regexp-in-string "/" "\\\\" pathspec))
+  
+(defun explorer ()
   (interactive)
-  (shell-command "nautilus $(pwd)" "*Messages*" "*Messages*"))
+  (shell-command (format "explorer.exe /root,\"%s\""
+			 (w32-pathspec default-directory))
+		 "*Messages*"
+		 "*Messages*"))
 
-(defun xterm ()
+;; (defun xterm ()
+;;   (interactive)
+;;   (shell-command "gnome-terminal --working-directory=$(pwd)" "*Messages*" "*Messages*"))
+
+(defun cmd ()
   (interactive)
-  (shell-command "gnome-terminal --working-directory=$(pwd)" "*Messages*" "*Messages*"))
+  (shell-command (format "start /D \"%s\" cmd.exe /E:ON"
+			 (w32-pathspec default-directory))
+		 "*Messages*"
+		 "*Messages*"))
 
 (defun etags ()
   (interactive)
-  (shell-command "find ./ -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
+  (shell-command (format "find . -type f -exec %s -a {} \";\""
+			 (locate-file "etags.exe" exec-path))
+		 "*Messages*" "*Messages*"))
 
-(tool-bar-add-item "nautilus" 'nautilus 'nautilus :visible '(memq major-mode '(dired-mode)))
-(tool-bar-add-item "xterm" 'xterm 'xterm :visible '(memq major-mode '(dired-mode)))
+(tool-bar-add-item "nautilus" 'explorer 'explorer :visible '(memq major-mode '(dired-mode)))
+(tool-bar-add-item "xterm" 'cmd 'cmd :visible '(memq major-mode '(dired-mode)))
 (mapc (lambda (mode-hook)
 	(add-hook mode-hook (lambda ()
 			      (progn
-				(define-key dired-mode-map (kbd "N") 'nautilus)
-				(define-key dired-mode-map (kbd "b") 'xterm)
-				(define-key dired-mode-map (kbd "E") 'etags)))))
+				(define-key dired-mode-map (kbd "E") 'explorer)
+				(define-key dired-mode-map (kbd "c") 'cmd)
+				(define-key dired-mode-map (kbd "r") 'etags)))))
       '(dired-mode-hook))
 
 ;;;;;;;;;;;;;;;; Linum and Text Rescaling ;;;;;;;;;;;;;;;;
@@ -894,8 +930,8 @@ The advice call MODE-push-curpos by current major-mode"
 (with-current-buffer "*Messages*"
   (linum-on))
 
-(global-set-key (kbd "M-<mouse-4>") 'text-scale-increase)
-(global-set-key (kbd "M-<mouse-5>") 'text-scale-decrease)
+(global-set-key (kbd "M-<wheel-up>") 'text-scale-increase)
+(global-set-key (kbd "M-<wheel-down>") 'text-scale-decrease)
 
 ;;;;;;;;;;;;;;;; Slime ;;;;;;;;;;;;;;;;
 (when (load (file-truename "~/quicklisp/slime-helper.el") t) ;Only when quicklisp-slime-helper exist
@@ -932,9 +968,10 @@ The advice call MODE-push-curpos by current major-mode"
     (define-key easy-buffer-window-mode-map (kbd "<next>") 'scroll-up)
     ad-return-value)
   
-  (let ((fasls-dir "/tmp/slime-fasls/"))
-    (setq slime-compie-file-options '(:fasl-directory fasls-dir))
-    (make-directory fasls-dir t)))
+  ;; (let ((fasls-dir "/tmp/slime-fasls/"))
+  ;;   (setq slime-compie-file-options '(:fasl-directory fasls-dir))
+  ;;   (make-directory fasls-dir t))
+  )
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
 (defun ielm-quit-sentinel (proc change)
@@ -1036,12 +1073,12 @@ This command assumes point is not in a string or comment."
 	 (quote ("\223^[[:space:]]*$" 0 "%d")) 
 	 arg)))
 
-(mapc (lambda (mode-hook)
-	(add-hook mode-hook (lambda ()
-			      (progn
-				(tool-bar-add-item "gud" 'gdb 'gdb :visible '(memq major-mode '(c++-mode c-mode)))
-				(tool-bar-add-item "compile" 'compile 'compile :visible '(memq major-mode '(c++-mode c-mode)))))))
-      '(c-mode-hook c++-mode-hook))
+;; (mapc (lambda (mode-hook)
+;; 	(add-hook mode-hook (lambda ()
+;; 			      (progn
+;; 				(tool-bar-add-item "gud" 'gdb 'gdb :visible '(memq major-mode '(c++-mode c-mode)))
+;; 				(tool-bar-add-item "compile" 'compile 'compile :visible '(memq major-mode '(c++-mode c-mode)))))))
+;;       '(c-mode-hook c++-mode-hook))
 
 (define-key c-mode-base-map (kbd "C-M-S-c") 'kill-c-comment)
 (define-key c-mode-base-map (kbd "C-M-S-b") 'kill-c-blank-line)
@@ -1052,119 +1089,124 @@ This command assumes point is not in a string or comment."
 
 (define-key c-mode-base-map (kbd "<f8>") 'ecb-minor-mode)
 
-(define-key c-mode-base-map (kbd "<f5>") 'gdb)
-(define-key c-mode-base-map (kbd "<f6>") 'compile)
-(define-key c-mode-base-map (kbd "S-<f5>") (lambda ()
-					     (interactive)				     
-					     (mapc 'call-interactively '(gdb gdb-many-windows))))
-(define-key c-mode-base-map (kbd "M-S-<f5>") (lambda ()
-					       (interactive)
-					       (mapc 'call-interactively '(compile gdb gdb-many-windows))))
+;; (define-key c-mode-base-map (kbd "<f5>") 'gdb)
+;; (define-key c-mode-base-map (kbd "<f6>") 'compile)
+;; (define-key c-mode-base-map (kbd "S-<f5>") (lambda ()
+;; 					     (interactive)				     
+;; 					     (mapc 'call-interactively '(gdb gdb-many-windows))))
+;; (define-key c-mode-base-map (kbd "M-S-<f5>") (lambda ()
+;; 					       (interactive)
+;; 					       (mapc 'call-interactively '(compile gdb gdb-many-windows))))
 
 ;;;;;;;;;;;;;;;; Compiler ;;;;;;;;;;;;;;;;
-(defvar compile-output-time 3.0)
+;; (defvar compile-output-time 3.0)
 
-(add-to-list 'compilation-finish-functions
-	     (lambda (buffer string)
-	       (when (and (string= (buffer-name buffer) "*compilation*")
-			  (not (string-match "exited abnormally" string)))
-		 (run-at-time compile-output-time nil 'delete-windows-on buffer))))
+;; (add-to-list 'compilation-finish-functions
+;; 	     (lambda (buffer string)
+;; 	       (when (and (string= (buffer-name buffer) "*compilation*")
+;; 			  (not (string-match "exited abnormally" string)))
+;; 		 (run-at-time compile-output-time nil 'delete-windows-on buffer))))
 
 ;;;;;;;;;;;;;;;; GDB and GUD ;;;;;;;;;;;;;;;;
-(defvar gdb-fn-mode-map 
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "<f5>") 'gud-go)
-    (define-key map (kbd "<f9>") (lambda () (interactive) (mapc 'call-interactively '(windmove-source-window gud-break))))
-    (define-key map (kbd "S-<f9>") (lambda () (interactive) (mapc 'call-interactively '(windmove-source-window gud-remove))))
-    (define-key map (kbd "<f10>") 'gud-step)
-    (define-key map (kbd "<f11>") 'gud-next)
-    (define-key map (kbd "S-<f10>") 'gud-finish)
-    (define-key map (kbd "ESC") (lambda () (interactive) (mapc 'call-interactively '(windmove-gdb-window comint-send-eof))))
-    map)
-  "Keymap for `gdb-fn-mode'.")
+;; (defvar gdb-fn-mode-map 
+;;   (let ((map (make-sparse-keymap)))
+;;     (define-key map (kbd "<f5>") 'gud-go)
+;;     (define-key map (kbd "<f9>") (lambda () (interactive) (mapc 'call-interactively '(windmove-source-window gud-break))))
+;;     (define-key map (kbd "S-<f9>") (lambda () (interactive) (mapc 'call-interactively '(windmove-source-window gud-remove))))
+;;     (define-key map (kbd "<f10>") 'gud-step)
+;;     (define-key map (kbd "<f11>") 'gud-next)
+;;     (define-key map (kbd "S-<f10>") 'gud-finish)
+;;     (define-key map (kbd "ESC") (lambda () (interactive) (mapc 'call-interactively '(windmove-gdb-window comint-send-eof))))
+;;     map)
+;;   "Keymap for `gdb-fn-mode'.")
 
-(define-minor-mode gdb-fn-mode
-  "Toggle GDB FN Key Available.
-     With no argument, this command toggles the mode.
-     Non-null prefix argument turns on the mode.
-     Null prefix argument turns off the mode.
-     \{KEYMAP}
-     When gdb-fn-key-mode mode is enabled, the function key
-     [f5], [f9], [f10], [f11] are enabled for debugging commands"
-  ;; The initial value.
-  :init-value nil
-  ;; The indicator for the mode line.
-  :lighter "Gdb-FN"
-  :global t
-  ;; The minor mode bindings.
-  :keymap gdb-fn-mode-map)
+;; (define-minor-mode gdb-fn-mode
+;;   "Toggle GDB FN Key Available.
+;;      With no argument, this command toggles the mode.
+;;      Non-null prefix argument turns on the mode.
+;;      Null prefix argument turns off the mode.
+;;      \{KEYMAP}
+;;      When gdb-fn-key-mode mode is enabled, the function key
+;;      [f5], [f9], [f10], [f11] are enabled for debugging commands"
+;;   ;; The initial value.
+;;   :init-value nil
+;;   ;; The indicator for the mode line.
+;;   :lighter "Gdb-FN"
+;;   :global t
+;;   ;; The minor mode bindings.
+;;   :keymap gdb-fn-mode-map)
 
-(define-globalized-minor-mode global-gdb-fn-mode gdb-fn-mode 
-  (lambda ()
-    (gdb-fn-mode 1))
-  :require 'gud)
+;; (define-globalized-minor-mode global-gdb-fn-mode gdb-fn-mode 
+;;   (lambda ()
+;;     (gdb-fn-mode 1))
+;;   :require 'gud)
 
-(defun gdb-quit-sentinel (proc change)
-  "Clean up of buffers, fn keys, etc. when GDB quit."
-  (when (string-match "\\(finished\\|exited\\|killed\\)" change)
-    (condition-case nil
-	(let ((src-buffer (condition-case nil
-			      (or (and (not (null gdb-many-windows)) 
-				       (not (null gdb-show-main)) 
-				       (window-buffer gdb-source-window))
-				  (gud-find-file gdb-main-file))
-			    (error "*scratch*"))))
-	  (global-gdb-fn-mode -1)	;Disable GDB's Function Key
-	  (delete-other-windows	;Restore Source window
-	   (get-buffer-window (switch-to-buffer src-buffer)))
-	  (mapc (lambda (name-func) ;Kill all dead buffer associate with GDB
-		  (condition-case nil
-		      (let ((buffer (get-buffer (funcall name-func))))
-			(and (buffer-live-p buffer) (kill-buffer buffer)))
-		    (error nil)))
-		`(gdb-assembler-buffer-name
-		  gdb-memory-buffer-name
-		  gdb-stack-buffer-name
-		  gdb-registers-buffer-name
-		  gdb-threads-buffer-name
-		  gdb-locals-buffer-name
-		  gdb-breakpoints-buffer-name
-		  ,(lambda ()	;This is the gud comint buffer
-		     (buffer-name (process-buffer proc)))))
-	  (switch-to-buffer src-buffer)
-	  (gdb-many-windows -1)	;Disable GDB Many windows
-	  (gud-reset)
-	  (gdb-reset))
-      (error nil))))
+;; (defun gdb-quit-sentinel (proc change)
+;;   "Clean up of buffers, fn keys, etc. when GDB quit."
+;;   (when (string-match "\\(finished\\|exited\\|killed\\)" change)
+;;     (condition-case nil
+;; 	(let ((src-buffer (condition-case nil
+;; 			      (or (and (not (null gdb-many-windows)) 
+;; 				       (not (null gdb-show-main)) 
+;; 				       (window-buffer gdb-source-window))
+;; 				  (gud-find-file gdb-main-file))
+;; 			    (error "*scratch*"))))
+;; 	  (global-gdb-fn-mode -1)	;Disable GDB's Function Key
+;; 	  (delete-other-windows	;Restore Source window
+;; 	   (get-buffer-window (switch-to-buffer src-buffer)))
+;; 	  (mapc (lambda (name-func) ;Kill all dead buffer associate with GDB
+;; 		  (condition-case nil
+;; 		      (let ((buffer (get-buffer (funcall name-func))))
+;; 			(and (buffer-live-p buffer) (kill-buffer buffer)))
+;; 		    (error nil)))
+;; 		`(gdb-assembler-buffer-name
+;; 		  gdb-memory-buffer-name
+;; 		  gdb-stack-buffer-name
+;; 		  gdb-registers-buffer-name
+;; 		  gdb-threads-buffer-name
+;; 		  gdb-locals-buffer-name
+;; 		  gdb-breakpoints-buffer-name
+;; 		  ,(lambda ()	;This is the gud comint buffer
+;; 		     (buffer-name (process-buffer proc)))))
+;; 	  (switch-to-buffer src-buffer)
+;; 	  (gdb-many-windows -1)	;Disable GDB Many windows
+;; 	  (gud-reset)
+;; 	  (gdb-reset))
+;;       (error nil))))
 
-(defun kill-gdb-process ()
-  "kill gdb process"
-  (interactive)
-  (with-current-buffer gud-comint-buffer 
-    (comint-skip-input))
-  (set-process-query-on-exit-flag (get-buffer-process gud-comint-buffer) nil)
-  (kill-buffer gud-comint-buffer))
+;; (defun kill-gdb-process ()
+;;   "kill gdb process"
+;;   (interactive)
+;;   (with-current-buffer gud-comint-buffer 
+;;     (comint-skip-input))
+;;   (set-process-query-on-exit-flag (get-buffer-process gud-comint-buffer) nil)
+;;   (kill-buffer gud-comint-buffer))
 
-(defun easy-gdb ()
-  "Make gdb easy to use"
-  ;; Enable and Clean up FN keys
-  (global-gdb-fn-mode 1)
-  ;; Close gdb buffer when gdb quit, Clean up windows if multiple windows are shown
-  (let ((process (get-buffer-process (current-buffer))))
-    (when (processp process)
-      (set-process-sentinel process 'gdb-quit-sentinel))))
+;; (defun easy-gdb ()
+;;   "Make gdb easy to use"
+;;   ;; Enable and Clean up FN keys
+;;   (global-gdb-fn-mode 1)
+;;   ;; Close gdb buffer when gdb quit, Clean up windows if multiple windows are shown
+;;   (let ((process (get-buffer-process (current-buffer))))
+;;     (when (processp process)
+;;       (set-process-sentinel process 'gdb-quit-sentinel))))
 
-(defun windmove-source-window ()
-  (interactive)
-  (other-window-by-name (buffer-name (window-buffer gdb-source-window))))
+;; (defun windmove-source-window ()
+;;   (interactive)
+;;   (other-window-by-name (buffer-name (window-buffer gdb-source-window))))
 
-(defun windmove-gdb-window ()
-  (interactive)
-  (other-window-by-name (buffer-name gud-comint-buffer)))
+;; (defun windmove-gdb-window ()
+;;   (interactive)
+;;   (other-window-by-name (buffer-name gud-comint-buffer)))
 
-(mapc (lambda (mode-hook)
-	(add-hook mode-hook 'easy-gdb))
-      '(gdb-mode-hook gud-mode-hook))
+;; (mapc (lambda (mode-hook)
+;; 	(add-hook mode-hook 'easy-gdb))
+;;       '(gdb-mode-hook gud-mode-hook))
+
+;;;;;;;;;;;;;;;; Prolog Programming ;;;;;;;;;;;;;;;;
+(pushnew (cons "\\.plc\\'" 'prolog-mode) auto-mode-alist :key #'car :test #'string=)
+(pushnew (cons "\\.pl\\'" 'prolog-mode) auto-mode-alist :key #'car :test #'string=)
+
 ;;;;;;;;;;;;;;;; ERC ;;;;;;;;;;;;;;;;
 ;; Join the #emacs and #erc channels whenever connecting to Freenode.
 (setq erc-autojoin-channels-alist '(("freenode.net" 
