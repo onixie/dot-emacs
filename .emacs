@@ -220,26 +220,51 @@
 	      (lambda ()
 		(which-func-mode 1))))
 
-(add-hook 'semantic-init-hook
-	  (lambda () 
-	    (let ((semantic-user-local-include
-		   (list "include" "inc" "common" "public"
-			 "../include" "../inc" "../common" "../public"
-			 "../../include" "../../inc" "../../common" "../../public"))
-		  (semantic-sys-spec-include
-		   (list "C:/WinDDK/7600.16385.0/inc"
-			 "C:/WinDDK/6001.18002/inc"
-			 "C:/Program Files/Microsoft SDKs/Windows/v7.0/Include"
-			 "C:/Program Files/Microsoft SDKs/Windows/v6.0A/Include"
-			 "C:/Program Files/Microsoft SDKs/Windows/v5.0/Include"
-			 "C:/Program Files/Microsoft Visual Studio 9.0/VC/include"
-			 "C:/Program Files/Microsoft Visual Studio 8/VC/include")))
-	      (let ((includes (append semantic-user-local-include semantic-sys-spec-include)))
-		(dolist (dirname includes)
-		  (traverse-walk-directory dirname
-					   :dir-fn #'(lambda (include-path)
-						       (semantic-add-system-include include-path 'c-mode)
-						       (semantic-add-system-include include-path 'c++-mode))))))))
+(when (require 'semantic-c nil 'noerror)
+  (defsubst* walk-and-collect-directory (dirname &key operation excludes (by-full-pathname t))
+    (labels
+        ((walk (name)
+               (cond
+                ((and excludes (member (if by-full-pathname name (file-name-nondirectory name)) excludes))
+                 nil)
+                ((eq t (car (file-attributes name))) ;; Is a directory and not a symlink.
+                 (cons (funcall (or operation #'identity) name)
+                       (mapcan #'walk (traverse-list-directory name t)))))))
+      (walk (expand-file-name dirname))))
+
+  (defvar semantic-user-local-include
+    (list "include" "inc" "common" "public"
+          "../include" "../inc" "../common" "../public"
+          "../../include" "../../inc" "../../common" "../../public"))
+
+  (defvar semantic-sys-spec-include
+    (list "C:/WinDDK/7600.16385.0/inc"
+	  ;; "C:/WinDDK/6001.18002/inc"
+	  "C:/Program Files/Microsoft SDKs/Windows/v7.0/Include"
+	  ;; "C:/Program Files/Microsoft SDKs/Windows/v6.0A/Include"
+	  ;; "C:/Program Files/Microsoft SDKs/Windows/v5.0/Include"
+	  "C:/Program Files/Microsoft Visual Studio 9.0/VC/include"
+	  ;; "C:/Program Files/Microsoft Visual Studio 8/VC/include"
+	  ))
+
+  (dolist (dirname semantic-sys-spec-include)
+    (walk-and-collect-directory dirname
+                                :operation #'(lambda (include-path)
+                                               (semantic-add-system-include include-path 'c-mode)
+                                               (semantic-add-system-include include-path 'c++-mode)
+                                               nil)))
+
+  (add-hook 'semantic-init-hook
+            (lambda ()
+              (dolist (dirname semantic-user-local-include)
+                (walk-and-collect-directory dirname
+                                            :operation #'(lambda (include-path)
+                                                           (print include-path)
+                                                           (semantic-add-system-include include-path 'c-mode)
+                                                           (semantic-add-system-include include-path 'c++-mode)
+                                                           nil)
+                                            :excludes semantic-sys-spec-include
+                                            :by-full-pathname t)))))
 
 ;; (when (and (require 'semantic-tag-folding nil 'noerror))
 ;;   (global-semantic-tag-folding-mode 1)
