@@ -217,14 +217,50 @@
 	      (lambda ()
 		(which-func-mode 1))))
 
-(add-hook 'semantic-init-hook
-	  (lambda ()
-	    (mapc (lambda (path)
-		      (pushnew path semantic-c-dependency-system-include-path :test #'string=))
-		    '("/usr/include"
-		      "/usr/local/include"))))
+(when (require 'semantic-c nil 'noerror)
+  (defsubst* walk-and-collect-directory (dirname &key operation excludes (by-full-pathname t))
+    (labels
+	((walk (name)
+	       (cond
+		((and excludes (member (if by-full-pathname name (file-name-nondirectory name)) excludes))
+		 nil)
+		((eq t (car (file-attributes name))) ;; Is a directory and not a symlink.
+		 (cons (funcall (or operation #'identity) name)
+		       (mapcan #'walk (traverse-list-directory name t)))))))
+      (walk (expand-file-name dirname))))
+  
+  (defvar semantic-user-local-include
+    (list "include" "inc" "common" "public"
+	  "../include" "../inc" "../common" "../public"
+	  "../../include" "../../inc" "../../common" "../../public"))
 
-(when (and (require 'semantic-tag-folding nil 'noerror))
+  (defvar semantic-sys-spec-include
+    (list "/usr/include"
+	  "/usr/local/include"
+	  ;; "/usr/src"
+	  ;; "/usr/local/src"
+	  ))
+
+  (dolist (dirname semantic-sys-spec-include)
+    (walk-and-collect-directory dirname
+				:operation #'(lambda (include-path)
+					       (semantic-add-system-include include-path 'c-mode)
+					       (semantic-add-system-include include-path 'c++-mode)
+					       nil)))
+
+  (add-hook 'semantic-init-hook
+	    (lambda ()
+	      (dolist (dirname semantic-user-local-include)
+		(walk-and-collect-directory dirname
+					    :operation #'(lambda (include-path)
+							   (print include-path)
+							   (semantic-add-system-include include-path 'c-mode)
+							   (semantic-add-system-include include-path 'c++-mode)
+							   nil)
+					    :excludes semantic-sys-spec-include
+					    :by-full-pathname t)))))
+
+(when (require 'semantic-tag-folding nil 'noerror)
   (global-semantic-tag-folding-mode 1)
   (global-set-key (kbd "C-?") 'global-semantic-tag-folding-mode)
   (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
@@ -756,8 +792,7 @@ The advice call MODE-push-curpos by current major-mode"
 		   c-end-of-statement
 		   c-up-conditional
 		   c-backward-conditional
-		   c-forward-conditional
-		   )
+		   c-forward-conditional)
 
 (mode-local-curpos lisp-mode		;lisp-mode itself is a mode and stands for other two lisp mode as mode-group
 		   forward-word
@@ -859,7 +894,7 @@ The advice call MODE-push-curpos by current major-mode"
 
 (defun etags ()
   (interactive)
-  (shell-command "find ./ -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
+  (shell-command "find ./ -type f -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
 
 (tool-bar-add-item "nautilus" 'nautilus 'nautilus :visible '(memq major-mode '(dired-mode)))
 (tool-bar-add-item "xterm" 'xterm 'xterm :visible '(memq major-mode '(dired-mode)))
