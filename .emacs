@@ -493,17 +493,12 @@ Return a list of one element based on major mode."
   (list
    (cond ((member (buffer-name) '("*scratch*" "*Messages*" "*ielm*" ".emacs"))
 	  "Emacs")
-	 ((or (get-buffer-process (current-buffer))
-	      ;; Check if the major mode derives from `comint-mode' or
-	      ;; `compilation-mode'.
-	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
-	  "Process")
 	 ((eq major-mode 'dired-mode)
 	  "Dired")
 	 ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
 	  "Help")
 	 ((or (memq major-mode '(slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode))
-	      (search "*lisp-inferior*" (buffer-name))
+	      (search "*inferior-lisp*" (buffer-name))
 	      (search "*slime-events*" (buffer-name)))
 	  "Slime")
 	 ((memq major-mode '(rmail-mode
@@ -512,6 +507,11 @@ Return a list of one element based on major mode."
 			     gnus-summary-mode message-mode gnus-group-mode
 			     gnus-article-mode score-mode gnus-browse-killed-mode))
 	  "Mail")
+	 ((or (get-buffer-process (current-buffer))
+	      ;; Check if the major mode derives from `comint-mode' or
+	      ;; `compilation-mode'.
+	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
+	  "Process")
 	 (t
 	  ;; Return `mode-name' if not blank, `major-mode' otherwise.
 	  (if (and (stringp mode-name)
