@@ -802,7 +802,9 @@ The advice call MODE-push-curpos by current major-mode"
 		   c-end-of-statement
 		   c-up-conditional
 		   c-backward-conditional
-		   c-forward-conditional)
+		   c-forward-conditional
+		   end-of-defun
+		   beginning-of-defun)
 
 (mode-local-curpos lisp-mode		;lisp-mode itself is a mode and stands for other two lisp mode as mode-group
 		   forward-word
@@ -838,7 +840,9 @@ The advice call MODE-push-curpos by current major-mode"
 		   paredit-forward-up
 		   paredit-forward-down
 		   paredit-backward-up
-		   paredit-backward-down)
+		   paredit-backward-down
+		   end-of-defun
+		   beginning-of-defun)
 
 (mode-local-curpos text-mode 
 		   forward-word
