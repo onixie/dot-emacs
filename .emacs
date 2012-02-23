@@ -503,6 +503,8 @@ Return a list of one element based on major mode."
 	      (search "*inferior-lisp*" (buffer-name))
 	      (search "*slime-events*" (buffer-name)))
 	  "Slime")
+	 ((memq major-mode '(c-mode c++-mode objc-mode))
+	  "C/C++")
 	 ((memq major-mode '(rmail-mode
 			     rmail-edit-mode vm-summary-mode vm-mode mail-mode
 			     mh-letter-mode mh-show-mode mh-folder-mode
