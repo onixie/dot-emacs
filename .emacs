@@ -22,6 +22,9 @@
 ;; (require 'eassist)
 ;; (require 'semantic-ia)
 ;; (require 'semantic-gcc)
+(require 'ede)
+(require 'semantic)
+(require 'srecode)
 
 ;; Scan all directories under .emacs.d
 (let ((default-directory "~/.emacs.d/"))
@@ -204,41 +207,65 @@
 ;;;;;;;;;;;;;;;; CEDET ;;;;;;;;;;;;;;;;
 (semantic-mode 1)
 (global-ede-mode 1)
-;; (semantic-load-enable-minimum-features)
-;; (semantic-load-enable-code-helpers)
-;; (semantic-load-enable-guady-code-helpers)
-;; (semantic-load-enable-excessive-code-helpers)
-;; (semantic-load-enable-semantic-debugging-helpers)
+(remove-hook 'find-file-hook 'ede-turn-on-hook)
+(add-hook 'find-file-hook 'ede-turn-on-hook t)
+
 (global-semantic-highlight-func-mode 1)
 (global-semantic-decoration-mode 1)
 (global-semantic-idle-summary-mode 1)
-(global-semantic-stickyfunc-mode 1)
 (global-semantic-idle-scheduler-mode 1)
+(global-srecode-minor-mode 1)
 
 (if (fboundp #'which-func-mode)
     (add-hook 'semantic-init-hook 
 	      (lambda ()
 		(which-func-mode 1))))
 
-(when (require 'semantic-c nil 'noerror)
-  (defsubst* walk-and-collect-directory (dirname &key operation excludes (by-full-pathname t))
+;; (global-semantic-tag-folding-mode 1)
+;; (remove-hook 'semantic-init-hook 'semantic-tag-folding-mode)
+;; (add-hook 'semantic-init-hook 'semantic-tag-folding-mode t)
+;; (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
+;; (define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
+;; (define-key semantic-tag-folding-mode-map (kbd "C-c M--") 'semantic-tag-folding-fold-all)
+;; (define-key semantic-tag-folding-mode-map (kbd "C-c M-=") 'semantic-tag-folding-show-all)
+
+(defsubst* walk-directory (dirname &key operation (collectp nil) excludes (excludes-subp t) (by-full-pathname t))
+  (let ((collector-sym (gensym)))
+    (fset collector-sym (symbol-function (if collectp 'cons 'ignore)))
     (labels
-        ((walk (name)
-               (cond
-                ((and excludes (member (if by-full-pathname name (file-name-nondirectory name)) excludes))
-                 nil)
-                ((eq t (car (file-attributes name))) ;; Is a directory and not a symlink.
-                 (cons (funcall (or operation #'identity) name)
-                       (mapcan #'walk (traverse-list-directory name t)))))))
-      (walk (expand-file-name dirname))))
+	((walk (name)
+	       (cond
+		((excludesp name) nil)
+		((eq t (car (file-attributes name)))
+		 (apply collector-sym
+			(list (funcall (or operation #'identity) name)
+			      (mapcan #'walk (traverse-list-directory name t)))))))
+	 (excludesp (name)
+		    (and excludes
+			 (cond ((not excludes-subp)
+				(member (if by-full-pathname
+					    name
+					  (file-name-nondirectory name))
+					excludes))
+			       (t (find name excludes
+					:test (lambda (n ex)
+						(let ((pos (search ex n)))
+						  (and (not (null pos))
+						       (or (not by-full-pathname)
+							   (= pos 0)))))))))))
+      (walk (expand-file-name dirname)))))
 
-  (defvar semantic-user-local-include
-    (list "include" "inc" "common" "public"
-          "../include" "../inc" "../common" "../public"
-          "../../include" "../../inc" "../../common" "../../public"))
+(defun add-path-to-sys-include (path)
+  (semantic-add-system-include path 'c-mode)
+  (semantic-add-system-include path 'c++-mode))
 
-  (defvar semantic-sys-spec-include
-    (list "C:/WinDDK/7600.16385.0/inc"
+(defvar semantic-user-local-include
+  (list "include" "inc" "common" "public"
+	"../include" "../inc" "../common" "../public"
+	"../../include" "../../inc" "../../common" "../../public"))
+
+(defvar semantic-sys-spec-include
+  (list "C:/WinDDK/7600.16385.0/inc"
 	  ;; "C:/WinDDK/6001.18002/inc"
 	  "C:/Program Files/Microsoft SDKs/Windows/v7.0/Include"
 	  ;; "C:/Program Files/Microsoft SDKs/Windows/v6.0A/Include"
@@ -247,35 +274,19 @@
 	  ;; "C:/Program Files/Microsoft Visual Studio 8/VC/include"
 	  ))
 
-  (dolist (dirname semantic-sys-spec-include)
-    (walk-and-collect-directory dirname
-                                :operation #'(lambda (include-path)
-                                               (semantic-add-system-include include-path 'c-mode)
-                                               (semantic-add-system-include include-path 'c++-mode)
-                                               nil)))
+(dolist (dirname semantic-sys-spec-include)
+  (walk-directory dirname :operation #'add-path-to-sys-include))
 
-  (add-hook 'semantic-init-hook
-            (lambda ()
-              (dolist (dirname semantic-user-local-include)
-                (walk-and-collect-directory dirname
-                                            :operation #'(lambda (include-path)
-                                                           (print include-path)
-                                                           (semantic-add-system-include include-path 'c-mode)
-                                                           (semantic-add-system-include include-path 'c++-mode)
-                                                           nil)
-                                            :excludes semantic-sys-spec-include
-                                            :by-full-pathname t)))))
+(add-hook 'semantic-init-hook
+	  (lambda ()
+	    (dolist (dirname semantic-user-local-include)
+	      (walk-directory dirname
+			      :operation #'add-path-to-sys-include
+			      :excludes semantic-sys-spec-include))))
 
-;; (when (and (require 'semantic-tag-folding nil 'noerror))
-;;   (global-semantic-tag-folding-mode 1)
-;;   (global-set-key (kbd "C-?") 'global-semantic-tag-folding-mode)
-;;   (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
-;;   (define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
-;;   (define-key semantic-tag-folding-mode-map (kbd "C-c M--") 'semantic-tag-folding-fold-all)
-;;   (define-key semantic-tag-folding-mode-map (kbd "C-c M-=") 'semantic-tag-folding-show-all))
+(add-hook 'semantic-init-mode-hook (lambda () (senator-force-refresh)) t)
 
 ;; (enable-visual-studio-bookmarks)
-
 ;;;;;;;;;;;;;;;; Yasnippet ;;;;;;;;;;;;;;;;
 (yas/initialize)
 (yas/load-directory "~/.emacs.d/contrib/yasnippet/snippets")
@@ -492,17 +503,12 @@ Return a list of one element based on major mode."
   (list
    (cond ((member (buffer-name) '("*scratch*" "*Messages*" "*ielm*" ".emacs"))
 	  "Emacs")
-	 ((or (get-buffer-process (current-buffer))
-	      ;; Check if the major mode derives from `comint-mode' or
-	      ;; `compilation-mode'.
-	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
-	  "Process")
 	 ((eq major-mode 'dired-mode)
 	  "Dired")
 	 ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
 	  "Help")
 	 ((or (memq major-mode '(slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode))
-	      (search "*lisp-inferior*" (buffer-name))
+	      (search "*inferior-lisp*" (buffer-name))
 	      (search "*slime-events*" (buffer-name)))
 	  "Slime")
 	 ((memq major-mode '(rmail-mode
@@ -511,6 +517,11 @@ Return a list of one element based on major mode."
 			     gnus-summary-mode message-mode gnus-group-mode
 			     gnus-article-mode score-mode gnus-browse-killed-mode))
 	  "Mail")
+	 ((or (get-buffer-process (current-buffer))
+	      ;; Check if the major mode derives from `comint-mode' or
+	      ;; `compilation-mode'.
+	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
+	  "Process")
 	 (t
 	  ;; Return `mode-name' if not blank, `major-mode' otherwise.
 	  (if (and (stringp mode-name)
@@ -799,8 +810,7 @@ The advice call MODE-push-curpos by current major-mode"
 		   c-end-of-statement
 		   c-up-conditional
 		   c-backward-conditional
-		   c-forward-conditional
-		   )
+		   c-forward-conditional)
 
 (mode-local-curpos lisp-mode		;lisp-mode itself is a mode and stands for other two lisp mode as mode-group
 		   forward-word
@@ -1066,7 +1076,6 @@ This command assumes point is not in a string or comment."
 	    (eldoc-mode)))
 
 (mapc (lambda (map)
-	(define-key map (kbd "<f12>") 'semantic-ia-fast-jump)
 	(define-key map (kbd "C-S-r") 'replace-sexp-at-point)
 	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug)
 	(define-key map (kbd "C-S-o") 'rip-sexp-a-hug))
@@ -1098,13 +1107,6 @@ This command assumes point is not in a string or comment."
 	 (quote ("\223^[[:space:]]*$" 0 "%d")) 
 	 arg)))
 
-;; (mapc (lambda (mode-hook)
-;; 	(add-hook mode-hook (lambda ()
-;; 			      (progn
-;; 				(tool-bar-add-item "gud" 'gdb 'gdb :visible '(memq major-mode '(c++-mode c-mode)))
-;; 				(tool-bar-add-item "compile" 'compile 'compile :visible '(memq major-mode '(c++-mode c-mode)))))))
-;;       '(c-mode-hook c++-mode-hook))
-
 (define-key c-mode-base-map (kbd "C-M-S-c") 'kill-c-comment)
 (define-key c-mode-base-map (kbd "C-M-S-b") 'kill-c-blank-line)
 
@@ -1123,14 +1125,17 @@ This command assumes point is not in a string or comment."
 ;; 					       (interactive)
 ;; 					       (mapc 'call-interactively '(compile gdb gdb-many-windows))))
 
-;;;;;;;;;;;;;;;; Compiler ;;;;;;;;;;;;;;;;
-;; (defvar compile-output-time 3.0)
+;; (tool-bar-add-item "gud" 'gdb 'gdb :visible '(memq major-mode '(c++-mode c-mode)))
+;; (tool-bar-add-item "compile" 'compile 'compile :visible '(memq major-mode '(c++-mode c-mode)))
 
-;; (add-to-list 'compilation-finish-functions
-;; 	     (lambda (buffer string)
-;; 	       (when (and (string= (buffer-name buffer) "*compilation*")
-;; 			  (not (string-match "exited abnormally" string)))
-;; 		 (run-at-time compile-output-time nil 'delete-windows-on buffer))))
+;;;;;;;;;;;;;;;; Compiler ;;;;;;;;;;;;;;;;
+(defvar compile-output-time 3.0)
+
+(add-to-list 'compilation-finish-functions
+	     (lambda (buffer string)
+	       (when (and (string= (buffer-name buffer) "*compilation*")
+			  (not (string-match "exited abnormally" string)))
+		 (run-at-time compile-output-time nil 'delete-windows-on buffer))))
 
 ;;;;;;;;;;;;;;;; GDB and GUD ;;;;;;;;;;;;;;;;
 ;; (defvar gdb-fn-mode-map 
