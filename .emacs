@@ -21,6 +21,7 @@
 
 (require 'eassist)
 (require 'semantic-ia)
+(require 'semantic-c)
 (require 'semantic-gcc)
 
 ;; Scan all directories under .emacs.d
@@ -203,73 +204,80 @@
 (ido-mode 1)
 
 ;;;;;;;;;;;;;;;; CEDET ;;;;;;;;;;;;;;;;
-(global-ede-mode 1)
-(semantic-load-enable-minimum-features)
-(semantic-load-enable-code-helpers)
-(semantic-load-enable-guady-code-helpers)
 (semantic-load-enable-excessive-code-helpers)
 (semantic-load-enable-semantic-debugging-helpers)
-(global-semantic-highlight-func-mode 1)
 (global-srecode-minor-mode 1)
+(global-semantic-stickyfunc-mode -1)
 
-(if (fboundp #'which-func-mode)
-    (add-hook 'semantic-init-hook 
-	      (lambda ()
-		(which-func-mode 1))))
-
-(when (require 'semantic-c nil 'noerror)
-  (defsubst* walk-and-collect-directory (dirname &key operation excludes (by-full-pathname t))
-    (labels
-	((walk (name)
-	       (cond
-		((and excludes (member (if by-full-pathname name (file-name-nondirectory name)) excludes))
-		 nil)
-		((eq t (car (file-attributes name))) ;; Is a directory and not a symlink.
-		 (cons (funcall (or operation #'identity) name)
-		       (mapcan #'walk (traverse-list-directory name t)))))))
-      (walk (expand-file-name dirname))))
-  
-  (defvar semantic-user-local-include
-    (list "include" "inc" "common" "public"
-	  "../include" "../inc" "../common" "../public"
-	  "../../include" "../../inc" "../../common" "../../public"))
-
-  (defvar semantic-sys-spec-include
-    (list "/usr/include"
-	  "/usr/local/include"
-	  ;; "/usr/src"
-	  ;; "/usr/local/src"
-	  ))
-
-  (dolist (dirname semantic-sys-spec-include)
-    (walk-and-collect-directory dirname
-				:operation #'(lambda (include-path)
-					       (semantic-add-system-include include-path 'c-mode)
-					       (semantic-add-system-include include-path 'c++-mode)
-					       nil)))
-
-  (add-hook 'semantic-init-hook
-	    (lambda ()
-	      (dolist (dirname semantic-user-local-include)
-		(walk-and-collect-directory dirname
-					    :operation #'(lambda (include-path)
-							   (print include-path)
-							   (semantic-add-system-include include-path 'c-mode)
-							   (semantic-add-system-include include-path 'c++-mode)
-							   nil)
-					    :excludes semantic-sys-spec-include
-					    :by-full-pathname t)))))
+(global-ede-mode 1)
+(remove-hook 'find-file-hook 'ede-turn-on-hook)
+(add-hook 'find-file-hook 'ede-turn-on-hook t)
 
 (when (require 'semantic-tag-folding nil 'noerror)
   (global-semantic-tag-folding-mode 1)
-  (global-set-key (kbd "C-?") 'global-semantic-tag-folding-mode)
+  (remove-hook 'semantic-init-hook 'semantic-tag-folding-mode)
+  (add-hook 'semantic-init-hook 'semantic-tag-folding-mode t)
+
   (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
   (define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
   (define-key semantic-tag-folding-mode-map (kbd "C-c M--") 'semantic-tag-folding-fold-all)
   (define-key semantic-tag-folding-mode-map (kbd "C-c M-=") 'semantic-tag-folding-show-all))
 
-(enable-visual-studio-bookmarks)
+(defsubst* walk-directory (dirname &key operation (collectp nil) excludes (excludes-subp t) (by-full-pathname t))
+  (let ((collector-sym (gensym)))
+    (fset collector-sym (symbol-function (if collectp 'cons 'ignore)))
+    (labels
+	((walk (name)
+	       (cond
+		((excludesp name) nil)
+		((eq t (car (file-attributes name)))
+		 (apply collector-sym
+			(list (funcall (or operation #'identity) name)
+			      (mapcan #'walk (traverse-list-directory name t)))))))
+	 (excludesp (name)
+		    (and excludes
+			 (cond ((not excludes-subp)
+				(member (if by-full-pathname
+					    name
+					  (file-name-nondirectory name))
+					excludes))
+			       (t (find name excludes
+					:test (lambda (n ex)
+						(let ((pos (search ex n)))
+						  (and (not (null pos))
+						       (or (not by-full-pathname)
+							   (= pos 0)))))))))))
+      (walk (expand-file-name dirname)))))
 
+(defun add-path-to-sys-include (path)
+  (semantic-add-system-include path 'c-mode)
+  (semantic-add-system-include path 'c++-mode))
+
+(defvar semantic-user-local-include
+  (list "include" "inc" "common" "public"
+	"../include" "../inc" "../common" "../public"
+	"../../include" "../../inc" "../../common" "../../public"))
+
+(defvar semantic-sys-spec-include
+  (list "/usr/include"
+	"/usr/local/include"
+	;; "/usr/src"
+	;; "/usr/local/src"
+	))
+
+(dolist (dirname semantic-sys-spec-include)
+  (walk-directory dirname :operation #'add-path-to-sys-include))
+
+(add-hook 'semantic-init-hook
+	  (lambda ()
+	    (dolist (dirname semantic-user-local-include)
+	      (walk-directory dirname
+			      :operation #'add-path-to-sys-include
+			      :excludes semantic-sys-spec-include))))
+
+(add-hook 'semantic-init-mode-hook (lambda () (senator-force-refresh)) t)
+
+(enable-visual-studio-bookmarks)
 ;;;;;;;;;;;;;;;; Yasnippet ;;;;;;;;;;;;;;;;
 (yas/initialize)
 (yas/load-directory "~/.emacs.d/contrib/yasnippet/snippets")
@@ -1039,7 +1047,6 @@ This command assumes point is not in a string or comment."
 	    (eldoc-mode)))
 
 (mapc (lambda (map)
-	(define-key map (kbd "<f12>") 'semantic-ia-fast-jump)
 	(define-key map (kbd "C-S-r") 'replace-sexp-at-point)
 	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug)
 	(define-key map (kbd "C-S-o") 'rip-sexp-a-hug))
@@ -1071,13 +1078,6 @@ This command assumes point is not in a string or comment."
 	 (quote ("\223^[[:space:]]*$" 0 "%d")) 
 	 arg)))
 
-(mapc (lambda (mode-hook)
-	(add-hook mode-hook (lambda ()
-			      (progn
-				(tool-bar-add-item "gud" 'gdb 'gdb :visible '(memq major-mode '(c++-mode c-mode)))
-				(tool-bar-add-item "compile" 'compile 'compile :visible '(memq major-mode '(c++-mode c-mode)))))))
-      '(c-mode-hook c++-mode-hook))
-
 (define-key c-mode-base-map (kbd "C-M-S-c") 'kill-c-comment)
 (define-key c-mode-base-map (kbd "C-M-S-b") 'kill-c-blank-line)
 
@@ -1095,6 +1095,9 @@ This command assumes point is not in a string or comment."
 (define-key c-mode-base-map (kbd "M-S-<f5>") (lambda ()
 					       (interactive)
 					       (mapc 'call-interactively '(compile gdb gdb-many-windows))))
+
+(tool-bar-add-item "gud" 'gdb 'gdb :visible '(memq major-mode '(c++-mode c-mode)))
+(tool-bar-add-item "compile" 'compile 'compile :visible '(memq major-mode '(c++-mode c-mode)))
 
 ;;;;;;;;;;;;;;;; Compiler ;;;;;;;;;;;;;;;;
 (defvar compile-output-time 3.0)
