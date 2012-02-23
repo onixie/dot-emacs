@@ -19,10 +19,11 @@
 ;; CEDET must be first loaded explicitly, otherwise the old version will mess up new version
 (load-file "~/.emacs.d/contrib/cedet/common/cedet.elc")
 
-(require 'eassist)
-(require 'semantic-ia)
-(require 'semantic-c)
-(require 'semantic-gcc)
+(require 'ede)
+(require 'semantic)
+(require 'srecode)
+(require 'cogre)
+(require 'cedet-contrib)
 
 ;; Scan all directories under .emacs.d
 (let ((default-directory "~/.emacs.d/"))
@@ -265,6 +266,7 @@
 	;; "/usr/local/src"
 	))
 
+(require 'semantic-c nil 'noerror)
 (dolist (dirname semantic-sys-spec-include)
   (walk-directory dirname :operation #'add-path-to-sys-include))
 
