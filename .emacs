@@ -256,12 +256,12 @@
   (semantic-add-system-include path 'c-mode)
   (semantic-add-system-include path 'c++-mode))
 
-(defvar semantic-user-local-include
+(defconst semantic-user-local-include
   (list "include" "inc" "common" "public"
 	"../include" "../inc" "../common" "../public"
 	"../../include" "../../inc" "../../common" "../../public"))
 
-(defvar semantic-sys-spec-include
+(defconst semantic-sys-spec-include
   (list "C:/WinDDK/7600.16385.0/inc"
 	  ;; "C:/WinDDK/6001.18002/inc"
 	  "C:/Program Files/Microsoft SDKs/Windows/v7.0/Include"
@@ -271,15 +271,19 @@
 	  ;; "C:/Program Files/Microsoft Visual Studio 8/VC/include"
 	  ))
 
-(dolist (dirname semantic-sys-spec-include)
-  (walk-directory dirname :operation #'add-path-to-sys-include))
+(defconst semantic-sys-spec-include-recursive
+  (mapcan (lambda (dirname)
+	    (walk-directory dirname :collectp t))
+	  semantic-sys-spec-include))
 
 (add-hook 'semantic-init-hook
 	  (lambda ()
 	    (dolist (dirname semantic-user-local-include)
 	      (walk-directory dirname
 			      :operation #'add-path-to-sys-include
-			      :excludes semantic-sys-spec-include))))
+			      :excludes semantic-sys-spec-include))
+	    (dolist (dirname semantic-sys-spec-include-recursive)
+	      (add-path-to-sys-include dirname))))
 
 (add-hook 'semantic-init-mode-hook (lambda () (senator-force-refresh)) t)
 
