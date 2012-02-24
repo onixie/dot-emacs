@@ -476,6 +476,49 @@ uninstall()
     RET_CODE=$RET_OK
     return $RET_OK
 }
+dist()
+{
+    echo -n "Check repository: "
+    repository_ok_p
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+    echo "OK"
+
+    echo -n "Check specified commit: "
+    commit_ok_p $DOT_EMACS_VERSION
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+    echo "OK"
+    
+    ARC_NAME=dot-emacs-on-$DOT_EMACS_VERSION-$(date +%Y%m%d%H%M%S).tar.gz
+    echo -n "Archiving commit/branch: "
+    echo $DOT_EMACS_VERSION
+    echo -n "Generating "$ARC_NAME": "
+    mkdir -p dist && git archive --format=tar.gz $DOT_EMACS_VERSION > dist/$ARC_NAME
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+    echo "OK"
+}
+clean()
+{
+    echo -n "Check repository: "
+    repository_ok_p
+    if [ $? = $RET_ERR ]
+    then
+	return $RET_ERR
+    fi
+    echo "OK"
+
+    echo "Cleanning: "
+    git clean -d -x -f -f
+    echo "Done."
+}
 usage()
 {
     echo "Usage: $(basename $0) [OPTION]"
@@ -484,6 +527,8 @@ usage()
     echo "    -s [commit], --switch[=commit]      Switch to commit-specified (current by default) dot-emacs branch"
     echo "    -f, --force                         Force to install"
     echo "    -u, --uninstall                     Remove links and dot-emacs branch"
+    echo "    -d, --dist                          Make distribution archive (on current branch by default)"
+    echo "    -c, --clean                         Clean up working directory"
     echo "    -h, --help                          Output this help"
     exit 1
 }
@@ -558,6 +603,40 @@ do
 		usage
 	    fi
 	    ;;
+	-d|--dist*)
+	    if echo "$1" | grep "^--dist=" 1>/dev/null 2>&1 # CASE1: --option=argument
+	    then
+		DOT_EMACS_VERSION=$(echo "$1" | sed -r s/--[^-=]+=//)
+	    fi
+
+	    echo "$2" | grep -E '^=$' 1>/dev/null 2>&1 # CASE2: --option = argument
+	    if [ $? = 0 ]
+	    then
+		shift
+	    fi
+
+	    echo "$2" | grep -E '^-.?$|^--.*$' 1>/dev/null 2>&1 # CASE3: --option =argument
+	    if [ $? != 0 ]
+	    then
+		shift
+		DOT_EMACS_VERSION=$(echo -n "$1" | tr -d "=")
+	    fi
+
+	    if [ -z $ACTION ]
+	    then
+		ACTION="DIST"
+	    else
+		usage
+	    fi
+	    ;;
+	-c|--clean*)
+	    if [ -z $ACTION ]
+	    then
+		ACTION="CLEAN"
+	    else
+		usage
+	    fi
+	    ;;
 	-h|--help|'?'|':')
 	    usage
 	    ;;
@@ -582,6 +661,20 @@ case $ACTION in
 	;;
     UNINSTALL)
 	uninstall
+	if [ $? != 0 ]
+	then
+	    errorp $RET_CODE
+	fi
+	;;
+    DIST)
+	dist
+	if [ $? != 0 ]
+	then
+	    errorp $RET_CODE
+	fi
+	;;
+    CLEAN)
+	clean
 	if [ $? != 0 ]
 	then
 	    errorp $RET_CODE
