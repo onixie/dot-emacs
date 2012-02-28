@@ -122,6 +122,7 @@
  '(max-specpdl-size 1048576)
  '(mf-max-height (+ (display-pixel-height) 0))
  '(mf-max-width (- (display-pixel-width) 1))
+ '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
  '(org-export-docbook-xsl-fo-proc-command "fop %s %s")
  '(org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s")
  '(org-hide-leading-stars nil nil nil "Clean View is done by org-startup-indented, this variable has little usage in future.")
