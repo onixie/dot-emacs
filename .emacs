@@ -49,11 +49,14 @@
 (require 'parenface)
 (require 'ibus)
 (require 'pp-c-l)
+(require 'geiser)
+(require 'rainbow-delimiters)
 
 ;; Use emacs-goodies-el packages
 (require 'tabbar)
 (require 'highlight-current-line)
 (require 'pack-windows)
+(require 'quack)
 
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
@@ -97,6 +100,7 @@
  '(eval-expression-print-length nil)
  '(eval-expression-print-level nil)
  '(gdb-many-windows nil)
+ '(geiser-repl-use-other-window nil)
  '(highlight-current-line-globally t nil (highlight-current-line))
  '(highlight-current-line-ignore-regexp "Faces\\|Colors\\| \\*Mini\\|\\*Calendar\\*")
  '(highlight-current-line-whole-line t)
@@ -130,13 +134,19 @@
  '(org-startup-indented t)
  '(pp^L-^L-string "                              -* Next Page *-                              ")
  '(pp^L-^L-string-pre "")
+ '(quack-browse-url-browser-function (quote quack-w3m-browse-url-other-window))
+ '(quack-default-program "racket")
+ '(quack-fontify-style (quote emacs))
+ '(quack-global-menu-p nil)
+ '(quack-pretty-lambda-p t)
+ '(quack-programs (quote ("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)
  '(scroll-preserve-screen-position nil)
  '(scroll-step 1)
  '(semantic-idle-scheduler-idle-time 0.5)
- '(semantic-inhibit-functions (quote ((lambda nil (eq major-mode (quote lisp-mode))) (lambda nil (eq major-mode (quote emacs-lisp-mode))))))
+ '(semantic-inhibit-functions (quote ((lambda nil (or (eq major-mode (quote lisp-mode)) (eq major-mode (quote scheme-mode)) (eq major-mode (quote emacs-lisp-mode)))))))
  '(show-paren-mode t)
  '(slime-kill-without-query-p t)
  '(speedbar-default-position (quote right))
@@ -504,6 +514,9 @@ Return a list of one element based on major mode."
 	      (search "*inferior-lisp*" (buffer-name))
 	      (search "*slime-events*" (buffer-name)))
 	  "Slime")
+	 ((or (memq major-mode '(scheme-mode inferior-scheme-mode geiser-doc-mode geiser-debug-mode geiser-repl-mode))
+	      (search "*scheme*" (buffer-name)))
+	  "Racket")
 	 ((memq major-mode '(c-mode c++-mode objc-mode))
 	  "C/C++")
 	 ((memq major-mode '(rmail-mode
@@ -988,6 +1001,17 @@ The advice call MODE-push-curpos by current major-mode"
     (setq slime-compie-file-options '(:fasl-directory fasls-dir))
     (make-directory fasls-dir t)))
 
+;;;;;;;;;;;;;;;; Scheme Programming ;;;;;;;;;;;;;;;;
+(mapc (lambda (hook)
+	(add-hook hook 
+		  (lambda ()
+		    (switch-to-buffer (prog1
+					  (current-buffer) 
+					(switch-to-racket)
+					(geiser-syntax--font-lock-buffer))))
+		  t))
+      (list 'scheme-mode-hook))
+
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
 (defun ielm-quit-sentinel (proc change)
   "Clean up of buffers, when eilm quit."
@@ -1040,9 +1064,20 @@ This command assumes point is not in a string or comment."
 (mapc (lambda (hook)
 	(add-hook hook 
 		  (lambda ()
-		    (paredit-mode 1)
+		    (paredit-mode 1))))
+      (list 'emacs-lisp-mode-hook 'lisp-mode-hook 'lisp-interaction-mode-hook 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
+
+(mapc (lambda (hook)
+	(add-hook hook 
+		  (lambda ()
 		    (set-face-foreground 'paren-face "gray70"))))
       (list 'emacs-lisp-mode-hook 'lisp-mode-hook 'lisp-interaction-mode-hook))
+
+(mapc (lambda (hook)
+	(add-hook hook 
+		  (lambda ()
+		    (rainbow-delimiters-mode 1))))
+      (list 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
 
 (add-hook 'ielm-mode-hook 
 	  (lambda ()
@@ -1059,7 +1094,7 @@ This command assumes point is not in a string or comment."
 	(define-key map (kbd "C-S-r") 'replace-sexp-at-point)
 	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug)
 	(define-key map (kbd "C-S-o") 'rip-sexp-a-hug))
-      (list lisp-mode-map emacs-lisp-mode-map lisp-interaction-mode-map))
+      (list lisp-mode-map emacs-lisp-mode-map lisp-interaction-mode-map scheme-mode-map))
 
 (mapc (lambda (map)
 	(define-key map (kbd "TAB") 'slime-indent-and-complete-symbol))
@@ -1069,7 +1104,6 @@ This command assumes point is not in a string or comment."
 ; But it really relieves my fingers' wrick :P
 ;; (swap-key-translation (kbd "(") (kbd "["))
 ;; (swap-key-translation (kbd ")") (kbd "]"))
-
 ;;;;;;;;;;;;;;;; C/C++ Programming ;;;;;;;;;;;;;;;;
 (fset 'kill-c-comment
       (lambda (&optional arg) 
