@@ -149,6 +149,8 @@
  '(semantic-inhibit-functions (quote ((lambda nil (or (eq major-mode (quote lisp-mode)) (eq major-mode (quote scheme-mode)) (eq major-mode (quote emacs-lisp-mode)))))))
  '(show-paren-mode t)
  '(slime-kill-without-query-p t)
+ '(slime-repl-history-remove-duplicates t)
+ '(slime-repl-history-trim-whitespaces t)
  '(speedbar-default-position (quote right))
  '(speedbar-frame-parameters (quote ((minibuffer) (width . 40) (border-width . 0) (menu-bar-lines . 0) (tool-bar-lines . 0) (unsplittable . t) (left-fringe . 0))))
  '(speedbar-frame-plist (quote (minibuffer nil width 40 border-width 0 internal-border-width 0 unsplittable t default-toolbar-visible-p nil has-modeline-p nil menubar-visible-p nil default-gutter-visible-p nil)))
@@ -185,9 +187,6 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (put 'set-goal-column 'disabled nil)
 (setq ielm-header "")
-
-(eshell)
-(ielm)
 
 ;;;;;;;;;;;;;;;; Common ;;;;;;;;;;;;;;;;
 (defun name-combinator (&rest names)
@@ -510,13 +509,13 @@ Return a list of one element based on major mode."
 	  "Dired")
 	 ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
 	  "Help")
-	 ((or (memq major-mode '(slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode))
+	 ((or (memq major-mode '(lisp-mode slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode))
 	      (search "*inferior-lisp*" (buffer-name))
 	      (search "*slime-events*" (buffer-name)))
-	  "Slime")
+	  "Common Lisp")
 	 ((or (memq major-mode '(scheme-mode inferior-scheme-mode geiser-doc-mode geiser-debug-mode geiser-repl-mode))
 	      (search "*scheme*" (buffer-name)))
-	  "Racket")
+	  "Scheme")
 	 ((memq major-mode '(c-mode c++-mode objc-mode))
 	  "C/C++")
 	 ((memq major-mode '(rmail-mode
@@ -975,10 +974,16 @@ The advice call MODE-push-curpos by current major-mode"
   (setq slime-autodoc-use-multiline-p t)
 
   (add-hook 'slime-mode-hook
-	    (lambda ()
-	      (unless (slime-connected-p)
-		(save-selected-window (save-excursion (slime)))))) ; Enable slime when a file open
-
+  	    (lambda ()
+  	      (unless (slime-connected-p)
+		(when (eq major-mode 'lisp-mode)
+		  (labels ((src-revisit
+			    ()
+			    (remove-hook 'slime-connected-hook #'src-revisit)
+			    (switch-to-buffer (slime-recently-visited-buffer 'lisp-mode))))
+		    (add-hook 'slime-connected-hook #'src-revisit t)))
+		(slime))))
+  
   (add-hook 'slime-connected-hook
 	    (lambda ()
 	      (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
@@ -1002,13 +1007,32 @@ The advice call MODE-push-curpos by current major-mode"
     (make-directory fasls-dir t)))
 
 ;;;;;;;;;;;;;;;; Scheme Programming ;;;;;;;;;;;;;;;;
+(defadvice run-geiser (after good-geiser-run last activate)
+  (let ((cur-buf (current-buffer)))
+    (geiser-syntax--font-lock-buffer)
+    (set-process-query-on-exit-flag (get-buffer-process cur-buf) nil)
+    (switch-to-buffer cur-buf))
+  ad-return-value)
+
+(defadvice run-scheme (after good-quack-run last activate)
+  (let ((cur-buf (current-buffer)))
+    (set-process-query-on-exit-flag (get-buffer-process cur-buf) nil))
+  ad-return-value)
+
+(defadvice geiser-repl--save-remote-data (around no-setq-head-line-format (address) activate)
+  (setq geiser-repl--address address)
+  ;; (setq header-line-format (and address
+  ;;                               (format "Host: %s   Port: %s"
+  ;;                                       (geiser-repl--host)
+  ;;                                       (geiser-repl--port))))
+  )
+
 (mapc (lambda (hook)
 	(add-hook hook 
 		  (lambda ()
 		    (switch-to-buffer (prog1
 					  (current-buffer) 
-					(switch-to-racket)
-					(geiser-syntax--font-lock-buffer))))
+					(switch-to-racket))))
 		  t))
       (list 'scheme-mode-hook))
 
@@ -1065,13 +1089,13 @@ This command assumes point is not in a string or comment."
 	(add-hook hook 
 		  (lambda ()
 		    (paredit-mode 1))))
-      (list 'emacs-lisp-mode-hook 'lisp-mode-hook 'lisp-interaction-mode-hook 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
+      (list 'emacs-lisp-mode-hook 'ielm-mode-hook 'lisp-interaction-mode-hook 'lisp-mode-hook 'slime-repl-mode-hook 'inferior-lisp-mode-hook 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
 
 (mapc (lambda (hook)
 	(add-hook hook 
 		  (lambda ()
 		    (set-face-foreground 'paren-face "gray70"))))
-      (list 'emacs-lisp-mode-hook 'lisp-mode-hook 'lisp-interaction-mode-hook))
+      (list 'emacs-lisp-mode-hook 'ielm-mode-hook 'lisp-interaction-mode-hook 'lisp-mode-hook 'slime-repl-mode-hook 'inferior-lisp-mode-hook))
 
 (mapc (lambda (hook)
 	(add-hook hook 
@@ -1299,3 +1323,7 @@ This command assumes point is not in a string or comment."
   (next-line))
 
 (global-set-key (kbd "C-S-l") '^L-line-ocuppy)
+
+;;;;;;;;;;;;;;;; Startup ;;;;;;;;;;;;;;;;
+(eshell)
+(ielm)
