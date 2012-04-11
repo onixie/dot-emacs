@@ -391,6 +391,33 @@ If the arguements are nil, all buffers except current buffer will be killed"
 	  (null (calendar-exit)))
       (calendar)))
 
+(defvar max-cycle-header-count 3)
+(set-default (make-variable-buffer-local 'cycle-header-count) max-cycle-header-count)
+(set-default (make-variable-buffer-local 'cycle-header-format) header-line-format)
+(defun cycle-tabbar-press-home ()
+  (interactive)
+  (let* ((tbl-fmt '(:eval (tabbar-line)))
+	 (cmd-key (this-command-keys))
+	 (up-p (equalp cmd-key (kbd "S-<up>")))
+	 (down-p (equalp cmd-key (kbd "S-<down>"))))
+    (setq cycle-header-count
+	  (cond (up-p (mod (decf cycle-header-count) max-cycle-header-count))
+		(down-p (mod (incf cycle-header-count) max-cycle-header-count))
+		(t max-cycle-header-count)))
+    (cond ((= cycle-header-count (1- max-cycle-header-count))
+	   (unless (equalp header-line-format tbl-fmt)
+	     (setq cycle-header-format header-line-format))
+	   (setq header-line-format tbl-fmt)
+	   (tabbar-press-home))
+	  ((= cycle-header-count 0)
+	   (unless (equalp cycle-header-format tbl-fmt)
+	     (setq header-line-format cycle-header-format))
+	   (when down-p
+	     (tabbar-press-home)))
+	  (t (setq header-line-format tbl-fmt)
+	     (when up-p
+	       (tabbar-press-home))))))
+
 (defvar easy-buffer-window-mode-map
   (let ((map (make-sparse-keymap)))
     (kill-window-along-direction left map)
@@ -411,8 +438,9 @@ If the arguements are nil, all buffers except current buffer will be killed"
 									      (symbol-name direction)))))))
       (define-key map (kbd "S-<left>") (tabbar-dwim-move backward))
       (define-key map (kbd "S-<right>") (tabbar-dwim-move forward)))
-    (define-key map (kbd "S-<up>") 'tabbar-press-home)
-    (define-key map (kbd "S-<down>") 'tabbar-press-home)
+
+    (define-key map (kbd "S-<up>") 'cycle-tabbar-press-home)
+    (define-key map (kbd "S-<down>") 'cycle-tabbar-press-home)
 
     (define-key map (kbd "<C-left>") 'windmove-left)
     (define-key map (kbd "<C-right>") 'windmove-right)
