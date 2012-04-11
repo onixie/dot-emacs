@@ -46,7 +46,7 @@
 (require 'cups-dif)
 (require 'erc)
 (require 'paredit)
-(require 'parenface)
+;; (require 'parenface)
 (require 'ibus)
 (require 'pp-c-l)
 (require 'geiser)
@@ -176,6 +176,15 @@
  '(highlight-current-line-face ((t (:background "black" :slant italic :weight bold))))
  '(org-hide ((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
  '(pp^L-highlight ((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
+ '(rainbow-delimiters-depth-1-face ((((background dark)) (:foreground "red" :weight normal :height 1.8))))
+ '(rainbow-delimiters-depth-2-face ((((background dark)) (:foreground "orange" :weight normal :height 1.7))))
+ '(rainbow-delimiters-depth-3-face ((((background dark)) (:foreground "yellow" :weight normal :height 1.6))))
+ '(rainbow-delimiters-depth-4-face ((((background dark)) (:foreground "#55FF55" :height 1.5 :width normal))))
+ '(rainbow-delimiters-depth-5-face ((((background dark)) (:foreground "cyan" :weight normal :height 1.4))))
+ '(rainbow-delimiters-depth-6-face ((((background dark)) (:foreground "#2F2FFF" :weight normal :height 1.3))))
+ '(rainbow-delimiters-depth-7-face ((((background dark)) (:foreground "purple" :weight normal :height 1.2))))
+ '(rainbow-delimiters-depth-8-face ((((background dark)) (:foreground "#a2b6da" :weight normal :height 1.1))))
+ '(rainbow-delimiters-depth-9-face ((((background dark)) (:foreground "#9cb6ad"))))
  '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
  '(tabbar-separator ((t (:inherit tabbar-default :height 0.1))))
  '(tabbar-unselected ((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button))))))
@@ -1116,20 +1125,21 @@ This command assumes point is not in a string or comment."
 (mapc (lambda (hook)
 	(add-hook hook 
 		  (lambda ()
-		    (paredit-mode 1))))
+		    (paredit-mode 1)
+		    (rainbow-delimiters-mode 1))))
       (list 'emacs-lisp-mode-hook 'ielm-mode-hook 'lisp-interaction-mode-hook 'lisp-mode-hook 'slime-repl-mode-hook 'inferior-lisp-mode-hook 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
 
-(mapc (lambda (hook)
-	(add-hook hook 
-		  (lambda ()
-		    (set-face-foreground 'paren-face "gray70"))))
-      (list 'emacs-lisp-mode-hook 'ielm-mode-hook 'lisp-interaction-mode-hook 'lisp-mode-hook 'slime-repl-mode-hook 'inferior-lisp-mode-hook))
+;; (mapc (lambda (hook)
+;; 	(add-hook hook 
+;; 		  (lambda ()
+;; 		    (set-face-foreground 'paren-face "gray70"))))
+;;       (list 'emacs-lisp-mode-hook 'ielm-mode-hook 'lisp-interaction-mode-hook 'lisp-mode-hook 'slime-repl-mode-hook 'inferior-lisp-mode-hook))
 
-(mapc (lambda (hook)
-	(add-hook hook 
-		  (lambda ()
-		    (rainbow-delimiters-mode 1))))
-      (list 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
+;; (mapc (lambda (hook)
+;; 	(add-hook hook 
+;; 		  (lambda ()
+;; 		    (rainbow-delimiters-mode 1))))
+;;       (list 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
 
 (add-hook 'ielm-mode-hook 
 	  (lambda ()
