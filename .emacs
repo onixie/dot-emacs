@@ -212,9 +212,16 @@
   (insert-string (shell-command-to-string "date")))
 
 ;;;;;;;;;;;;;;;; Color-Theme ;;;;;;;;;;
+(defvar even-day-p (evenp (time-to-day-in-year (current-time))))
+
+(defun theme-rule-select ()
+  (cond
+   (even-day-p (color-theme-matrix))
+   (t (color-theme-calm-forest))))
+
 (eval-after-load "color-theme"
   '(progn (color-theme-initialize)
-	  (color-theme-calm-forest)))
+	  (theme-rule-select)))
 
 ;;;;;;;;;;;;;;;; ibus  ;;;;;;;;;;;;;;;;
 (add-hook 'after-init-hook 'ibus-mode-on)
