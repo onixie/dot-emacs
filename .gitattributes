@@ -1,2 +1,6 @@
 *.elc binary
 *.dat binary
+*.png binary
+*.xpm binary
+*.jpg binary
+*.jpeg binary

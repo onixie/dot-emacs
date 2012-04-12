@@ -1,3 +1,6 @@
 .emacs.d/ac-comphist.dat
 .emacs.d/.projects.ede
+.emacs.d/auto-save-list
 dot-emacs*.tar.gz
+\#*\#
+*~
