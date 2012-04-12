@@ -428,10 +428,10 @@ If the arguements are nil, all buffers except current buffer will be killed"
 	  ((= cycle-header-count 0)
 	   (unless (equalp cycle-header-format tbl-fmt)
 	     (setq header-line-format cycle-header-format))
-	   (when down-p
+	   (when (or down-p (equalp cycle-header-format tbl-fmt))
 	     (tabbar-press-home)))
 	  (t (setq header-line-format tbl-fmt)
-	     (when up-p
+	     (when (or up-p (equalp cycle-header-format tbl-fmt))
 	       (tabbar-press-home))))))
 
 (defvar easy-buffer-window-mode-map
