@@ -714,7 +714,7 @@ Return the the first group where the current buffer is."
 (defvar group-mode-alist nil
   "A replacement for push curpos when mode-across curpos comes into trouble. e.g. c, c++ mode")
 
-(defun group-mode-name (mode)
+(defsubst group-mode-name (mode)
   "Make a name replacement for mode"
   (symbol-name (or (cdr (assoc mode group-mode-alist))
 		   mode)))
@@ -722,16 +722,19 @@ Return the the first group where the current buffer is."
 (defvar mode-map-alist nil
   "A replacement for the default mode map naming scheme")
 
-(defun mode-map-name (mode-map)
+(defvar curpos-idle-time 5
+  "Track curpos when beyond idle time")
+
+(defsubst mode-map-name (mode-map)
   "Make a name replacement for mode-map"
   (symbol-name (or (cdr (assoc mode-map mode-map-alist))
 		   mode-map)))
 
-(defun current-mode-curpos-push ()
+(defsubst current-mode-curpos-push ()
   "Return the symbol of which function definition is MODE-push-curpos"
   (name-combinator (symbol-name major-mode) "-push-curpos"))
 
-(defun group-mode-curpos-push ()
+(defsubst group-mode-curpos-push ()
   (name-combinator (group-mode-name major-mode) "-push-curpos"))
 
 (defmacro add-curpos-advice (group-mode &rest adviced-function)
@@ -739,88 +742,83 @@ Return the the first group where the current buffer is."
 The advice call MODE-push-curpos by current major-mode"
   `(progn
      ,@(mapcar (lambda (func)
-		 (list 'defadvice func (list 'before (name-combinator (symbol-name group-mode) "-push-curpos") 'activate)
-		       (list 'if (list 'and (list 'called-interactively-p ''interactive) (list 'string-equal (symbol-name group-mode) '(group-mode-name major-mode)))
-			     '(cond ((fboundp (current-mode-curpos-push))
-				     (funcall (current-mode-curpos-push)))
-				    ((fboundp (group-mode-curpos-push))
-				     (funcall (group-mode-curpos-push)))))))
+		 (list 'defadvice func (list 'around (name-combinator (symbol-name group-mode) "-push-curpos") 'activate)
+		       (list 'cond
+			     (list (list 'and (list 'called-interactively-p ''interactive) (list 'string-equal (symbol-name group-mode) '(group-mode-name major-mode)))
+				   '(cond ((fboundp (current-mode-curpos-push))
+					   (funcall (current-mode-curpos-push)))
+					  ((fboundp (group-mode-curpos-push))
+					   (funcall (group-mode-curpos-push))))
+				   'ad-do-it
+				   '(cond ((fboundp (current-mode-curpos-push))
+					   (funcall (current-mode-curpos-push)))
+					  ((fboundp (group-mode-curpos-push))
+					   (funcall (group-mode-curpos-push))))
+				   'ad-return-value)
+			     (list 't
+				   'ad-do-it
+				   'ad-return-value))))
 	       adviced-function)))
 
 (defmacro mode-local-curpos (mode &rest adviced-function)
   "Define mode local curpos, each curpos has MODE name prefixed"
   `(progn
-     (defconst ,(name-combinator (symbol-name mode) "-curpos-max-record") 512
-       "Maximum count of history records")
-     
      (defvar ,(name-combinator (symbol-name mode) "-curpos-history") nil
        "Record the positions of the cursor in the form of (buffer . point)")
-
-     (defun ,(name-combinator (symbol-name mode) "-curpos-record-count") ()
-       "Return the count of the record in curpos-history"
-       (let ((count 0))
-	 (dolist (curpos ,(name-combinator (symbol-name mode) "-curpos-history"))
-	   (setq count (1+ count)))
-	 count))
-
+     
      (defun ,(name-combinator (symbol-name mode) "-push-curpos") ()
        "Push current cursor position in curpose-history"
-       (setq ,(name-combinator (symbol-name mode) "-curpos-history") 
-	     (remove nil (remove-duplicates (push (cons (current-buffer) (point)) 
-						  ,(name-combinator (symbol-name mode) "-curpos-history")) 
-					    :test (lambda (arg1 arg2)
-						    (and (equal (car arg1) (car arg2))
-							 (equal (cdr arg1) (cdr arg2))))
-					    :from-end t))) ;Move the most recent curpos to the first even if it is in history
-       (if (< ,(name-combinator (symbol-name mode) "-curpos-max-record") 
-	      (,(name-combinator (symbol-name mode) "-curpos-record-count")))
+       (let ((newpos (cons (current-buffer) (point))))
+	 (unless (equal newpos (car ,(name-combinator (symbol-name mode) "-curpos-history")))
 	   (setq ,(name-combinator (symbol-name mode) "-curpos-history") 
-		 (butlast ,(name-combinator (symbol-name mode) "-curpos-history")))))
+		 (cons newpos ,(name-combinator (symbol-name mode) "-curpos-history"))))))
+
+     (run-with-idle-timer curpos-idle-time t (lambda ()
+						 (when (string-equal ,(group-mode-name mode) (group-mode-name major-mode))
+						   (cond ((fboundp (current-mode-curpos-push))
+							  (funcall (current-mode-curpos-push)))
+							 ((fboundp (group-mode-curpos-push))
+							  (funcall (group-mode-curpos-push)))))))
+
+     (defun ,(name-combinator (symbol-name mode) "-pop-curpos") ()
+       "Pop up the top curpos in curpos-history"
+       (cond ((null ,(name-combinator (symbol-name mode) "-curpos-history")) nil)
+	     ((and (buffer-live-p (caar ,(name-combinator (symbol-name mode) "-curpos-history")))
+		   (integer-or-marker-p (cdr (car ,(name-combinator (symbol-name mode) "-curpos-history")))))
+	      (prog1 (car ,(name-combinator (symbol-name mode) "-curpos-history"))
+		(setq ,(name-combinator (symbol-name mode) "-curpos-history") 
+		      (cdr ,(name-combinator (symbol-name mode) "-curpos-history")))))
+	     (t (setq ,(name-combinator (symbol-name mode) "-curpos-history") 
+		      (cdr ,(name-combinator (symbol-name mode) "-curpos-history")))
+		(,(name-combinator (symbol-name mode) "-pop-curpos")))))
 
      (defun ,(name-combinator (symbol-name mode) "-empty-curpos") ()
        "Empty curpos-history"
        (interactive)
        (setq ,(name-combinator (symbol-name mode) "-curpos-history") nil))
-     
-     (defun ,(name-combinator (symbol-name mode) "-pop-curpos") ()
-       "Pop up the top curpos in curpos-history"
-       (if (null ,(name-combinator (symbol-name mode) "-curpos-history"))
-	   nil
-	 (prog1 (car ,(name-combinator (symbol-name mode) "-curpos-history"))
-	   (setq ,(name-combinator (symbol-name mode) "-curpos-history") 
-		 (cdr ,(name-combinator (symbol-name mode) "-curpos-history"))))))
-     
+
      (defun ,(name-combinator (symbol-name mode) "-backtrace-curpos") ()
        "Backtrace the curpos-history stack"
        (interactive)
-       (let ((current-buffer (current-buffer))
-	     (current-point (point)))
-	 (if (and (called-interactively-p 'interactive)
-		  (null (position (cons current-buffer current-point) 
-			     ,(name-combinator (symbol-name mode) "-curpos-history")
-			     :test (lambda (arg1 arg2)
-				     (and (equal (car arg1) (car arg2))
-					  (equal (cdr arg1) (cdr arg2)))))))
-	     (,(name-combinator (symbol-name mode) "-push-curpos")))
-	 (let* ((target-curpos (car ,(name-combinator (symbol-name mode) "-curpos-history")))
-		(target-buffer (car target-curpos))
-		(target-point (cdr target-curpos)))
-	   (if (and (equal target-buffer current-buffer)
-		    (equal target-point current-point))
-	       (setq ,(name-combinator (symbol-name mode) "-curpos-history") 
-		     (remove nil (append (cdr ,(name-combinator (symbol-name mode) "-curpos-history")) 
-					 (list (,(name-combinator (symbol-name mode) "-pop-curpos"))))))))
-	 (let* ((target-curpos (,(name-combinator (symbol-name mode) "-pop-curpos")))
-		(target-buffer (car target-curpos))
-		(target-point (cdr target-curpos)))
-	   (setq ,(name-combinator (symbol-name mode) "-curpos-history") 
-		 (remove nil (append ,(name-combinator (symbol-name mode) "-curpos-history") 
-				     (list target-curpos))))
-	   (if (and (bufferp target-buffer)
-		    (integer-or-marker-p target-point))
-	       (progn
-		 (switch-to-buffer target-buffer)
-		 (goto-char target-point))))))
+       (let* ((current-curpos (cons (current-buffer) (point)))
+	      (target-curpos (,(name-combinator (symbol-name mode) "-pop-curpos")))
+	      (target-buffer (car target-curpos))
+	      (target-point (cdr target-curpos)))
+	 (cond ((equal current-curpos target-curpos)
+		(setq ,(name-combinator (symbol-name mode) "-curpos-history")
+		      (append ,(name-combinator (symbol-name mode) "-curpos-history") (list target-curpos)))
+		(let* ((target-curpos (car ,(name-combinator (symbol-name mode) "-curpos-history")))
+		       (target-buffer (car target-curpos))
+		       (target-point (cdr target-curpos)))
+		  (when (and (buffer-live-p target-buffer) (integer-or-marker-p target-point))
+		    (switch-to-buffer target-buffer)
+		    (goto-char target-point))))
+	       ((and (called-interactively-p 'interactive) (buffer-live-p target-buffer) (integer-or-marker-p target-point))
+		(,(name-combinator (symbol-name mode) "-push-curpos"))
+		(switch-to-buffer target-buffer)
+		(goto-char target-point)
+		(,(name-combinator (symbol-name mode) "-push-curpos")))
+	       (t nil))))
 
      (add-curpos-advice ,mode ,@adviced-function) ; Define each advice function for push-curpos
 
@@ -859,6 +857,7 @@ The advice call MODE-push-curpos by current major-mode"
 		   isearch-current-word-backward
 		   isearch-current-word-forward
 		   mouse-set-point
+		   mouse-drag-region
 		   semantic-complete-jump-local
 		   semantic-ia-fast-jump
 		   find-tag
@@ -896,6 +895,7 @@ The advice call MODE-push-curpos by current major-mode"
 		   isearch-current-word-backward
 		   isearch-current-word-forward
 		   mouse-set-point
+		   mouse-drag-region
 		   semantic-complete-jump-local
 		   semantic-ia-fast-jump
 		   scroll-up
@@ -927,6 +927,7 @@ The advice call MODE-push-curpos by current major-mode"
 		   isearch-current-word-backward
 		   isearch-current-word-forward
 		   mouse-set-point
+		   mouse-drag-region
 		   scroll-up
 		   scroll-down)
 
@@ -947,6 +948,7 @@ The advice call MODE-push-curpos by current major-mode"
 		   isearch-current-word-backward
 		   isearch-current-word-forward
 		   mouse-set-point
+		   mouse-drag-region
 		   scroll-up
 		   scroll-down)
 
