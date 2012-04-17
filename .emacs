@@ -61,10 +61,10 @@
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ac-auto-show-menu 0.1)
  '(ac-menu-height 30)
  '(ac-quick-help-delay 0.8)
@@ -169,10 +169,10 @@
  '(yas/trigger-key (kbd "C-x C-y"))
  '(zoneinfo-style-world-list (quote (("America/Los_Angeles" "Seattle") ("America/New_York" "New York") ("Europe/London" "London") ("Europe/Paris" "Paris") ("Asia/Calcutta" "Bangalore") ("Asia/Tokyo" "Tokyo") ("Asia/BeiJing" "BeiJing")))))
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ac-candidate-face ((t (:background "lightgray" :foreground "black" :height 120))))
  '(ac-completion-face ((t (:foreground "darkgray" :underline t :height 120))))
  '(ac-gtags-candidate-face ((t (:background "lightgray" :foreground "navy" :height 120))))
@@ -367,16 +367,16 @@ If the arguements are nil, all buffers except current buffer will be killed"
 	   direction))))
   
   `(defun ,(name-combinator "kill-" (symbol-name direction) "-window") ()
-	    (interactive)
-	    (save-selected-window
-	      (if (not (null (condition-case err 
-				 (,((lambda (direction)
-				      (name-combinator "windmove-" (symbol-name direction))) direction))
-			       (error nil))))
-		  ;; Do not kill buffer as such simple way, 
-		  ;; or you might lose origninal window.
-		  (delete-window)	; (kill-buffer-and-window)
-		))))
+     (interactive)
+     (save-selected-window
+       (if (not (null (condition-case err 
+			  (,((lambda (direction)
+			       (name-combinator "windmove-" (symbol-name direction))) direction))
+			(error nil))))
+	   ;; Do not kill buffer as such simple way, 
+	   ;; or you might lose origninal window.
+	   (delete-window)	; (kill-buffer-and-window)
+	 ))))
 
 (defun other-window-by-name (name &optional win)
   "Move cursor to the window with buffer named like NAME by other-window"
@@ -397,16 +397,16 @@ If the arguements are nil, all buffers except current buffer will be killed"
 	  (setq run nil)))))
 
 (defun switch-to-scratch ()
-    (interactive)
-    (switch-to-buffer "*scratch*"))
+  (interactive)
+  (switch-to-buffer "*scratch*"))
 
 (defun switch-to-message ()
-    (interactive)
-    (switch-to-buffer "*Messages*"))
+  (interactive)
+  (switch-to-buffer "*Messages*"))
 
 (defun switch-to-dot-emacs ()
-    (interactive)
-    (find-file "~/.emacs"))
+  (interactive)
+  (find-file "~/.emacs"))
 
 (defun switch-to-calender ()
   (interactive)
@@ -518,7 +518,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (define-key map (kbd "<end>") 'switch-to-dot-emacs)
     (define-key map (kbd "<kp-end>") 'switch-to-dot-emacs)
     (when (not window-system)
-	(define-key map (kbd "<select>") 'switch-to-dot-emacs))
+      (define-key map (kbd "<select>") 'switch-to-dot-emacs))
 
     (define-key map (kbd "<insert>") 'switch-to-message)
     (define-key map (kbd "<kp-insert>") 'switch-to-message)
@@ -714,21 +714,16 @@ Return the the first group where the current buffer is."
 (defvar group-mode-alist nil
   "A replacement for push curpos when mode-across curpos comes into trouble. e.g. c, c++ mode")
 
-(defsubst group-mode-name (mode)
-  "Make a name replacement for mode"
-  (symbol-name (or (cdr (assoc mode group-mode-alist))
-		   mode)))
-
 (defvar mode-map-alist nil
   "A replacement for the default mode map naming scheme")
 
-(defvar curpos-idle-time 5
-  "Track curpos when beyond idle time")
+(defsubst group-mode-name (mode)
+  "Make a name replacement for mode"
+  (symbol-name (or (cdr (assoc mode group-mode-alist)) mode)))
 
 (defsubst mode-map-name (mode-map)
   "Make a name replacement for mode-map"
-  (symbol-name (or (cdr (assoc mode-map mode-map-alist))
-		   mode-map)))
+  (symbol-name (or (cdr (assoc mode-map mode-map-alist)) mode-map)))
 
 (defsubst current-mode-curpos-push ()
   "Return the symbol of which function definition is MODE-push-curpos"
@@ -736,6 +731,24 @@ Return the the first group where the current buffer is."
 
 (defsubst group-mode-curpos-push ()
   (name-combinator (group-mode-name major-mode) "-push-curpos"))
+
+(defsubst curpos-buffer (curpos)
+  (car curpos))
+
+(defsubst curpos-point (curpos)
+  (cdr curpos))
+
+(defsubst valid-curpos-p (curpos)
+  (and (buffer-live-p (curpos-buffer curpos))
+       (integer-or-marker-p (curpos-point curpos))
+       curpos))
+
+(defsubst current-curpos ()
+  (cons (current-buffer) (point)))
+
+(defsubst make-curpos (&optional buffer point)
+  (or (valid-curpos-p (cons buffer point))
+      (current-curpos)))
 
 (defmacro add-curpos-advice (group-mode &rest adviced-function)
   "Add push-curpos advice for each global defined function. 
@@ -765,61 +778,84 @@ The advice call MODE-push-curpos by current major-mode"
   `(progn
      (defvar ,(name-combinator (symbol-name mode) "-curpos-history") nil
        "Record the positions of the cursor in the form of (buffer . point)")
+     (defvar ,(name-combinator (symbol-name mode) "-curpos-bottom") nil
+       "Oldest curpos in history")
+     (defvar ,(name-combinator (symbol-name mode) "-curpos-top") nil
+       "Current push curpos")
+     (defvar ,(name-combinator (symbol-name mode) "-curpos-cur") nil
+       "Current backtrack curpos")
+     (defvar ,(name-combinator (symbol-name mode) "-curpos-max-count") 5120
+       "Maximum curpos allowed in history")
+     (defvar ,(name-combinator (symbol-name mode) "-curpos-cur-count") 0
+       "Current curpos in history")
      
-     (defun ,(name-combinator (symbol-name mode) "-push-curpos") ()
+     (defun ,(name-combinator (symbol-name mode) "-push-curpos") (&optional dont-update-curpos-cur-p)
        "Push current cursor position in curpose-history"
-       (let ((newpos (cons (current-buffer) (point))))
-	 (unless (equal newpos (car ,(name-combinator (symbol-name mode) "-curpos-history")))
-	   (setq ,(name-combinator (symbol-name mode) "-curpos-history") 
-		 (cons newpos ,(name-combinator (symbol-name mode) "-curpos-history"))))))
-
-     (run-with-idle-timer curpos-idle-time t (lambda ()
-						 (when (string-equal ,(group-mode-name mode) (group-mode-name major-mode))
-						   (cond ((fboundp (current-mode-curpos-push))
-							  (funcall (current-mode-curpos-push)))
-							 ((fboundp (group-mode-curpos-push))
-							  (funcall (group-mode-curpos-push)))))))
-
-     (defun ,(name-combinator (symbol-name mode) "-pop-curpos") ()
-       "Pop up the top curpos in curpos-history"
-       (cond ((null ,(name-combinator (symbol-name mode) "-curpos-history")) nil)
-	     ((and (buffer-live-p (caar ,(name-combinator (symbol-name mode) "-curpos-history")))
-		   (integer-or-marker-p (cdr (car ,(name-combinator (symbol-name mode) "-curpos-history")))))
-	      (prog1 (car ,(name-combinator (symbol-name mode) "-curpos-history"))
-		(setq ,(name-combinator (symbol-name mode) "-curpos-history") 
-		      (cdr ,(name-combinator (symbol-name mode) "-curpos-history")))))
-	     (t (setq ,(name-combinator (symbol-name mode) "-curpos-history") 
-		      (cdr ,(name-combinator (symbol-name mode) "-curpos-history")))
-		(,(name-combinator (symbol-name mode) "-pop-curpos")))))
+       (let ((newpos (current-curpos)))
+	 (cond
+	  ((equal newpos ,(name-combinator (symbol-name mode) "-curpos-top"))
+	   nil)
+	  ((null ,(name-combinator (symbol-name mode) "-curpos-history"))
+	   (setq ,(name-combinator (symbol-name mode) "-curpos-top") newpos
+		 ,(name-combinator (symbol-name mode) "-curpos-bottom") newpos
+		 ,(name-combinator (symbol-name mode) "-curpos-history") (cons newpos ,(name-combinator (symbol-name mode) "-curpos-history")))
+	   (incf ,(name-combinator (symbol-name mode) "-curpos-cur-count"))
+	   (unless dont-update-curpos-cur-p
+	     (setq ,(name-combinator (symbol-name mode) "-curpos-cur") ,(name-combinator (symbol-name mode) "-curpos-history"))))
+	  ((< ,(name-combinator (symbol-name mode) "-curpos-max-count") ,(name-combinator (symbol-name mode) "-curpos-cur-count"))
+	   (setq ,(name-combinator (symbol-name mode) "-curpos-top") newpos
+		 ,(name-combinator (symbol-name mode) "-curpos-history") (butlast (cons newpos ,(name-combinator (symbol-name mode) "-curpos-history")))
+		 ,(name-combinator (symbol-name mode) "-curpos-cur") (butlast ,(name-combinator (symbol-name mode) "-curpos-cur"))
+		 ,(name-combinator (symbol-name mode) "-curpos-bottom") (car (last ,(name-combinator (symbol-name mode) "-curpos-history"))))
+	   (unless dont-update-curpos-cur-p
+	     (setq ,(name-combinator (symbol-name mode) "-curpos-cur") ,(name-combinator (symbol-name mode) "-curpos-history"))))
+	  (t
+	   (setq ,(name-combinator (symbol-name mode) "-curpos-top") newpos
+		 ,(name-combinator (symbol-name mode) "-curpos-history") (cons newpos ,(name-combinator (symbol-name mode) "-curpos-history")))
+	   (incf ,(name-combinator (symbol-name mode) "-curpos-cur-count"))
+	   (unless dont-update-curpos-cur-p
+	     (setq ,(name-combinator (symbol-name mode) "-curpos-cur") ,(name-combinator (symbol-name mode) "-curpos-history"))))))
+       ,(name-combinator (symbol-name mode) "-curpos-history"))
+     
+     (defun ,(name-combinator (symbol-name mode) "-clear-curpos") ()
+       "Update curpos-history"
+       (setq ,(name-combinator (symbol-name mode) "-curpos-history") (remove-if-not #'valid-curpos-p ,(name-combinator (symbol-name mode) "-curpos-history")))
+       (setq ,(name-combinator (symbol-name mode) "-curpos-cur") (or (remove-if-not #'valid-curpos-p ,(name-combinator (symbol-name mode) "-curpos-cur"))
+								     ,(name-combinator (symbol-name mode) "-curpos-history")))
+       (setq ,(name-combinator (symbol-name mode) "-curpos-top") (car ,(name-combinator (symbol-name mode) "-curpos-history")))
+       (setq ,(name-combinator (symbol-name mode) "-curpos-bottom") (car (last ,(name-combinator (symbol-name mode) "-curpos-history"))))
+       (setq ,(name-combinator (symbol-name mode) "-curpos-cur") ,(name-combinator (symbol-name mode) "-curpos-history"))
+       (setq ,(name-combinator (symbol-name mode) "-curpos-cur-count") (length ,(name-combinator (symbol-name mode) "-curpos-history"))))
 
      (defun ,(name-combinator (symbol-name mode) "-empty-curpos") ()
        "Empty curpos-history"
        (interactive)
-       (setq ,(name-combinator (symbol-name mode) "-curpos-history") nil))
-
+       (setq ,(name-combinator (symbol-name mode) "-curpos-history") nil)
+       (setq ,(name-combinator (symbol-name mode) "-curpos-top") nil)
+       (setq ,(name-combinator (symbol-name mode) "-curpos-bottom") nil)
+       (setq ,(name-combinator (symbol-name mode) "-curpos-cur") nil)
+       (setq ,(name-combinator (symbol-name mode) "-curpos-cur-count") 0))
+     
      (defun ,(name-combinator (symbol-name mode) "-backtrace-curpos") ()
        "Backtrace the curpos-history stack"
        (interactive)
-       (let* ((current-curpos (cons (current-buffer) (point)))
-	      (target-curpos (,(name-combinator (symbol-name mode) "-pop-curpos")))
-	      (target-buffer (car target-curpos))
-	      (target-point (cdr target-curpos)))
-	 (cond ((equal current-curpos target-curpos)
-		(setq ,(name-combinator (symbol-name mode) "-curpos-history")
-		      (append ,(name-combinator (symbol-name mode) "-curpos-history") (list target-curpos)))
-		(let* ((target-curpos (car ,(name-combinator (symbol-name mode) "-curpos-history")))
-		       (target-buffer (car target-curpos))
-		       (target-point (cdr target-curpos)))
-		  (when (and (buffer-live-p target-buffer) (integer-or-marker-p target-point))
-		    (switch-to-buffer target-buffer)
-		    (goto-char target-point))))
-	       ((and (called-interactively-p 'interactive) (buffer-live-p target-buffer) (integer-or-marker-p target-point))
-		(,(name-combinator (symbol-name mode) "-push-curpos"))
-		(switch-to-buffer target-buffer)
-		(goto-char target-point)
-		(,(name-combinator (symbol-name mode) "-push-curpos")))
-	       (t nil))))
-
+       (let* ((current-curpos (current-curpos))
+	      (target-curpos (car ,(name-combinator (symbol-name mode) "-curpos-cur"))))
+	 (unless (valid-curpos-p target-curpos)
+	   (,(name-combinator (symbol-name mode) "-clear-curpos"))
+	   (setq target-curpos (car ,(name-combinator (symbol-name mode) "-curpos-cur"))))
+	 (cond ((not (valid-curpos-p target-curpos))
+		(,(name-combinator (symbol-name mode) "-push-curpos") t)
+		nil)
+	       ((equal current-curpos target-curpos)
+		(setq ,(name-combinator (symbol-name mode) "-curpos-cur") (cdr ,(name-combinator (symbol-name mode) "-curpos-cur")))
+		(,(name-combinator (symbol-name mode) "-backtrace-curpos")))
+	       (t
+		(,(name-combinator (symbol-name mode) "-push-curpos") t)
+		(switch-to-buffer (curpos-buffer target-curpos))
+		(goto-char (curpos-point target-curpos))
+		(,(name-combinator (symbol-name mode) "-push-curpos") t)))))
+     
      (add-curpos-advice ,mode ,@adviced-function) ; Define each advice function for push-curpos
 
      ,@(mapcar (lambda (group)
@@ -829,7 +865,7 @@ The advice call MODE-push-curpos by current major-mode"
 		 ,@(or (remove nil (mapcar (lambda (pair)
 					     (if (eq (cdr pair) mode)
 						 (car pair)))
-					   group-mode-alist)) 
+					   group-mode-alist))
 		       nil)))))
 
 (setq group-mode-alist '((c++-mode . c-mode-base) ;C/C++ as a group
@@ -1178,8 +1214,8 @@ This command assumes point is not in a string or comment."
 	(define-key map (kbd "TAB") 'slime-indent-and-complete-symbol))
       (list lisp-mode-map))
 
-; Switching () and [] keys, I don't like it. 
-; But it really relieves my fingers' wrick :P
+					; Switching () and [] keys, I don't like it. 
+					; But it really relieves my fingers' wrick :P
 ;; (swap-key-translation (kbd "(") (kbd "["))
 ;; (swap-key-translation (kbd ")") (kbd "]"))
 ;;;;;;;;;;;;;;;; C/C++ Programming ;;;;;;;;;;;;;;;;
