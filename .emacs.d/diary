@@ -730,3 +730,32 @@ Jan 31, 2012 Linux Shell-Script Invoking
    执行的脚本在原进程中执行，因此继承并且可以修改原进程中的所有环境变量
 3. 使用exec
    执行的脚本将会替换原来执行的内容，在该命令后的原脚本的内容都将不再执行
+
+Apr 14, 2012 ELP (Emacs Lisp Profiler)可用来对Emacs进行Profiling
+有三种方式:
+  - elp-instrument-package
+  - elp-instrument-function
+  - elp-instrument-list
+
+通过 elp-results 可以查看对特定函数的profiling结果。
+这样可以发现一些性能上的瓶颈。
+
+Apr 17, 2012 dpkg错误处理
+有时候倒霉会碰到dpkg包管理错误（比如安装时突然断电）
+一旦发生这样的错误，往往后续的安装将会失败或者报错，通常情况下apt-get之类的无法修复。
+
+以下是一些修复的方案：
+1. 先尝试最基本的dpkg修复
+   - 使用dpkg --audit查看错误
+   - 使用dpkg --remove/--configure/--install/--purge等对出错包进行处理
+2. 如果以上还不能成功
+   - 使用dpkg --force all --remove
+2.5 如果还不行   
+   - 使用aptitude update, aptitude install -f进行修复
+3. 如果还不成功
+   - 保存/var/lib/dpkg/status
+   - 打开/var/lib/dpkg/status，找出出错的包所在的 Package: XXXX的行
+   - 删除从Package: XXXX的整个该包的信息
+   - 保持下一个包和上一个包仅隔一行
+   - 然后使用aptitude install -f重新安装
+4. 如果还不成功， 恭喜你！   
