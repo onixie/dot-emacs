@@ -759,3 +759,36 @@ Apr 17, 2012 dpkg错误处理
    - 保持下一个包和上一个包仅隔一行
    - 然后使用aptitude install -f重新安装
 4. 如果还不成功， 恭喜你！   
+
+Apr 19, 2012 软件介绍
+unetbootin可以使得grub2加载硬盘上的iso文件，因此免去了刻盘的麻烦。
+比起徒手去load各种iso镜像。方便很多。
+
+virt-manager是一款很好的管理kvm虚拟机的软件。
+但是ubuntu karmic上0.7.0的版本是破损的。
+
+win32下可以使用Git for Windows + Toitose Git来使用git
+另外，作为git server端的用户配置，可以之用gitosis
+gitosis是一个在git仓库中被版本管理的管理git仓库访问权限的配置项目。
+
+doxygen可以生成代码文档，配合emacs的doxymacs可以很轻松生成针对
+代码的文档注视。需要注意doxygen -g默认生成的Doxyfile中，是不生成XML TAG
+的，而doxymacs若需要扫描，就需要这个TAG。所以除非仅仅把doxymacs
+当添加标准注释工具，就有必要配置配置Doxyfile.另外，使用doxygen-gui的
+doxywizard可以方便的进行配置。
+
+Apr 19, 2012 Gentoo 镜像站点
+- 源镜像
+  Gentoo的full source mirror大小大概240G以上，
+  包括
+	distfiles（源码目录140G）,
+	snapshots(portage快照600M）,
+	releases（正式stage, livedvd发布40～50G),
+	experamental(实验性的发布， 20～30G)
+
+  镜像站点的制作可以只包括前两者（叫做partial mirror)或者所有(叫做full mirror)
+  同步镜像使用rsync工具，要求每个站点4小时同步一次。
+
+- rsync镜像
+  除了源镜像还有一种镜像是保持多个机器间的portage同步的
+  通常是使用一台机器作为rsyncd服务，提供给其他机器进行同步

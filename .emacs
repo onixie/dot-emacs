@@ -51,6 +51,7 @@
 (require 'pp-c-l)
 (require 'geiser)
 (require 'rainbow-delimiters)
+(require 'doxymacs)
 
 ;; Use emacs-goodies-el packages
 (require 'tabbar)
@@ -95,6 +96,7 @@
  '(display-time-world-list (quote (("PST8PDT" "Seattle") ("EST5EDT" "New York") ("GMT0BST" "London") ("CET-1CDT" "Paris") ("IST-5:30" "Bangalore") ("JST-9" "Tokyo") ("CST-8" "BeiJing"))))
  '(display-time-world-time-format "%A %B %d %T %Z")
  '(display-time-world-timer-second 1)
+ '(doxymacs-doxygen-style "C++")
  '(ecb-options-version "2.40")
  '(ede-project-placeholder-cache-file "~/.emacs.d/.projects.ede")
  '(eval-expression-print-length nil)
