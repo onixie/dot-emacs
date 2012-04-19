@@ -61,10 +61,10 @@
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(ac-auto-show-menu 0.1)
  '(ac-menu-height 30)
  '(ac-quick-help-delay 0.8)
@@ -164,15 +164,16 @@
  '(tabbar-separator (quote (0.2)))
  '(time-stamp-format "%:y-%02m-%02d %02H:%02M:%02S %u@%s")
  '(uniquify-buffer-name-style (quote forward) nil (uniquify))
+ '(w3m-use-cookies t)
  '(x-select-enable-clipboard t)
  '(yank-pop-change-selection t)
  '(yas/trigger-key (kbd "C-x C-y"))
  '(zoneinfo-style-world-list (quote (("America/Los_Angeles" "Seattle") ("America/New_York" "New York") ("Europe/London" "London") ("Europe/Paris" "Paris") ("Asia/Calcutta" "Bangalore") ("Asia/Tokyo" "Tokyo") ("Asia/BeiJing" "BeiJing")))))
 (custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(ac-candidate-face ((t (:background "lightgray" :foreground "black" :height 120))))
  '(ac-completion-face ((t (:foreground "darkgray" :underline t :height 120))))
  '(ac-gtags-candidate-face ((t (:background "lightgray" :foreground "navy" :height 120))))
@@ -1414,6 +1415,48 @@ This command assumes point is not in a string or comment."
 
 (global-set-key (kbd "C-S-l") '^L-line-ocuppy)
 
+;;;;;;;;;;;;;;;; Emacs Wiki ;;;;;;;;;;;;;;;;
+(defun emacs-wiki-publish-and-preview-this-page ()
+  (interactive)
+  (emacs-wiki-publish-this-page)
+  (browse-url (emacs-wiki-published-file)))
+
+(setq emacs-wiki-projects
+      '(("personal" (emacs-wiki-directories "~/emacs-wiki/src")
+	 (emacs-wiki-publishing-directory . "~/emacs-wiki/publish")
+	 (emacs-wiki-default-page . "index"))))
+
+(setq emacs-wiki-maintainer "mailto:onixie@gmail.com")
+
+(define-key emacs-wiki-mode-map (kbd "C-c C-y") #'emacs-wiki-publish-and-preview-this-page)
+
+;;;;;;;;;;;;;;;; Muse ;;;;;;;;;;;;;;;;
+(defun muse-project-publish-and-preview-this-file ()
+  (interactive)
+  (let ((muse-project-published-file nil))
+    (flet ((setq-published-file () (setq muse-project-published-file output-path)))
+      (add-hook 'muse-before-publish-hook #'setq-published-file)
+      (muse-project-publish-this-file t)
+      (remove-hook 'muse-before-publish-hook #'setq-published-file)
+      (browse-url muse-project-published-file))))
+
+(setq muse-project-alist
+      '(("personal" ("~/muse/src" :default "index")
+	 (:base "html" :path "~/muse/publish"))))
+
+(setq muse-colors-autogen-headings 'outline)
+
+(add-hook 'muse-mode-hook
+	  (lambda ()
+	    (setq outline-regexp "\\*+ ")
+	    (outline-minor-mode)
+	    (hide-body)))
+
+(define-key muse-mode-map (kbd "<tab>") #'org-cycle)
+(define-key muse-mode-map (kbd "S-<tab>") #'org-shifttab)
+(define-key muse-mode-map (kbd "C-c C-y") #'muse-project-publish-and-preview-this-file)
+
 ;;;;;;;;;;;;;;;; Startup ;;;;;;;;;;;;;;;;
 (eshell)
 (ielm)
+

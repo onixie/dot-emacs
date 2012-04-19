@@ -8,6 +8,7 @@
 ;; Copyright (C) 2004, 2005, 2006 Michael Olson
 ;; Copyright (C) 2004 Yohanes Santoso
 ;; Copyright (C) 2005 Markus Hoenicka
+;; Copyright (C) 2012 O.Nixie
 
 ;; Emacs Lisp Archive Entry
 ;; Filename: emacs-wiki.el
@@ -659,9 +660,9 @@ If SUBSTITUTE is non-nil, use `replace-match'-style substitutions."
   ;; This inversion is necessary because old code had been written to
   ;; always literally replace.
   (cond
-   ((fboundp 'replace-in-string)
-    (let ((case-fold-search nil))
-      (replace-in-string text regexp replacement (not substitute))))
+   ;; ((fboundp 'replace-in-string)
+   ;;  (let ((case-fold-search nil))
+   ;;    (replace-in-string text regexp replacement (not substitute))))
    ((fboundp 'replace-regexp-in-string)
     (let ((case-fold-search nil))
       (replace-regexp-in-string regexp replacement text t
