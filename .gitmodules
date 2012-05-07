@@ -1,0 +1,6 @@
+
+[submodule ".emacs.d/contrib/cedet"]
+	path = .emacs.d/contrib/cedet
+	url = https://github.com/onixie/cedet.git
+	ignore = dirty
+

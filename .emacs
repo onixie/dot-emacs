@@ -17,13 +17,12 @@
 (require 'org)
 
 ;; CEDET must be first loaded explicitly, otherwise the old version will mess up new version
-(load-file "~/.emacs.d/contrib/cedet/common/cedet.elc")
+(load-file "~/.emacs.d/contrib/cedet/cedet-devel-load.el")
 
 (require 'ede)
 (require 'semantic)
 (require 'srecode)
 (require 'cogre)
-(require 'cedet-contrib)
 
 ;; Scan all directories under .emacs.d
 (let ((default-directory "~/.emacs.d/"))
@@ -668,7 +667,7 @@ Return the the first group where the current buffer is."
     ad-do-it
     (speedbar-frame-reposition-smartly)
     (set-frame-height (selected-frame) speedbar-height)
-    (define-key speedbar-key-map (kbd "Q") 
+    (define-key speedbar-mode-map (kbd "Q") 
       (lambda ()
 	(interactive)
 	(run-hooks 'speedbar-before-delete-hook)
