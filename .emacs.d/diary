@@ -792,3 +792,39 @@ Apr 19, 2012 Gentoo 镜像站点
 - rsync镜像
   除了源镜像还有一种镜像是保持多个机器间的portage同步的
   通常是使用一台机器作为rsyncd服务，提供给其他机器进行同步
+
+May 8, 2012 git submodule 相关命令
+修改子模块的remote:	  更新.gitmodule后运行git submodule sync
+删除子模块: 	   	  更新.gitmodule和.git/config后，使用git rm --cached 子模块路径 将其删除
+忽略子模块的dirty变化：	  在.gitmodule中子项目配置下加入ignore=dirty
+
+May 8, 2012 udev设备管理器
+linux系统中的udev负责设备管理的工作，通过内核sysfs和uevent获取设备信息，根据/etc/udev/rules.d下的配置，
+对设备执行相应的动作（包括在用户层将设备映射到/dev目录下的文件，执行指定的脚本等）
+
+通过udev系统解决了两大问题：
+1. /dev目录下的文件在传统unix中是固定的，因此对于添加设备文件，或许需要手动进行。还有如果某些设备的链接拓扑结构变化时，文件将指向错误的设备。
+2. 当某些设备挂载到系统中时，可能需要自动执行一些初始化程序，通过udev的rules就可以轻松实现。
+
+注：
+1. 在udev出现之前，devfs在2.4内核中管理/dev目录，类似于udev，但却是内核态的。现在多数发行版已经使用udev替代它。
+2. udev后续版本严重依赖于uevent，所以基本上在2.6之前的内核很可能不会支持了。
+3. udev在2.6内核中一段时间使用hal层，后来hal被merge进了udev，所以现在3.0之后的基本上都看不到hal这个东西了。
+
+May 8, 2012 linux bridging设备
+linux内核可以配置成伪装的bridge设备，当启用CONFIG_BRIDGE后，
+可以使用bridge-utils的brctl来给linux添加网桥。
+
+网桥是工作在二层的设备，它能够将两个物理网段链接起来。在linux系统中的具体应用就是
+通过将两块物理网卡桥接到这个虚拟的网桥中，将把两块物理网卡所在的网段在二层上打通。
+
+注：
+1. 当linux作为网桥设备时，它的两块物理网卡都处于混杂模式，且没有IP地址的。
+这个时候，如果仍然想让linux工作在IP层的话，其实可以给创建的网桥配置一个IP。
+这样就可以通过这个IP访问作为网桥的Linux系统了。
+2. 如果应用场景是qemu-kvm之类的虚拟机环境，那么内核还需要启用CONFIG_TUN对tun/tap设备的支持。
+
+May 8, 2012 ibus与emacs ibus-mode的冲突
+当在ibus设置窗口的[Advance]页面中启用了[Share the same input method among all applications]的时候，
+这个与ibus-mode中的ibus-mode-local冲突了，使得会不断的报告IMContext ID xx is mismatched的错误。
+这个时候可以关掉[Share the same input method among all application]
