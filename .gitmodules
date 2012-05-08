@@ -4,3 +4,6 @@
 	url = https://github.com/onixie/cedet.git
 	ignore = dirty
 
+[submodule ".emacs.d/contrib/ibus"]
+	path = .emacs.d/contrib/ibus
+	url = https://github.com/onixie/ibus.git
