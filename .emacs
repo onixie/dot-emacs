@@ -61,10 +61,10 @@
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ac-auto-show-menu 0.1)
  '(ac-menu-height 30)
  '(ac-quick-help-delay 0.8)
@@ -125,8 +125,6 @@
  '(legacy-style-world-list (quote (("PST8PDT" "Seattle") ("EST5EDT" "New York") ("GMT0BST" "London") ("CET-1CDT" "Paris") ("IST-5:30" "Bangalore") ("JST-9" "Tokyo") ("CST-8" "BeiJing"))))
  '(make-backup-files nil)
  '(max-specpdl-size 1048576)
- '(mf-max-height (+ (display-pixel-height) 0))
- '(mf-max-width (- (display-pixel-width) 1))
  '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
  '(org-export-docbook-xsl-fo-proc-command "fop %s %s")
  '(org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s")
@@ -171,10 +169,10 @@
  '(yas/trigger-key (kbd "C-x C-y"))
  '(zoneinfo-style-world-list (quote (("America/Los_Angeles" "Seattle") ("America/New_York" "New York") ("Europe/London" "London") ("Europe/Paris" "Paris") ("Asia/Calcutta" "Bangalore") ("Asia/Tokyo" "Tokyo") ("Asia/BeiJing" "BeiJing")))))
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ac-candidate-face ((t (:background "lightgray" :foreground "black" :height 120))))
  '(ac-completion-face ((t (:foreground "darkgray" :underline t :height 120))))
  '(ac-gtags-candidate-face ((t (:background "lightgray" :foreground "navy" :height 120))))
@@ -325,26 +323,252 @@
 
 (setq help-xref-following nil) ;Prevent quick-help yields warning and destroy the C-h function
 
-;;;;;;;;;;;;;;;; Maxframe ;;;;;;;;;;;;;;;;
-(defvar maxframe-mode-map
+;;;;;;;;;;;;;;;; Easy-Frame ;;;;;;;;;;;;;;;;
+(defcustom default-unfillness 0.85
+  "The default ratio of the workarea to fill when unfill it"
+  :type 'number
+  :group 'easy-frame)
+
+(defcustom auto-smart-pose t
+  "Smartly pose new frame automatically"
+  :type 'boolean
+  :group 'easy-frame)
+
+(defcustom first-frame-x-workarea 'fill
+  "Let first frame fill the whole workarea"
+  :type 'symbol
+  :group 'easy-frame)
+
+(defcustom precise-1 2
+  "Internal use for set frame position and size precisely"
+  :type 'integer
+  :group 'easy-frame)
+
+(defcustom precise-2 0.10
+  "Internal use for set frame position and size precisely"
+  :type 'number
+  :group 'easy-frame)
+
+(defsubst frame-desktop (&optional frame)
+  "Return the 0-based index of desktop the frame posed in."
+  (condition-case nil
+      (or (x-window-property "_NET_WM_DESKTOP" nil "AnyPropertyType" (string-to-int (frame-parameter frame 'outer-window-id)) nil t)
+	  (error "_NET_WORKAREA not supported"))
+    (error nil 0)))
+
+(defsubst frame-workarea (&optional frame)
+  "Return the allowed workarea (x y width height) from Window Manager in current desktop."
+  (condition-case nil
+      (let ((desk-ind (frame-desktop frame))
+	    (workareas (or (x-window-property "_NET_WORKAREA" nil "AnyPropertyType" 0 nil t)
+			   (error "_NET_WORKAREA not supported"))))
+	(subseq workareas (* 4 desk-ind) (* 4 (1+ desk-ind))))
+    (error nil (list 0 0 (display-pixel-width) (display-pixel-height)))))
+
+(defsubst frame-extents (&optional frame)
+  "Return the border (left right top bottom) added by Window Manager"
+  (condition-case nil
+      (or (x-window-property "_NET_FRAME_EXTENTS" nil "AnyPropertyType" (string-to-int (frame-parameter frame 'outer-window-id)) nil t)
+	  (error "_NET_FRAME_EXTENTS not supported"))
+    (error nil (list 0 0 0 0))))
+
+;;; Kludge: I have to set multiple times to make the resizing precisely.
+(defmacro precisely-do (frame &rest body)
+  "Get rid of the effect from wm"
+  `(macrolet ((redo (&rest body)
+		     (let ((i (gensym "precisely-do-is-redo")))
+		       `(loop for ,i from 1 to ,precise-1 do (progn ,@body)))))
+     (progn
+       (redo
+	(x-send-client-message nil 0 ,frame "_NET_WM_STATE" 32 '(0 "_NET_WM_STATE_FULLSCREEN" 0))
+	(x-send-client-message nil 0 ,frame "_NET_WM_STATE" 32 '(0 "_NET_WM_STATE_MAXIMIZED_VERT" 0))
+	(x-send-client-message nil 0 ,frame "_NET_WM_STATE" 32 '(0 "_NET_WM_STATE_MAXIMIZED_HORZ" 0)))
+       (redo
+	,@body))))
+
+(defsubst frame-resize (width height &optional frame)
+  "Resize the frame in pixel size."
+  (precisely-do frame
+		(let ((flags (cond ((and (integerp height) (integerp width)) #x0001FC0A)
+		      ((integerp width) #x0001F40A)
+		      ((integerp height) #x0001F80A)
+		      (t #x0001F000))))
+     (x-send-client-message nil 0 frame "_NET_MOVERESIZE_WINDOW" 32 `(,flags 0 0 ,(or width 0) ,(or height 0))))))
+
+(defmacro with-frame-sizing-info (frame &rest body)
+  `(let* ((extents (frame-extents ,frame))
+	  (left-extent (aref extents 0))
+	  (right-extent (aref extents 1))
+	  (top-extent (aref extents 2))
+	  (bottom-extent (aref extents 3))
+	  (workarea (frame-workarea ,frame))
+	  (left (aref workarea 0))
+	  (top (aref workarea 1))
+	  (width (aref workarea 2))
+	  (height (aref workarea 3)))
+     ;; (princ-list left-extent ", " right-extent ", " top-extent ", " bottom-extent ", ")
+     ;; (princ-list left ", " top ", " width ", " height)
+     ,@body))
+
+(defun frame-fill-workarea (&optional frame dir factor)
+  (interactive)
+  (precisely-do frame
+   (with-frame-sizing-info frame
+    (let ((factor (if (and (integerp factor) (> factor 0))
+		      factor
+		    2)))
+      (modify-frame-parameters frame `((ffw-state . ,(case dir
+						     ((upper down left right upper-left upper-right down-left down-right)
+						      dir)
+						     (t
+						      'fill)))))
+      (multiple-value-bind (x y w h) (case dir
+				       ((upper)
+					(values left top
+						(- width left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
+				       ((down)
+					(values left (+ top (/ (* height (1- factor)) factor))
+						(- width left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
+				       ((left)
+					(values left top
+						(- (/ width factor) left-extent right-extent) (- height top-extent bottom-extent)))
+				       ((right)
+					(values (+ left (/ (* width (1- factor)) factor)) top
+						(- (/ width factor) left-extent right-extent) (- height top-extent bottom-extent)))
+				       ((upper-left)
+					(values left top
+						(- (/ width factor) left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
+				       ((upper-right)
+					(values (+ left (/ (* width (1- factor)) factor)) top
+						(- (/ width factor) left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
+				       ((down-left)
+					(values left (+ top (/ (* height (1- factor)) factor))
+						(- (/ width factor) left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
+				       ((down-right)
+					(values (+ left (/ (* width (1- factor)) factor)) (+ top (/ (* height (1- factor)) factor))
+						(- (/ width factor) left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
+				       (t 
+					(values left top (- width left-extent right-extent) (- height top-extent bottom-extent))))
+	;; (princ-list x ", " y ", " w ", " h)
+	(frame-resize w h frame)
+	(set-frame-position (or frame (selected-frame)) x y))))))
+
+(defun frame-unfill-workarea (&optional frame ratio)
+  (interactive)
+  (precisely-do frame
+   (with-frame-sizing-info frame
+    (let ((ratio (if (and (numberp ratio) (<= ratio 1))
+		     ratio
+		   default-unfillness)))
+      (if (>= ratio 1)
+	  (frame-fill-workarea frame)
+	(modify-frame-parameters frame '((ffw-state . unfill)))
+	(multiple-value-bind (x y w h)
+	    (values  (floor (+ left (/ (* width (- 1 ratio)) 2))) (floor (+ top (/ (* height (- 1 ratio)) 2)))
+		     (floor (- (* width ratio) left-extent right-extent)) (floor (- (* height ratio) top-extent bottom-extent)))
+	  ;; (princ-list x ", " y ", " w ", " h)	  
+	  (frame-resize w h frame)
+	  (set-frame-position (or frame (selected-frame)) x y)))))))
+
+(defun frame-toggle-unfill (&optional frame)
+  (interactive)
+  (if (equalp (frame-parameter frame 'ffw-state) 'unfill)
+      (frame-fill-workarea frame)
+    (frame-unfill-workarea)))
+
+(defun frame-smart-fill-workarea (&optional frame)
+  (interactive)
+  (flet ((collect-ffw-state (frame)
+			    (let* ((di (frame-desktop frame))
+				   (fl (remove-if #'(lambda (fr)
+						      (/= di (frame-desktop fr)))
+						  (frame-list))))
+			      (loop for fr in fl
+				    when (not (equalp frame fr))
+				    collect (frame-parameter fr 'ffw-state))))
+	 (remove-states (s1 s2)
+			(loop for s in s1
+			      when (not (member s s2))
+			      collect s))
+	 (contain-states (s1 s2)
+			 (subsetp s2 s1 :test #'equalp)))
+    (let ((ffw-states (collect-ffw-state (or frame (selected-frame)))))
+
+      (cond ((null ffw-states) (frame-fill-workarea frame))
+	    ;; ((member 'fill ffw-states) (frame-unfill-workarea frame))
+	    ;; ((member 'unfill ffw-states) (frame-unfill-workarea frame))
+	    (t
+	     (flet ((remove-mb (dirs s1 &rest ss)
+			       (if (member s1 ffw-states)
+				   (remove-states dirs (list* s1 ss))
+				 dirs)))
+	       (let* ((dirs '(upper down left right upper-left upper-right down-left down-right))
+		      (dirs (remove-mb dirs 'upper 'upper-left 'upper-right 'left 'right))
+		      (dirs (remove-mb dirs 'down 'down-left 'down-right 'left 'right))	
+		      (dirs (remove-mb dirs 'left 'upper-left 'down-left 'upper 'down))
+		      (dirs (remove-mb dirs 'right 'upper-right 'down-right 'upper 'down))
+		      (dirs (remove-mb dirs 'upper-left 'upper 'left))
+		      (dirs (remove-mb dirs 'upper-right 'upper 'right))
+		      (dirs (remove-mb dirs 'down-right 'down 'right))
+		      (dirs (remove-mb dirs 'down-left 'down 'left)))
+		 (cond ((null dirs) (frame-unfill-workarea frame))
+		       (t
+			(frame-fill-workarea frame (first (remove-states dirs ffw-states))))))))))))
+
+(add-to-list 'after-make-frame-functions #'(lambda (fr)
+					     ;; Make sure it start after all other actions
+					     (when auto-smart-pose
+					       (run-at-time precise-2 nil #'frame-smart-fill-workarea fr))))
+
+(defmacro define-frame-fill-workarea-key (map key dir)
+  `(progn
+     (unless (fboundp ',(name-combinator "frame-fill-" (symbol-name dir) "-workarea"))
+       (defun ,(name-combinator "frame-fill-" (symbol-name dir) "-workarea") ()
+	 (interactive)
+	 (frame-fill-workarea nil ',dir)))
+     (define-key ,map ,key #',(name-combinator "frame-fill-" (symbol-name dir) "-workarea"))))
+
+(defvar easy-frame-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-x 9") 'maximize-frame) ;Use maximize-frame, for the speedbar, instead of using -mm option
-    (define-key map (kbd "C-x 7") 'restore-frame)
+    (define-frame-fill-workarea-key map (kbd "M-<up>") upper)
+    (define-key map (kbd "<M-kp-up>") (kbd "M-<up>"))
+    (define-frame-fill-workarea-key map (kbd "M-<down>") down)
+    (define-key map (kbd "<M-kp-down>") (kbd "M-<down>"))
+    (define-frame-fill-workarea-key map (kbd "M-<left>") left)
+    (define-key map (kbd "<M-kp-left>") (kbd "M-<left>"))
+    (define-frame-fill-workarea-key map (kbd "M-<right>") right)
+    (define-key map (kbd "<M-kp-right>") (kbd "M-<right>"))
+    (define-frame-fill-workarea-key map (kbd "<M-kp-home>") upper-left)
+    (define-frame-fill-workarea-key map (kbd "<M-kp-end>") down-left)
+    (define-frame-fill-workarea-key map (kbd "<M-kp-next>") down-right)
+    (define-frame-fill-workarea-key map (kbd "<M-kp-prior>") upper-right)
+    (define-key map (kbd "<M-kp-begin>") #'frame-toggle-unfill)
+    (define-key map (kbd "<M-kp-enter>") #'frame-smart-fill-workarea)
+    (define-key map (kbd "<M-kp-add>") (kbd "C-x 5 2"))
+    (define-key map (kbd "<M-kp-subtract>") (kbd "C-x 5 0"))
+    (define-key map (kbd "C-x 9") #'frame-fill-workarea)
+    (define-key map (kbd "C-x 7") #'frame-unfill-workarea)
+    
     map))
 
-(define-minor-mode maxframe-mode
-  "Minor Mode for maximze-frame
+(add-hook 'window-setup-hook 'easy-frame-mode)
+
+(define-minor-mode easy-frame-mode
+  "Minor Mode for Adjust Frame Parameters
    \{KEYMAP}"
   :init-value nil
-  :lighter " MaxFrame "
-  :keymap maxframe-mode-map
-  :require 'maxframe
-  :group 'maxframe
-  :global t)
+  :lighter " Easy-F "
+  :keymap easy-frame-mode-map
+  :group 'easy-frame
+  :global t
+  :set (run-at-time precise-2 nil
+		    (lambda nil
+		      (case first-frame-x-workarea
+			((fill) (frame-fill-workarea))
+			((unfill) (frame-unfill-workarea))
+			((upper) (frame-fill-workarea nil 'upper))
+			((left) (frame-fill-workarea nil 'left))))))
 
-(maxframe-mode 1)
-(maximize-frame)
-(add-hook 'window-setup-hook 'maximize-frame)
 
 ;;;;;;;;;;;;;;;;  Buffer and Window Management ;;;;;;;;;;;;;;;;
 (defun kill-other-buffers (&rest buffers-not-to-kill)
