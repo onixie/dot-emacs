@@ -410,48 +410,50 @@
      ;; (princ-list left ", " top ", " width ", " height)
      ,@body))
 
-(defun frame-fill-workarea (&optional frame dir factor)
+(defun frame-fill-workarea (&optional frame dir ratio)
   (interactive)
   (precisely-do frame
    (with-frame-sizing-info frame
-    (let ((factor (if (and (integerp factor) (> factor 0))
-		      factor
-		    2)))
-      (modify-frame-parameters frame `((ffw-state . ,(case dir
-						     ((upper down left right upper-left upper-right down-left down-right)
-						      dir)
-						     (t
-						      'fill)))))
-      (multiple-value-bind (x y w h) (case dir
-				       ((upper)
-					(values left top
-						(- width left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
-				       ((down)
-					(values left (+ top (/ (* height (1- factor)) factor))
-						(- width left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
-				       ((left)
-					(values left top
-						(- (/ width factor) left-extent right-extent) (- height top-extent bottom-extent)))
-				       ((right)
-					(values (+ left (/ (* width (1- factor)) factor)) top
-						(- (/ width factor) left-extent right-extent) (- height top-extent bottom-extent)))
-				       ((upper-left)
-					(values left top
-						(- (/ width factor) left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
-				       ((upper-right)
-					(values (+ left (/ (* width (1- factor)) factor)) top
-						(- (/ width factor) left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
-				       ((down-left)
-					(values left (+ top (/ (* height (1- factor)) factor))
-						(- (/ width factor) left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
-				       ((down-right)
-					(values (+ left (/ (* width (1- factor)) factor)) (+ top (/ (* height (1- factor)) factor))
-						(- (/ width factor) left-extent right-extent) (- (/ height factor) top-extent bottom-extent)))
-				       (t 
-					(values left top (- width left-extent right-extent) (- height top-extent bottom-extent))))
-	;; (princ-list x ", " y ", " w ", " h)
-	(frame-resize w h frame)
-	(set-frame-position (or frame (selected-frame)) x y))))))
+    (let ((ratio (if (and (numberp ratio) (<= ratio 1))
+		      ratio
+		    0.5)))
+      (if (>= ratio 1)
+	  (frame-fill-workarea frame)
+	(modify-frame-parameters frame `((ffw-state . ,(case dir
+							((upper down left right upper-left upper-right down-left down-right)
+							 dir)
+							(t
+							 'fill)))))
+	(multiple-value-bind (x y w h) (case dir
+					((upper)
+					 (values left top
+						 (- width left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+					((down)
+					 (values left (+ top (* height (- 1 ratio)))
+						 (- width left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+					((left)
+					 (values left top
+						 (- (* width ratio) left-extent right-extent) (- height top-extent bottom-extent)))
+					((right)
+					 (values (+ left (* width (- 1 ratio)) ) top
+						 (- (* width ratio) left-extent right-extent) (- height top-extent bottom-extent)))
+					((upper-left)
+					 (values left top
+						 (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+					((upper-right)
+					 (values (+ left (* width (- 1 ratio))) top
+						 (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+					((down-left)
+					 (values left (+ top (* height (- 1 ratio)))
+						 (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+					((down-right)
+					 (values (+ left (* width (- 1 ratio))) (+ top (* height (- 1 ratio)))
+						 (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+					(t 
+					 (values left top (- width left-extent right-extent) (- height top-extent bottom-extent))))
+	 ;; (princ-list x ", " y ", " w ", " h)
+	 (frame-resize (floor w) (floor h) frame)
+	 (set-frame-position (or frame (selected-frame)) (floor x) (floor y))))))))
 
 (defun frame-unfill-workarea (&optional frame ratio)
   (interactive)
@@ -464,11 +466,11 @@
 	  (frame-fill-workarea frame)
 	(modify-frame-parameters frame '((ffw-state . unfill)))
 	(multiple-value-bind (x y w h)
-	    (values  (floor (+ left (/ (* width (- 1 ratio)) 2))) (floor (+ top (/ (* height (- 1 ratio)) 2)))
-		     (floor (- (* width ratio) left-extent right-extent)) (floor (- (* height ratio) top-extent bottom-extent)))
+	    (values (+ left (/ (* width (- 1 ratio)) 2)) (+ top (/ (* height (- 1 ratio)) 2))
+		    (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent))
 	  ;; (princ-list x ", " y ", " w ", " h)	  
-	  (frame-resize w h frame)
-	  (set-frame-position (or frame (selected-frame)) x y)))))))
+	  (frame-resize (floor w) (floor h) frame)
+	  (set-frame-position (or frame (selected-frame)) (floor x) (floor y))))))))
 
 (defun frame-toggle-unfill (&optional frame)
   (interactive)
@@ -879,42 +881,35 @@ Return the the first group where the current buffer is."
 
 ;;;;;;;;;;;;;;;; SpeedBar Frame ;;;;;;;;;;;;;;;;
 (defvar *speedbar-main-frame* nil)
-(defvar *speedbar-main-frame-orig-width* nil)
-(defvar *speedbar-x-padding* 5)
-(defvar *speedbar-y-padding* 4)
+(defvar *speedbar-main-frame-ffw-state* nil)
 (defvar *speedbar-poped-up* nil)
+(defvar *speedbar-takeup* 0.20)
 
-(defadvice speedbar-frame-mode (around relocation-smartly activate)
-  (let ((speedbar-height (+ (frame-height *speedbar-main-frame*) 
-			    (tool-bar-lines-needed)
-			    *speedbar-y-padding*)))
-    ad-do-it
-    (speedbar-frame-reposition-smartly)
-    (set-frame-height (selected-frame) speedbar-height)
-    (define-key speedbar-mode-map (kbd "Q") 
-      (lambda ()
-	(interactive)
-	(run-hooks 'speedbar-before-delete-hook)
-	(call-interactively 'delete-frame)))
-    ad-return-value))
+(add-hook 'speedbar-after-create-hook
+	  (lambda ()
+	    (frame-fill-workarea nil 'right *speedbar-takeup*)
+	    (define-key speedbar-mode-map (kbd "Q") 
+	      (lambda ()
+		(interactive)
+		(run-hooks 'speedbar-before-delete-hook)
+		(call-interactively 'delete-frame)))
+	    (define-key speedbar-mode-map (kbd "q") (kbd "Q"))))
 
-(add-hook 'speedbar-before-popup-hook 
+(add-hook 'speedbar-before-popup-hook
 	  (lambda ()
 	    (if (not *speedbar-poped-up*)
 		(progn
+		  (setq auto-smart-pose nil)
 		  (setq *speedbar-poped-up* t)
 		  (setq *speedbar-main-frame* (selected-frame))
-		  (setq *speedbar-main-frame-orig-width* (frame-width))
-		  (set-frame-width (selected-frame) 
-				   (- (- (frame-width) 
-					 (cdr (assoc 'width speedbar-frame-parameters)))
-				      *speedbar-x-padding*))))))
+		  (setq *speedbar-main-frame-ffw-state* (frame-parameter *speedbar-main-frame* 'ffw-state))
+		  (frame-fill-workarea *speedbar-main-frame* 'left (- 1 *speedbar-takeup*))))))
 
 (add-hook 'speedbar-before-delete-hook 
 	  (lambda ()
 	    (setq *speedbar-poped-up* nil)
-	    (set-frame-width *speedbar-main-frame* 
-			     *speedbar-main-frame-orig-width*)))
+	    (setq auto-smart-pose t)
+	    (frame-fill-workarea *speedbar-main-frame* *speedbar-main-frame-ffw-state*)))
 
 ;;;;;;;;;;;;;;;; Session ;;;;;;;;;;;;;;;;
 ;;(add-hook 'after-init-hook 'session-initialize)
