@@ -329,12 +329,12 @@
   :type 'number
   :group 'easy-frame)
 
-(defcustom auto-smart-pose t
-  "Smartly pose new frame automatically"
+(defcustom auto-smart-fill t
+  "Smartly fill new frame automatically"
   :type 'boolean
   :group 'easy-frame)
 
-(defcustom first-frame-x-workarea 'fill
+(defcustom first-frame-x-workarea 'smart
   "Let first frame fill the whole workarea"
   :type 'symbol
   :group 'easy-frame)
@@ -497,7 +497,7 @@
     (let ((ffw-states (collect-ffw-state (or frame (selected-frame)))))
 
       (cond ((null ffw-states) (frame-fill-workarea frame))
-	    ;; ((member 'fill ffw-states) (frame-unfill-workarea frame))
+	    ((member 'fill ffw-states) (frame-unfill-workarea frame))
 	    ;; ((member 'unfill ffw-states) (frame-unfill-workarea frame))
 	    (t
 	     (flet ((remove-mb (dirs s1 &rest ss)
@@ -517,10 +517,44 @@
 		       (t
 			(frame-fill-workarea frame (first (remove-states dirs ffw-states))))))))))))
 
-(add-to-list 'after-make-frame-functions #'(lambda (fr)
-					     ;; Make sure it start after all other actions
-					     (when auto-smart-pose
-					       (run-at-time precise-2 nil #'frame-smart-fill-workarea fr))))
+(when auto-smart-fill
+  ;; Normal
+  (add-to-list 'after-make-frame-functions #'(lambda (fr)
+					       ;; Make sure it start after all other actions
+					       (when auto-smart-fill
+						 (run-at-time precise-2 nil #'frame-smart-fill-workarea fr))))
+
+  ;; Speedbar
+  (defvar *speedbar-main-frame* nil)
+  (defvar *speedbar-main-frame-ffw-state* nil)
+  (defvar *speedbar-poped-up* nil)
+  (defvar *speedbar-takeup* 0.20)
+
+  (add-hook 'speedbar-after-create-hook
+	    (lambda ()
+	      (frame-fill-workarea nil 'right *speedbar-takeup*)
+	      (define-key speedbar-mode-map (kbd "Q") 
+		(lambda ()
+		  (interactive)
+		  (run-hooks 'speedbar-before-delete-hook)
+		  (call-interactively 'delete-frame)))
+	      (define-key speedbar-mode-map (kbd "q") (kbd "Q"))))
+
+  (add-hook 'speedbar-before-popup-hook
+	    (lambda ()
+	      (if (not *speedbar-poped-up*)
+		  (progn
+		    (setq auto-smart-fill nil)
+		    (setq *speedbar-poped-up* t)
+		    (setq *speedbar-main-frame* (selected-frame))
+		    (setq *speedbar-main-frame-ffw-state* (frame-parameter *speedbar-main-frame* 'ffw-state))
+		    (frame-fill-workarea *speedbar-main-frame* 'left (- 1 *speedbar-takeup*))))))
+
+  (add-hook 'speedbar-before-delete-hook 
+	    (lambda ()
+	      (setq *speedbar-poped-up* nil)
+	      (setq auto-smart-fill t)
+	      (frame-fill-workarea *speedbar-main-frame* *speedbar-main-frame-ffw-state*))))
 
 (defmacro define-frame-fill-workarea-key (map key dir)
   `(progn
@@ -550,7 +584,6 @@
     (define-key map (kbd "<M-kp-subtract>") (kbd "C-x 5 0"))
     (define-key map (kbd "C-x 9") #'frame-fill-workarea)
     (define-key map (kbd "C-x 7") #'frame-unfill-workarea)
-    
     map))
 
 (add-hook 'window-setup-hook 'easy-frame-mode)
@@ -569,7 +602,8 @@
 			((fill) (frame-fill-workarea))
 			((unfill) (frame-unfill-workarea))
 			((upper) (frame-fill-workarea nil 'upper))
-			((left) (frame-fill-workarea nil 'left))))))
+			((left) (frame-fill-workarea nil 'left))
+			((smart) (frame-smart-fill-workarea))))))
 
 
 ;;;;;;;;;;;;;;;;  Buffer and Window Management ;;;;;;;;;;;;;;;;
@@ -878,38 +912,6 @@ Return the the first group where the current buffer is."
     (mapc 'call-interactively '(Buffer-menu-this-window delete-other-windows))))
 
 (define-key Buffer-menu-mode-map (kbd "e") (kbd "C-m"))
-
-;;;;;;;;;;;;;;;; SpeedBar Frame ;;;;;;;;;;;;;;;;
-(defvar *speedbar-main-frame* nil)
-(defvar *speedbar-main-frame-ffw-state* nil)
-(defvar *speedbar-poped-up* nil)
-(defvar *speedbar-takeup* 0.20)
-
-(add-hook 'speedbar-after-create-hook
-	  (lambda ()
-	    (frame-fill-workarea nil 'right *speedbar-takeup*)
-	    (define-key speedbar-mode-map (kbd "Q") 
-	      (lambda ()
-		(interactive)
-		(run-hooks 'speedbar-before-delete-hook)
-		(call-interactively 'delete-frame)))
-	    (define-key speedbar-mode-map (kbd "q") (kbd "Q"))))
-
-(add-hook 'speedbar-before-popup-hook
-	  (lambda ()
-	    (if (not *speedbar-poped-up*)
-		(progn
-		  (setq auto-smart-pose nil)
-		  (setq *speedbar-poped-up* t)
-		  (setq *speedbar-main-frame* (selected-frame))
-		  (setq *speedbar-main-frame-ffw-state* (frame-parameter *speedbar-main-frame* 'ffw-state))
-		  (frame-fill-workarea *speedbar-main-frame* 'left (- 1 *speedbar-takeup*))))))
-
-(add-hook 'speedbar-before-delete-hook 
-	  (lambda ()
-	    (setq *speedbar-poped-up* nil)
-	    (setq auto-smart-pose t)
-	    (frame-fill-workarea *speedbar-main-frame* *speedbar-main-frame-ffw-state*)))
 
 ;;;;;;;;;;;;;;;; Session ;;;;;;;;;;;;;;;;
 ;;(add-hook 'after-init-hook 'session-initialize)
