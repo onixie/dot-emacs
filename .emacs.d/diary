@@ -407,8 +407,8 @@ b. 通过修改*compiler-print-variable-alist*来绑定一些*print-xxx*变量�
    除了safety其他都使用全局的策略，而在该单元内使用safety为2的策略，该策略不影响全局的safety
    (with-compilation-unit (:policy '(optimize））
 	   (declaim (optimize (safety 2)))
-	   (load "/home/nixie/workspace/source/workdir/lisp/sbclstudy.lisp"))   
-   除了safety其他都使用全局策略，safety在该单元内为3 
+	   (load "/home/nixie/workspace/source/workdir/lisp/sbclstudy.lisp"))
+   除了safety其他都使用全局策略，safety在该单元内为3
    (with-compilation-unit (:policy '(optimize safety))
 	   (load "/home/nixie/workspace/source/workdir/lisp/sbclstudy.lisp"))
    都使用全局策略，包括safety的改变，会影像全局策略
@@ -462,10 +462,10 @@ Dec 28, 2011 计算理论
 
    --------------------
    在历史上，曾今使用Effectively calculable来代表可计算（但是它是形象的说法）
-   
+
    Rosser在1939年对Effective的描述是：Effective Method是指计算的每一步都是预先确定好的，并且能够在有限步内产生答案的方法。
    这里Effective有1. 能够产生确定的，准确的，期望的效果，2. 并且能够产生一个结果的意思。
-   
+
    Turing在1939年中说:computable function的意思是可以被机器计算的函数，而使用effectively calculable来代表形象的意思在不需要特别
    指明这些定义的情况下。即：
    Every effectively calculable function is a computable function.
@@ -482,23 +482,23 @@ Dec 28, 2011 计算理论
    如果该函数X'就是X，那么它就是一个total function。
 
    对于partial function来说，在recursion theorists那，domain就是X'；在category theorists那，domain还是X，X'被叫做domain of definition
-   
+
    在可计算理论里面，如果一个可计算函数没有接受所有可能的参数，那么它是partial computable或叫做partial recursive
    否则就是total computable或者叫total recursive
 
 4. Turing Complete图灵完备
    通常说能够模拟turing Machine图灵机的一系列操作规则（系统）的集合是图灵完备的
    （一般有上下文相关文法，递归函数，Lambda算子）。
-  
+
    Turing Completeness
    如果这套操作规则（或系统）可以计算每一个图灵机能够计算的可计算函数，那么他就是图灵完备的。
 
 5. Turing Equivalence
    如果这套操作规则（或系统）是图灵完备的，且它能计算的每一个函数都可以被图灵机计算，那么它和图灵机是等价的。
-   
+
 6. University
    所谓university是针对一类系统来说，如果这类系统里的每一个可计算函数都可以被某个系统计算，那么该系统就说是在该类系统中具有university.
-   
+
 7. Church-Turing Thesis
    在可计算性上：
      a. 图灵机(by Alan Turing)，
@@ -519,7 +519,7 @@ Dec 28, 2011 自动机理论
 2. 根据输入、状态、转移函数和接受条件的不同可以分为不同的状态机
    输入：Finit Input, Infinit Input, Tree word Input（一次读入树的所有输入）, Infinite Tree Input
    状态：Finit States, Infinite States（不可数或者数不尽）, Stack MEmory(pushdown automaton符号可以存入栈中)
-   转移：Deterministic, Non-deterministic, 
+   转移：Deterministic, Non-deterministic,
                        Alternation（一种特别的non-deterministic，有existential（选择）和universal(并行)两种不同的非确定转移）
        (这三种可以通过密集构造powerset construction相互转换)
 
@@ -561,7 +561,7 @@ Dec 28, 2011 形式语言理论
    III. 对于Computable Language或者说Recursive Language
    就是只要有一个total function能够确定字符集alphabet中的所有symbol要么属于要么不属于该语言，那么该语言就是可计算的。
    这个感觉比Type-0还要大的语言，对应Decider(Always Halting Turing machine)
-   
+
    对于Computably enumerable或者说Recursively enumerable Language
    就是说只要是在该语言里定义的symbol，都存在一个可计算函数可以对它进行计算。
    这个就是Type-0文法产生的语言
@@ -603,7 +603,7 @@ Extent涉及的是时间范围的概念
   对已经建立的实体的引用(reference to established entity)限制在与创建这个实体的构造相同的代码部分(program portions that are lexically contained within the establishing construct)。通常这个包含构造实体的代码部分构成叫做body, 而对该实体的引用就只能在这个body中。
   例子：
   函数的参数名
-  
+
 - Indefinite Scope
   对实体的引用可以在任何代码部分进行，没有限制。
 
@@ -705,7 +705,7 @@ Jan 30, 2012 CL reader
 
     对于macro类型，CL默认的标准定义有如下：
     ()'"`,#;
-    
+
 - 影响语法的dynamic variable
   除了Read Table还有一些全局变量影响reader，如：
   *read-base*
@@ -713,7 +713,7 @@ Jan 30, 2012 CL reader
   *package*
   *read-default-float-format*
   *read-eval*控制#这个macro char的启用与否
-  
+
 - 控制reader对大小写的处理
   除了通过escape字符来控制大小写，还可以通过控制当前readtable的readtable case，可以达到如下的效果：
   :upcase， 当使用此关键字值时，所有未被escape的符号都变成的大写
@@ -750,7 +750,7 @@ Apr 17, 2012 dpkg错误处理
    - 使用dpkg --remove/--configure/--install/--purge等对出错包进行处理
 2. 如果以上还不能成功
    - 使用dpkg --force all --remove
-2.5 如果还不行   
+2.5 如果还不行
    - 使用aptitude update, aptitude install -f进行修复
 3. 如果还不成功
    - 保存/var/lib/dpkg/status
@@ -758,7 +758,7 @@ Apr 17, 2012 dpkg错误处理
    - 删除从Package: XXXX的整个该包的信息
    - 保持下一个包和上一个包仅隔一行
    - 然后使用aptitude install -f重新安装
-4. 如果还不成功， 恭喜你！   
+4. 如果还不成功， 恭喜你！
 
 Apr 19, 2012 软件介绍
 unetbootin可以使得grub2加载硬盘上的iso文件，因此免去了刻盘的麻烦。
@@ -828,3 +828,250 @@ May 8, 2012 ibus与emacs ibus-mode的冲突
 当在ibus设置窗口的[Advance]页面中启用了[Share the same input method among all applications]的时候，
 这个与ibus-mode中的ibus-mode-local冲突了，使得会不断的报告IMContext ID xx is mismatched的错误。
 这个时候可以关掉[Share the same input method among all application]
+
+May 15, 2012 X property和X client message
+X Client可以通过property来存储一些客户端特定的数据，通常Window Manager为了管理窗口会定义
+一些特定的属性。通过获取这些属性就可以了解窗口相关的信息。在cli下，可以通过xprop命令获取特定窗口的属性。
+
+在Emacs下，可以通过x-window-property函数获取属性，要注意的是type参数一般用"AnyPropertyType"，
+vector-ret-p是t，如果窗口没有属性，就会返回nil,如果返回其他的结果，则可能是type参数或者vector-p参数不正确。
+
+另外，可以通过修改属性或者发送客户端消息的方式来修改特定的属性，在Emacs中可以使用x-send-client-message函数
+来达到这个目的。
+
+May 15, 2012 polkit与consolekit
+policykit提供权限认证的API给一些拥有权限的程序(Mechanism)，让这些程序来验证那些没有权限的程序发来的动作请求。
+这些请求可能通过DBUS或者Unix pipeline传来。通过验证这些请求，就可以赋予这些无权限的程序一些有权限的程序才能作
+的事情。
+polkit包括了一个在dbus上的认证机构authority,以及每个用户session上运行的认证代理agent。代理agent用来表明客户程序
+是特定用户session下的客户程序。机构authority用来验证权限。
+
+通过pkaction可以查看当前在polkit管辖下的动作。通过pkcheck可以检查，通过pkexec可以以另外一个用户身份执行
+
+consolekit是用来管理用户session和权限的，通常使用它来允许一般用户mount移动存储设备或者关机重启这类一般应该由root才能
+完成的动作。
+
+May 16, 2012 gitosis管理员key变更
+当gitosis的管理员key变更的时候，简单的更新key目录下的pub文件是不行的。
+这个时候需要到gitosis-admin的bare目录中运行su -H -u git gitosis-init < /path/to/new_public_key.pub
+重新初始化管理员使用的key。
+
+May 16, 2012 sb-unix是内部使用的包
+在SBCL中，sb-unix并不是开放给外部使用的，而是为了内部实现使用的，这个和CMUCL不同。
+它的函数定义很可能会发生变化。如果需要使用类似功能，需要使用sb-posix或者直接使用FFI
+
+May 17, 2012 racket的scribble语法
+通过@表达式可以简化一般S-exp的写法，使得编写像文档一样的代码很容易。
+这样通过scribble就可以生成文档。
+@表达式的语法一般是@<cmd>[<datum>*]{<text-body>*}
+这其实是(<cmd> <datum>* <parsed-body>*)函数调用的语法变形。
+
+另外，@表达式还支持直接的racket模式的函数调用@(frob arg1 arg2 ...)
+
+在@表达式中可以嵌套其他的@表达式，这将类似于在函数调用的参数中还有函数调用。
+如果想要转义这种动作，可以使用|{...}|的括号形式,这样一般嵌套的@就会作为普通的字符。
+如果这时还需要@表达式，就需要使用|@代替。如果|{括号形式中间包含其他诸如<<之类的字符，
+那么|}和|@也必须包含这些字符的反向才能达到效果。
+e.g.
+	@foo|{@abc}| => (foo "@abc")
+	@foo|{|@"abc"}| => (foo "abc")
+	@foo|<<{|@abc}>>| => (foo "|@abc")
+	@foo|!{|!@"abc"}!| => (foo "abc")
+
+另外@| ... |可以将其中的任何内容转义为racket代码，防止{}将其视作文本，而@||可以将{}中连续的文本分开。
+
+@表达式中的<cmd>部分也可以没有，这个时候其实类似于一个list，通常需要和quote一起使用。
+当<datum>和<text-body>都省去的时候，<cmd>部分就直接以<cmd>的文字形式出现，不会外加括号。
+这通常可以作为对racket中symbole的转义，e.g. @"@"
+
+@和<cmd>之间还可以有任何的标点，如'`@@#;之类的，这些标点会被放到变换后的s-exp的最前面
+e.g. @'foo{blah} => '(foo blah)
+一般这样可以实现注释，@; bla bla bla或者@;{ <any>* }，注意第二种方式<any>还是需要符合@表达式语法的。
+
+一般情况下@表达式是在scribble/base, scribble/manual, scribble/sigplan这样的包中的
+也可以通过meta-lang的特性将其引入一般的module中，e.g. #lang at-exp racket
+
+最后因为引入了@表达式的语法，一般的s-exp中的符号就不能以@开头了。如果必须以@开头，则需要通过\或者|来转义。
+
+May 18, 2012 DrRacket中输入Latex符号
+在DrRacket中可以通过\<macro> Meta-\的方式输入非ascii字符。
+如: \Lambda Meta-\将会显示希腊字母兰母达。或者\smiley Meta-\输入将显示一个笑脸。
+另外，也可以通过C-\迅速输入一个兰母达字符。
+
+May 21, 2012 git refname XXX is ambiguous警告
+当git中某个branch的名字是HEAD或者是origin/master的时候，
+这将使得与git中固有的符号相冲突，进而在运行一些git命令的时候会报出警告。
+如当运行git rev-list HEAD --not origin/master的时候，如果
+有一个branch名字恰巧叫origin/master的话，就会有：
+refname 'origin/master' is ambiguous 的警告。
+
+May 22, 2012 CLHS中编译器相关
+
+3.2.1 编译器术语
+
+- compiler是将代码翻译成与特定实现相关（表示或者执行效率会提高）代码的过程。术语compiler指的就是compile和compile-file这两个函数。
+- compiled code指的是被编译后的程序代码的对象表示，这些对象由compile或者在加载被编译文件是的load创建。
+- implicit compilation指的是在evaluation时的编译处理。
+- literal object指的是quoted对象或者self-evaluating对象，以及这些对象的子对像。但不包括常变量。
+- coalesce指的是在源代码中两个不同(not eql)的literal object - A和B， 在被编译后对应的对象A'和B'相同了(eql)的优化
+- minimal compilation指的是编译时标准规定的最少动作。
+
+- 动词process指的就是进行minimal compilation，如确定代码求值的时间，或者对其求值（如果需要的话）
+- further compilation指的是在minimal compilation之后实现相关的特殊编译过程。process并不说明完整的编译。
+  诸如block compilation或者生成特定机器指令的编译过程都是further compilation的内容。further compilation可以发生在运行时。
+
+与编译相关的环境由四种：startup environment, compilation environment, evaluation environment, runtime environment.
+- startup环境指的是compiler运行启动时的Lisp image环境。
+- compilation环境由编译器维护用于存储编译器内部需要的定义和声明。只有必须的部分会保存在该环境中。诸如传递给macro expander的环境参数就是compilation环境。
+- evaluation环境是runtime环境的一种，所有由编译器发起的求值动作都在该环境中进行，如macro expander以及由eval-when指明的求值。
+- runtime环境是指被编译的代码运行的环境。
+
+compilation环境继承evaluation环境，它们可能相同。evaluation环境继承startup环境，它们可能相同。
+
+- compile time指的是编译器处理源代码的时间段。在compile time中，只会有compilation和evalutaion两个环境。
+- run time指的是loader加载了被编译后的代码，代码运行的时间段。在run time中，只会由runtime环境。
+
+- run-time compiler指的是通过函数compile或者implicit compilation进行的编译，此时编译和运行时环境在同一个Lisp image中。此时runtime环境等同于startup环境。
+
+3.2.2 编译语义
+
+从概念上来讲，编译就是一个遍历代码、根据在compilation环境中的特定信息对代码语法语义进行分析、生成等价的更加高效的代码的过程。
+
+3.2.2.1 compiler macro
+一个compiler macro的名字也可以是function或者macro的名字。它们可以同时存在。
+如果在给定的词法环境中一个函数的名字作为compiler-macro-function参数的时候，它的返回值不是nil，那么就说明在该词法环境中，存在一个compiler macro。但是新创建的local函数或者宏定义会更新当前的词法绑定(lexical binding)，以至于覆盖shadow存在的compiler macro。
+
+由compiler-macro-function返回的结果是一个两个参数的函数，它叫做expansion function。为了展开compiler macro，需要调用macroexpand hook，并将expansion function、整个compiler macro代码以及当前的compliation环境作为参数。然后macroexpand hook会调用expansion function来展开compiler macro。返回的展开结果也许跟展开前的compiler macro代码完全相同，这个展开结果会替换原来的代码。
+
+*macroexpand-hook* compiler-macro-function define-compiler-macro
+
+3.2.2.1.1 compiler macro的目的
+compiler macro的目的是允许通过选择性的源代码变换来优化编译。对于一个compound代码的process, 如果代码中的操作符是一个compiler macro, compiler-macro-function可能被调用来将代码展开，展开后的代码则会替换原来的代码被进一步的处理。
+
+compiler macro function(expansion function)如同普通的macro function, 接受两个参数：一个是整个的macro代码，另外一个就是环境。
+但与一般的macro function不同，compiler macro function可以拒绝展开，直接返回原来的代码。
+
+如果compile-file选择展开一个top level form的compiler macro form。那么展开后的代码仍然被当作top level form处理。
+
+3.2.2.1.2 compiler macro命名
+compiler macro的名字可以与函数或者macro的名字相同。但是它是严格全局的。所以不可能像macrolet一样定义局部的compiler macro。想法，局部的函数定义和宏定义会覆盖（shadow）全局的compiler macro。
+
+注意compiler macro的存在不会影响存在的同名函数和宏定义。因为compiler macro是全局的，通过compiler-macro-function足够区分它们与那些词法环境中定义的函数和宏。
+
+3.2.2.1.3 什么时间使用compiler macro
+有以下两个情况是绝对不能使用的，其他情况标准不指定：
+- 当词法绑定被同名的函数或宏覆盖的时候
+- 当函数名被声明为notinline，恰巧该段代码在声明中。
+
+3.2.2.1.3.1 compiler macro实现注意
+虽然技术上允许在eval的时候和compile的时候，对compiler macro做相同的处理。但是在interpreted implementation中，可不是一个好主意。
+因为compiler macro是用来通过在编译期展开来优化运行时速度的，通过compiler macro编译器也许需要话更长的时间进行编译。这在interpreted implementation中eval这么做就比较低效了。
+
+3.2.2.2 minimal compilation
+minimal compilation定义如下：
+- 所有出现在源代码中的compiler macro被展开。在运行时时，它们不会展开。
+- 所有的macro和symbol macro都会在编译期展开，展开直到在运行时不需要再展开。
+  macrolet和symbol-macrolet都被它们body部分的代码替换、这些代码中引用的宏也将被展开替换。
+- 在load-time-value代码中的第一个参数，会被compile在compile time求值。但在compile-file的处理中，编译器安排它在load time求值。两种情况下，求值的结果都会被记录下来，用于在运行时execution time的load-time-value的值。
+
+3.2.3 File Compilation
+函数compile-file根据3.2.2 Compilation Semantics定义的规则编译，产生一个能被load加载的文件。
+通常，在被compile-file编译的文件中的top level form不会在编译时被求值，而是在被编译的文件被加载时。但有时，一个典型的情况就是文件中的代码需要在编译期求值，然后余下的代码才能顺利的被继续编译。
+
+eval-when特殊form就是用来控制top level form在compile time、load time的求值的。对于一个top level的eval-when代码段来说，:compile-toplevel会使其在compile time被编译器求值。:load-toplevel则会使得编译器安排它在load time求值。而对于非top level的eval-when代码段，:execute可以使其在runtime环境中被执行。
+
+
+eval-when的行为可以准确的用compile-file进行process的模型来理解：有两种process模式，“not-compile-time"和“compile-time-too"
+
+compile-file在not-compile-time工作模式下会从文件中读取代码，并将这些代码的求值安排在load time而不是在compile time中直接求值。
+在compile-time-too模式下，则在load time和compile time中都会求值。
+
+3.2.3.1 对top level form的处理
+
+"一个top level form就是被compile-file进行特殊处理的form，进行特殊处理的目的是允许在编译期求值。个人理解就是，只有在file compilation中存在toplevel form。"
+
+1. 如果代码是一个compiler macro form(并且没有被notinline禁止)，编译器可以选择是否展开并处理它。如果不展开，那就必须处理原先的代码。
+2. 对于macro form，会将其当作toplevel form展开和处理。
+3. 对于progn， 它的内部的每个form都当作toplevel form展开处理。
+4. 对于locally, macrolet或者symbol-macrolet, compile-file在建立了合适的绑定后，处理器内部的form如同top level form的处理。
+5. eval-when的处理:
+
+CT LT E Mode Action New Mode
+Y  Y  - -    P      compile-time-too
+N  Y  Y C    P      compile-time-too
+N  Y  Y N    P      not-compile-time
+N  Y  N -    P      not-compile-time
+Y  N  - -    E      -
+N  N  Y C    E      -
+N  N  Y N    D      -
+N  N  N -    D      -
+
+Y for Yes, N for No, C for compile-time-too, N for not-compile-time, P for process, E for Evaluate, D for discard
+- in Mode for irrelevant, - in New Mode for remain in current mode
+
+在compile-time-too模式下，process意味着首先编译器在evaluation环境中对其求值，然后进行minimal compile。而not-compile-time模式下，process仅仅是minimal compile。
+
+6. 所有subform都认为是非top level form
+
+注意:
+- 对于top level form，编译器是按照在代码里出现的顺序进行处理的。而对于非top level form的subform的处理(包括宏展开)还有further compilation标准不要求顺序，只要符合compliation semantic。
+
+- 对于非top level form, eval-when的:compile-toplevel和:load-toplevel都会被忽略(使用compile或者eval进行编译和求值时也是如此)。对于非top-level form，eval-when指定:execute的时候被当作一个implicit progn处理。
+
+May 22, 2012 SBCL 各种编译过程IR1前的处理调用关系
+1. 通过repl中输入代码的编译(implicit compilation)
+
+							       +--<---+
+							       |      |
+     							       |      ^
+       +------------+         +------------+         +---------+---   |     +------------+         +------------+         +------------+         +------------+        +------------+
+       |            |         |            |         | simple-eval|   |     |            |         |            |         |            |	 |            |        | make-functi|
+       |            |         |            |         | -in-lexenv +->-+     |            |         |compile-in- |         |            |	 |            |        |onal-from-to|
+       |interactive |-------->|  eval      |-------->| or         |-------->|%simple-eval|-------->|lexenv      |-------->|actually-   |-------->| %compile   |------->|p-level-lamb|-------->
+       |   -eval    |         |            |         | eval-in-lex|         |            |         |            |         |compile     |	 |            |        |da          |
+       |            |         |            |         | en         |         |            |         |            |         |            |	 |            |        |            |
+       +------------+         +------------+         +------------+         +------------+         +------------+         +------------+	 +------------+        +------------+
+
+       设置repl的一些变量        设置*eval-x-x*            分派处理               创建用于求值的           编译后，设置函数          初始编译相关信息            编译开始                IR1 变换
+       如：*, **, /, //        这些全局变量                                     named lambda          或宏名字与编译结果         compilation-unit
+                                                                             编译后，求值            的绑定
+
+
+      注：
+      1. simple-eval-in-lexenv会循环调用simple-eval-progn-body, simple-eval-locally以及自身
+      
+2. 通过compile-file的编译										       +-----------+
+													       |           |
+										    +----<----+		    +>-+ eval-tlf  |->+
+									            |         |		    |  |           |  |
+										    |	      ^		    |  +-----------+  |
+       +------------+         +------------+         +------------+         +-------+----+    |    +--------+---+         +---+--------+         +------------+
+       |            |         |            |         |            |         |            |    |    |convert-and-|         |            |	 |            |
+       |            |         | sub-compile|         |sub-sub-comp|         |process-topl+->--+    |maybe-compil|         |ir1-toplevel|	 |            |
+       |compile-file|-------->| -file      |-------->|ile-file    |-------->|evel-form   |-------->|e or eval-co|-------->|            |-------->|compile-topl|-------->
+       |            |         |            |         |            |         |            |         |mpile-toplev|         |            |	 |evl         |
+       |            |         |            |         |            |         |            |         |el          |         |            |	 |            |
+       +------------+         +------------+         +------------+         +------------+         +------------+         +------------+	 +------------+
+
+       设置代码文件相关          动作类似于              循环处理每个toplevel     宏展开，eval-when处理         编译开始                 IR1变换                后续编译动作
+       变量，source-info       actually-compile                            minimal compilation
+       file-info,输出          另外，还包括dump fasl
+       fasl文件等
+
+
+       注：
+       1. 当eval-compile-toplevel时会先求值，然后对求值部分编译。eval-tlf和eval类似，不过会设置*eval-tlf-index*，并且支持从非null-lexenv求值。
+       2. process-toplevel-form会根据情况递归调用process-toplevel-progn, process-toplevel-locally及自身。这点和simple-eval-in-lexenv有点类似。
+
+3. 通过compile的编译（run-time compilation）
+
+
+       +------------+         +------------+         +------------+         +------------+        +------------+
+       |            |         |            |         |            |         |            |        | make-functi|
+       |            |         |compile-in- |         |            |	    |            |        |onal-from-to|
+       | compile    |-------->|lexenv      |-------->|actually-   |-------->| %compile   |------->|p-level-lamb|-------->
+       |            |         |            |         |compile     |	    |            |        |da          |
+       |            |         |            |         |            |	    |            |        |            |
+       +------------+         +------------+         +------------+	    +------------+        +------------+
+
+        基本同1的过程的后半部分。如果是从repl输入的compile, 那么compile之前就是simple-eval-in-lexenv。
