@@ -1277,17 +1277,40 @@ The advice call MODE-push-curpos by current major-mode"
 ;;;;;;;;;;;;;;;; Slime ;;;;;;;;;;;;;;;;
 (when (or (load (file-truename "~/quicklisp/slime-helper.el") t)
 	  (require 'slime))
-  (setq slime-lisp-implementations
-	`((sbcl ("sbcl" "--noinform" "--no-linedit")
-		:coding-system utf-8-unix)
-	  (clisp ("clisp"))))
-
-  (slime-setup '(slime-fancy ;meta contrib:repl, autodoc, editing-command, fuzzy, scratch, etc.
-
-		 slime-banner
+  
+  (defmacro defrun-lisp-impl (name command &rest key-args)
+    (setq slime-lisp-implementations
+	  (cons `(,name ,(split-string command) ,@key-args) slime-lisp-implementations))
+    `(defun ,(name-combinator "run-" (symbol-name name)) ()
+       (interactive)
+       (slime ',name)))
+  
+  (defrun-lisp-impl clisp "clisp" :coding-system utf-8-unix)
+  (defrun-lisp-impl ccl "ccl" :coding-system utf-8-unix)
+  (defrun-lisp-impl sbcl "sbcl" :coding-system utf-8-unix)
+  
+  (slime-setup '(slime-fancy ;meta for autodoc, editing-command, fuzzy, scratch, etc.
 		 slime-asdf
-		 slime-sprof))
+		 slime-sprof
+		 slime-banner))
 
+  (defun slime-repl-insert-prompt ()
+    (goto-char slime-repl-input-start-mark)
+    (unless slime-repl-suppress-prompt
+      (slime-save-marker slime-output-start
+	(slime-save-marker slime-output-end
+	  (unless (bolp) (insert-before-markers "\n"))
+	  (let ((prompt-start (point))
+		(prompt (format "%s@%s> " (upcase (slime-lisp-implementation-name)) (slime-lisp-package-prompt-string))))
+	    (slime-propertize-region
+		'(face slime-repl-prompt-face read-only t intangible t
+		       slime-repl-prompt t
+		       rear-nonsticky (slime-repl-prompt read-only face intangible)
+		       start-open t end-open t)
+	      (insert-before-markers prompt))
+	    (set-marker slime-repl-prompt-start-mark prompt-start)
+	    prompt-start)))))
+  
   (setq common-lisp-hyperspec-root (format "file://%s" (file-truename "~/.emacs.d/contrib/hyperspec/")))
   (setq slime-autodoc-use-multiline-p t)
 
@@ -1321,7 +1344,7 @@ The advice call MODE-push-curpos by current major-mode"
     ad-return-value)
   
   (let ((fasls-dir "/tmp/slime-fasls/"))
-    (setq slime-compie-file-options '(:fasl-directory fasls-dir))
+    (setq slime-compile-file-options '(:fasl-directory fasls-dir))
     (make-directory fasls-dir t)))
 
 ;;;;;;;;;;;;;;;; Scheme Programming ;;;;;;;;;;;;;;;;
