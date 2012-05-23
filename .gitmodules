@@ -8,3 +8,8 @@
 	path = .emacs.d/contrib/ibus
 	url = https://github.com/onixie/ibus.git
 	ignore = dirty
+
+[submodule ".emacs.d/contrib/rainbow-delimiters"]
+	path = .emacs.d/contrib/rainbow-delimiters
+	url = https://github.com/onixie/rainbow-delimiters.git
+	ignore = dirty
