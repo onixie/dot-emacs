@@ -61,10 +61,10 @@
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(ac-auto-show-menu 0.1)
  '(ac-menu-height 30)
  '(ac-quick-help-delay 0.8)
@@ -147,6 +147,7 @@
  '(semantic-idle-scheduler-idle-time 0.5)
  '(semantic-inhibit-functions (quote ((lambda nil (or (eq major-mode (quote lisp-mode)) (eq major-mode (quote scheme-mode)) (eq major-mode (quote emacs-lisp-mode)))))))
  '(show-paren-mode t)
+ '(slime-header-line-p nil)
  '(slime-kill-without-query-p t)
  '(slime-repl-history-remove-duplicates t)
  '(slime-repl-history-trim-whitespaces t)
@@ -169,10 +170,10 @@
  '(yas/trigger-key (kbd "C-x C-y"))
  '(zoneinfo-style-world-list (quote (("America/Los_Angeles" "Seattle") ("America/New_York" "New York") ("Europe/London" "London") ("Europe/Paris" "Paris") ("Asia/Calcutta" "Bangalore") ("Asia/Tokyo" "Tokyo") ("Asia/BeiJing" "BeiJing")))))
 (custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(ac-candidate-face ((t (:background "lightgray" :foreground "black" :height 120))))
  '(ac-completion-face ((t (:foreground "darkgray" :underline t :height 120))))
  '(ac-gtags-candidate-face ((t (:background "lightgray" :foreground "navy" :height 120))))
@@ -822,7 +823,7 @@ Return a list of one element based on major mode."
 	  "Dired")
 	 ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
 	  "Help")
-	 ((or (memq major-mode '(lisp-mode slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode))
+	 ((or (memq major-mode '(lisp-mode slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode slime-sprof-browser-mode))
 	      (search "*inferior-lisp*" (buffer-name))
 	      (search "*slime-events*" (buffer-name)))
 	  "Common Lisp")
@@ -1274,13 +1275,18 @@ The advice call MODE-push-curpos by current major-mode"
 (global-set-key (kbd "M-<mouse-5>") 'text-scale-decrease)
 
 ;;;;;;;;;;;;;;;; Slime ;;;;;;;;;;;;;;;;
-(when (load (file-truename "~/quicklisp/slime-helper.el") t) ;Only when quicklisp-slime-helper exist
+(when (or (load (file-truename "~/quicklisp/slime-helper.el") t)
+	  (require 'slime))
   (setq slime-lisp-implementations
 	`((sbcl ("sbcl" "--noinform" "--no-linedit")
 		:coding-system utf-8-unix)
 	  (clisp ("clisp"))))
 
-  (slime-setup '(slime-fancy slime-repl slime-scratch slime-editing-commands slime-autodoc))
+  (slime-setup '(slime-fancy ;meta contrib:repl, autodoc, editing-command, fuzzy, scratch, etc.
+
+		 slime-banner
+		 slime-asdf
+		 slime-sprof))
 
   (setq common-lisp-hyperspec-root (format "file://%s" (file-truename "~/.emacs.d/contrib/hyperspec/")))
   (setq slime-autodoc-use-multiline-p t)
