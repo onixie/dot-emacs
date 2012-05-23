@@ -206,9 +206,16 @@
 (setq ielm-header "")
 
 ;;;;;;;;;;;;;;;; Common ;;;;;;;;;;;;;;;;
-(defun name-combinator (&rest names)
-  "Make a symbol by combining the strings as its name"
-  (intern (mapconcat 'concat names "")))
+(defun name-glue (&rest nameparts)
+  "Make a symbol by concating the strings/symbols as its name"
+  (intern (apply #'concat (mapcar #'(lambda (name)
+				      (cond ((symbolp name)
+					     (symbol-name name))
+					    ((numberp name)
+					     (number-to-string name))
+					    ((stringp name) name)
+					    (t (error "can't be glue together"))))
+				     nameparts))))
 
 (defun swap-key-translation (key1 key2)
   "Swap key bindings in key-translation-map"
@@ -559,11 +566,11 @@
 
 (defmacro define-frame-fill-workarea-key (map key dir)
   `(progn
-     (unless (fboundp ',(name-combinator "frame-fill-" (symbol-name dir) "-workarea"))
-       (defun ,(name-combinator "frame-fill-" (symbol-name dir) "-workarea") ()
+     (unless (fboundp ',(name-glue "frame-fill-" dir "-workarea"))
+       (defun ,(name-glue "frame-fill-" dir "-workarea") ()
 	 (interactive)
 	 (frame-fill-workarea nil ',dir)))
-     (define-key ,map ,key #',(name-combinator "frame-fill-" (symbol-name dir) "-workarea"))))
+     (define-key ,map ,key #',(name-glue "frame-fill-" dir "-workarea"))))
 
 (defvar easy-frame-mode-map
   (let ((map (make-sparse-keymap)))
@@ -626,15 +633,15 @@ If the arguements are nil, all buffers except current buffer will be killed"
       (let ((key (concat "<" (symbol-name direction) ">")))
 	(define-key (eval keymap) (read-kbd-macro key)
 	  ((lambda (direction)
-	     (name-combinator "kill-" (symbol-name direction) "-window")) 
+	     (name-glue "kill-" direction "-window")) 
 	   direction))))
   
-  `(defun ,(name-combinator "kill-" (symbol-name direction) "-window") ()
+  `(defun ,(name-glue "kill-" direction "-window") ()
      (interactive)
      (save-selected-window
        (if (not (null (condition-case err 
 			  (,((lambda (direction)
-			       (name-combinator "windmove-" (symbol-name direction))) direction))
+			       (name-glue "windmove-" direction)) direction))
 			(error nil))))
 	   ;; Do not kill buffer as such simple way, 
 	   ;; or you might lose origninal window.
@@ -712,16 +719,13 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (kill-window-along-direction down map)
 
     (macrolet ((tabbar-dwim-move (direction)
-				 `(defun ,(name-combinator "tabbar-dwim-" (symbol-name direction)) ()
+				 `(defun ,(name-glue "tabbar-dwim-" direction) ()
 				    (interactive)
 				    (if tabbar--buffer-show-groups
 					(progn
-					  (call-interactively #',(name-combinator "tabbar-"
-										  (symbol-name direction)
-										  "-group"))
+					  (call-interactively #',(name-glue "tabbar-" direction "-group"))
 					  (call-interactively #'tabbar-press-home))
-				      (call-interactively #',(name-combinator "tabbar-"
-									      (symbol-name direction)))))))
+				      (call-interactively #',(name-glue "tabbar-" direction))))))
       (define-key map (kbd "S-<left>") (tabbar-dwim-move backward))
       (define-key map (kbd "S-<right>") (tabbar-dwim-move forward)))
 
@@ -739,7 +743,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (define-key map (kbd "<C-kp-down>") 'windmove-down)
 
     (macrolet ((windmove-diagonal (hori vert)
-				  `(defun ,(name-combinator "windmove-" (symbol-name hori) "-" (symbol-name vert)) ()
+				  `(defun ,(name-glue "windmove-" hori "-" vert) ()
 				     (interactive)
 				     (condition-case nil
 					 (windmove-do-window-select ',hori)
@@ -951,10 +955,10 @@ Return the the first group where the current buffer is."
 
 (defsubst current-mode-curpos-push ()
   "Return the symbol of which function definition is MODE-push-curpos"
-  (name-combinator (symbol-name major-mode) "-push-curpos"))
+  (name-glue major-mode "-push-curpos"))
 
 (defsubst group-mode-curpos-push ()
-  (name-combinator (group-mode-name major-mode) "-push-curpos"))
+  (name-glue (group-mode-name major-mode) "-push-curpos"))
 
 (defsubst curpos-buffer (curpos)
   (car curpos))
@@ -979,7 +983,7 @@ Return the the first group where the current buffer is."
 The advice call MODE-push-curpos by current major-mode"
   `(progn
      ,@(mapcar (lambda (func)
-		 (list 'defadvice func (list 'around (name-combinator (symbol-name group-mode) "-push-curpos") 'activate)
+		 (list 'defadvice func (list 'around (name-glue group-mode "-push-curpos") 'activate)
 		       (list 'cond
 			     (list (list 'and (list 'called-interactively-p ''interactive) (list 'string-equal (symbol-name group-mode) '(group-mode-name major-mode)))
 				   '(cond ((fboundp (current-mode-curpos-push))
@@ -1000,91 +1004,91 @@ The advice call MODE-push-curpos by current major-mode"
 (defmacro mode-local-curpos (mode &rest adviced-function)
   "Define mode local curpos, each curpos has MODE name prefixed"
   `(progn
-     (defvar ,(name-combinator (symbol-name mode) "-curpos-history") nil
+     (defvar ,(name-glue mode "-curpos-history") nil
        "Record the positions of the cursor in the form of (buffer . point)")
-     (defvar ,(name-combinator (symbol-name mode) "-curpos-bottom") nil
+     (defvar ,(name-glue mode "-curpos-bottom") nil
        "Oldest curpos in history")
-     (defvar ,(name-combinator (symbol-name mode) "-curpos-top") nil
+     (defvar ,(name-glue mode "-curpos-top") nil
        "Current push curpos")
-     (defvar ,(name-combinator (symbol-name mode) "-curpos-cur") nil
+     (defvar ,(name-glue mode "-curpos-cur") nil
        "Current backtrack curpos")
-     (defvar ,(name-combinator (symbol-name mode) "-curpos-max-count") 5120
+     (defvar ,(name-glue mode "-curpos-max-count") 5120
        "Maximum curpos allowed in history")
-     (defvar ,(name-combinator (symbol-name mode) "-curpos-cur-count") 0
+     (defvar ,(name-glue mode "-curpos-cur-count") 0
        "Current curpos in history")
      
-     (defun ,(name-combinator (symbol-name mode) "-push-curpos") (&optional dont-update-curpos-cur-p)
+     (defun ,(name-glue mode "-push-curpos") (&optional dont-update-curpos-cur-p)
        "Push current cursor position in curpose-history"
        (let ((newpos (current-curpos)))
 	 (cond
-	  ((equal newpos ,(name-combinator (symbol-name mode) "-curpos-top"))
+	  ((equal newpos ,(name-glue mode "-curpos-top"))
 	   nil)
-	  ((null ,(name-combinator (symbol-name mode) "-curpos-history"))
-	   (setq ,(name-combinator (symbol-name mode) "-curpos-top") newpos
-		 ,(name-combinator (symbol-name mode) "-curpos-bottom") newpos
-		 ,(name-combinator (symbol-name mode) "-curpos-history") (cons newpos ,(name-combinator (symbol-name mode) "-curpos-history")))
-	   (incf ,(name-combinator (symbol-name mode) "-curpos-cur-count"))
+	  ((null ,(name-glue mode "-curpos-history"))
+	   (setq ,(name-glue mode "-curpos-top") newpos
+		 ,(name-glue mode "-curpos-bottom") newpos
+		 ,(name-glue mode "-curpos-history") (cons newpos ,(name-glue mode "-curpos-history")))
+	   (incf ,(name-glue mode "-curpos-cur-count"))
 	   (unless dont-update-curpos-cur-p
-	     (setq ,(name-combinator (symbol-name mode) "-curpos-cur") ,(name-combinator (symbol-name mode) "-curpos-history"))))
-	  ((< ,(name-combinator (symbol-name mode) "-curpos-max-count") ,(name-combinator (symbol-name mode) "-curpos-cur-count"))
-	   (setq ,(name-combinator (symbol-name mode) "-curpos-top") newpos
-		 ,(name-combinator (symbol-name mode) "-curpos-history") (butlast (cons newpos ,(name-combinator (symbol-name mode) "-curpos-history")))
-		 ,(name-combinator (symbol-name mode) "-curpos-cur") (butlast ,(name-combinator (symbol-name mode) "-curpos-cur"))
-		 ,(name-combinator (symbol-name mode) "-curpos-bottom") (car (last ,(name-combinator (symbol-name mode) "-curpos-history"))))
+	     (setq ,(name-glue mode "-curpos-cur") ,(name-glue mode "-curpos-history"))))
+	  ((< ,(name-glue mode "-curpos-max-count") ,(name-glue mode "-curpos-cur-count"))
+	   (setq ,(name-glue mode "-curpos-top") newpos
+		 ,(name-glue mode "-curpos-history") (butlast (cons newpos ,(name-glue mode "-curpos-history")))
+		 ,(name-glue mode "-curpos-cur") (butlast ,(name-glue mode "-curpos-cur"))
+		 ,(name-glue mode "-curpos-bottom") (car (last ,(name-glue mode "-curpos-history"))))
 	   (unless dont-update-curpos-cur-p
-	     (setq ,(name-combinator (symbol-name mode) "-curpos-cur") ,(name-combinator (symbol-name mode) "-curpos-history"))))
+	     (setq ,(name-glue mode "-curpos-cur") ,(name-glue mode "-curpos-history"))))
 	  (t
-	   (setq ,(name-combinator (symbol-name mode) "-curpos-top") newpos
-		 ,(name-combinator (symbol-name mode) "-curpos-history") (cons newpos ,(name-combinator (symbol-name mode) "-curpos-history")))
-	   (incf ,(name-combinator (symbol-name mode) "-curpos-cur-count"))
+	   (setq ,(name-glue mode "-curpos-top") newpos
+		 ,(name-glue mode "-curpos-history") (cons newpos ,(name-glue mode "-curpos-history")))
+	   (incf ,(name-glue mode "-curpos-cur-count"))
 	   (unless dont-update-curpos-cur-p
-	     (setq ,(name-combinator (symbol-name mode) "-curpos-cur") ,(name-combinator (symbol-name mode) "-curpos-history"))))))
-       ,(name-combinator (symbol-name mode) "-curpos-history"))
+	     (setq ,(name-glue mode "-curpos-cur") ,(name-glue mode "-curpos-history"))))))
+       ,(name-glue mode "-curpos-history"))
      
-     (defun ,(name-combinator (symbol-name mode) "-clear-curpos") ()
+     (defun ,(name-glue mode "-clear-curpos") ()
        "Update curpos-history"
-       (setq ,(name-combinator (symbol-name mode) "-curpos-history") (remove-if-not #'valid-curpos-p ,(name-combinator (symbol-name mode) "-curpos-history")))
-       (setq ,(name-combinator (symbol-name mode) "-curpos-cur") (or (remove-if-not #'valid-curpos-p ,(name-combinator (symbol-name mode) "-curpos-cur"))
-								     ,(name-combinator (symbol-name mode) "-curpos-history")))
-       (setq ,(name-combinator (symbol-name mode) "-curpos-top") (car ,(name-combinator (symbol-name mode) "-curpos-history")))
-       (setq ,(name-combinator (symbol-name mode) "-curpos-bottom") (car (last ,(name-combinator (symbol-name mode) "-curpos-history"))))
-       (setq ,(name-combinator (symbol-name mode) "-curpos-cur") ,(name-combinator (symbol-name mode) "-curpos-history"))
-       (setq ,(name-combinator (symbol-name mode) "-curpos-cur-count") (length ,(name-combinator (symbol-name mode) "-curpos-history"))))
+       (setq ,(name-glue mode "-curpos-history") (remove-if-not #'valid-curpos-p ,(name-glue mode "-curpos-history")))
+       (setq ,(name-glue mode "-curpos-cur") (or (remove-if-not #'valid-curpos-p ,(name-glue mode "-curpos-cur"))
+						 ,(name-glue mode "-curpos-history")))
+       (setq ,(name-glue mode "-curpos-top") (car ,(name-glue mode "-curpos-history")))
+       (setq ,(name-glue mode "-curpos-bottom") (car (last ,(name-glue mode "-curpos-history"))))
+       (setq ,(name-glue mode "-curpos-cur") ,(name-glue mode "-curpos-history"))
+       (setq ,(name-glue mode "-curpos-cur-count") (length ,(name-glue mode "-curpos-history"))))
 
-     (defun ,(name-combinator (symbol-name mode) "-empty-curpos") ()
+     (defun ,(name-glue mode "-empty-curpos") ()
        "Empty curpos-history"
        (interactive)
-       (setq ,(name-combinator (symbol-name mode) "-curpos-history") nil)
-       (setq ,(name-combinator (symbol-name mode) "-curpos-top") nil)
-       (setq ,(name-combinator (symbol-name mode) "-curpos-bottom") nil)
-       (setq ,(name-combinator (symbol-name mode) "-curpos-cur") nil)
-       (setq ,(name-combinator (symbol-name mode) "-curpos-cur-count") 0))
+       (setq ,(name-glue mode "-curpos-history") nil)
+       (setq ,(name-glue mode "-curpos-top") nil)
+       (setq ,(name-glue mode "-curpos-bottom") nil)
+       (setq ,(name-glue mode "-curpos-cur") nil)
+       (setq ,(name-glue mode "-curpos-cur-count") 0))
      
-     (defun ,(name-combinator (symbol-name mode) "-backtrace-curpos") ()
+     (defun ,(name-glue mode "-backtrace-curpos") ()
        "Backtrace the curpos-history stack"
        (interactive)
        (let* ((current-curpos (current-curpos))
-	      (target-curpos (car ,(name-combinator (symbol-name mode) "-curpos-cur"))))
+	      (target-curpos (car ,(name-glue mode "-curpos-cur"))))
 	 (unless (valid-curpos-p target-curpos)
-	   (,(name-combinator (symbol-name mode) "-clear-curpos"))
-	   (setq target-curpos (car ,(name-combinator (symbol-name mode) "-curpos-cur"))))
+	   (,(name-glue mode "-clear-curpos"))
+	   (setq target-curpos (car ,(name-glue mode "-curpos-cur"))))
 	 (cond ((not (valid-curpos-p target-curpos))
-		(,(name-combinator (symbol-name mode) "-push-curpos") t)
+		(,(name-glue mode "-push-curpos") t)
 		nil)
 	       ((equal current-curpos target-curpos)
-		(setq ,(name-combinator (symbol-name mode) "-curpos-cur") (cdr ,(name-combinator (symbol-name mode) "-curpos-cur")))
-		(,(name-combinator (symbol-name mode) "-backtrace-curpos")))
+		(setq ,(name-glue mode "-curpos-cur") (cdr ,(name-glue mode "-curpos-cur")))
+		(,(name-glue mode "-backtrace-curpos")))
 	       (t
-		(,(name-combinator (symbol-name mode) "-push-curpos") t)
+		(,(name-glue mode "-push-curpos") t)
 		(switch-to-buffer (curpos-buffer target-curpos))
 		(goto-char (curpos-point target-curpos))
-		(,(name-combinator (symbol-name mode) "-push-curpos") t)))))
+		(,(name-glue mode "-push-curpos") t)))))
      
      (add-curpos-advice ,mode ,@adviced-function) ; Define each advice function for push-curpos
 
      ,@(mapcar (lambda (group)
-		 `(define-key ,(name-combinator (mode-map-name group) "-map") (kbd "S-<f12>") ; Define each keymap for curpos-backtrace
-		    ',(name-combinator (symbol-name mode) "-backtrace-curpos")))
+		 `(define-key ,(name-glue (mode-map-name group) "-map") (kbd "S-<f12>") ; Define each keymap for curpos-backtrace
+		    ',(name-glue mode "-backtrace-curpos")))
 	       `(,mode			;All keymaps in group-mode-alist as a group
 		 ,@(or (remove nil (mapcar (lambda (pair)
 					     (if (eq (cdr pair) mode)
@@ -1281,7 +1285,7 @@ The advice call MODE-push-curpos by current major-mode"
   (defmacro defrun-lisp-impl (name command &rest key-args)
     (setq slime-lisp-implementations
 	  (cons `(,name ,(split-string command) ,@key-args) slime-lisp-implementations))
-    `(defun ,(name-combinator "run-" (symbol-name name)) ()
+    `(defun ,(name-glue "run-" name) ()
        (interactive)
        (slime ',name)))
   
