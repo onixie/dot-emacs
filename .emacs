@@ -1341,7 +1341,7 @@ The advice call MODE-push-curpos by current major-mode"
     ad-return-value)
   
   (let ((fasls-dir "/tmp/slime-fasls/"))
-    (setq slime-compile-file-options '(:fasl-directory fasls-dir))
+    (setq slime-compile-file-options `(:fasl-directory ,fasls-dir))
     (make-directory fasls-dir t)))
 
 ;;;;;;;;;;;;;;;; Scheme Programming ;;;;;;;;;;;;;;;;
