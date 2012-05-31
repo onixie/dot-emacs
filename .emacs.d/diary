@@ -99,7 +99,7 @@ Commercial:
 Khepera
 
 Jun 8, 2011  Git 断点续传
-通过git init && git fetch <url>可以实现git下载的断点续传
+通过git init && git fetch <url>可以实现git下载的断点续传(反馈：尝试了，貌似不能！)
 git clone不具备这个功能
 
 Jul 25, 2011 SBCL build process
@@ -318,7 +318,7 @@ Nov 28, 2011 Compiler, SBCL
 
 - Inline expansion是指函数在调用处展开为代码的优化。
 
-- Meta-programming是指通过开发一种语言的特定领域扩展 Domain-specific extension来编程的方法。 (我猜lisp里就是特别指macro编程了吧)
+- Meta-programming是指通过开发一种语言的特定领域扩展 Domain-specific extension来编程的方法。 (我猜lisp里就是特别指macro编程了吧，反馈：macro是其中一种机制)
 
 - Block compilation就是在假定全局函数global function不会重定义的情况下，优化掉函数边界。把defuned的函数编译成如flet, labels定义的
   函数块。该优化可以将函数调用转化为本地jump跳转，取消参数检查。另外，也将partial evaluation和type inference的边界扩展到block而不是函数。
@@ -422,8 +422,15 @@ b. 通过修改*compiler-print-variable-alist*来绑定一些*print-xxx*变量�
    注：restrict-compiler-policy并不受with-compilation-unit的影响，因此即便它在其内部，也会对全局起作用
 
 Dec 27, 2011 Open coded vs. Closed coded
-所谓Open coded就是指在函数调用的地方，用等价的内联代码（注意这里只是指代码，而不是其他等价的函数调用）替换掉该函数的调用。
-所谓Closed coded就是指在函数调用的地方，要么没有等价的替换，要么替换只是变成调用其他等价的函数。
+- 所谓Open coded就是指在函数调用的地方，用等价的内联代码inline code（注意这里只是指代码，而不是其他等价的函数调用）替换掉该函数的调用。
+  Open coding通常是牺牲空间来换取时间的一种做法，当实现比较简单的时候通常会这么做。
+- 所谓Closed coded就是指在函数调用的地方，要么没有等价的替换，要么替换只是变成调用其他等价的函数。
+
+- open coding与inline expansion的不同
+  由于CL中的标准函数都是固定的（用户不应随意修改），编译器一般可以根据情况来选择这些标准函数的内部实现，
+  这些内部实现是不同情况下的不同的内联代码。在不同的情况下，选择不同的内联代码进行替换，这就是open coding的实质。
+  而inline expansion通常指的是用函数体来代替函数调用的一种优化。
+
 
 Dec 27, 2011 杂技巧搜集
 1. 使用Xephyr实现窗口化X服务
@@ -588,6 +595,11 @@ Dec 30, 2011 编译器优化
 3. Tail local call
 对于CL中，即意思是通过labels, flet定义的函数存在尾调用。是一种效率很高的调用方式。
 
+（补充：从continuation的角度理解，tail call是指在tail position的调用，
+而tail position指的是当前表达式的continuation和包含它的表达式的continuation相同，
+如：(if A B C)中，B的作为redex（求值后结果），它的continuation等同于这个if的continuation，所以它处在if的tail position,
+B处的调用就是tail call， 符号表示为：C[B] => C[(if A B C)], 这部分详细可以参考racket reference中对于tail position的解释。)
+
 Dec 30, 2011 CL编译、调试
 (disassemble fn)
 通过该函数可以输出一个函数、或者lambda生成的本地代码 (SBCL中为汇编)
@@ -619,7 +631,7 @@ Extent涉及的是时间范围的概念
   1. 大多数的对象
   2. 函数内lexical scoped的函数参数（这些变量使得构造闭包称为可能）
 
-除了以上这些概念，还有一个dynamic scope的概念，它indefinite scope + dynamic extent，虽然用此不当，但是已经称为传统和习惯。
+除了以上这些概念，还有一个dynamic scope的概念，它indefinite scope + dynamic extent，虽然用词不当，但是已经称为传统和习惯。
 
 Jan 3, 2012 CL语言，控制转移
 1. normal return
@@ -639,8 +651,17 @@ Jan 5, 2012 CL语言，参数
 - Ordinary Lambda List
   即被普通的函数ordinary function使用的参数表，
   一般defun, flet, labels, lambda, handler-case, restart-case等都使用的是ordinary lambda list
-  该参数表只包含如下的关键字
-  &key, &rest, &optional, &allow-other-keys, &aux
+  该参数表只包含如下的关键字lambda keyword:
+  &optional, &rest, &key, &allow-other-keys, &aux
+
+  标准规定处理这些parameter specifier的顺序是：
+  1. 首先处理required parameter
+  2. 其次是optional parameter
+  3. 然后是rest 和 keyword parameter（注意这里如果有一个argument，会被同时处理到这两个parameter specifier的绑定上。）
+  4. 如果keyword同名的有多个，最左边的被处理。
+  5. 在这些都处理完了以后，aux parameter会被处理。（但是它不是参数，它只是用于函数内部普通变量的初始化，相当于一个let*)
+
+  还有&allow-other-keys parameter keyword和:allow-other-keys t argument pair可以使的一个接受keyword的函数，接受与keyword parameter不匹配的keyword argument pair。
 
 - Extended Lambda List
   就是扩展了Ordinary Lambda List的语法，增加了关键字的列表，通常defmacro使用的就是这种
@@ -648,6 +669,10 @@ Jan 5, 2012 CL语言，参数
 
 - Modified Lambda List
   就是从Ordinary Lambda List修改或者继承而来的参数表，通常deftype使用的就是这种
+
+最后，
+- lambda-list-keywords 可以显示实现支持的lambda list关键字都有那些
+- lambda-parameters-limit 可以显示实现支持的输入参数个数最大限制。
 
 P.S.
 在SBCL中，编译前端会将lambda list参数表转换为IR1中的lambda-vars和arg-info结构(在make-lambda-vars函数中)，
@@ -1015,7 +1040,6 @@ Y for Yes, N for No, C for compile-time-too, N for not-compile-time, P for proce
 
 注意:
 - 对于top level form，编译器是按照在代码里出现的顺序进行处理的。而对于非top level form的subform的处理(包括宏展开)还有further compilation标准不要求顺序，只要符合compliation semantic。
-
 - 对于非top level form, eval-when的:compile-toplevel和:load-toplevel都会被忽略(使用compile或者eval进行编译和求值时也是如此)。对于非top-level form，eval-when指定:execute的时候被当作一个implicit progn处理。
 
 May 22, 2012 SBCL 各种编译过程IR1前的处理调用关系
@@ -1039,7 +1063,7 @@ May 22, 2012 SBCL 各种编译过程IR1前的处理调用关系
 
       注：
       1. simple-eval-in-lexenv会循环调用simple-eval-progn-body, simple-eval-locally以及自身
-      
+
 2. 通过compile-file的编译										       +-----------+
 													       |           |
 										    +----<----+		    +>-+ eval-tlf  |->+
@@ -1075,3 +1099,381 @@ May 22, 2012 SBCL 各种编译过程IR1前的处理调用关系
        +------------+         +------------+         +------------+	    +------------+        +------------+
 
         基本同1的过程的后半部分。如果是从repl输入的compile, 那么compile之前就是simple-eval-in-lexenv。
+
+
+May 24, 2012 SBCL编译feature
+编译sbcl源代码的时候，可以指定一些feature，如以最高debug优化等级编译sbcl
+全部的feature在base-target-features.lisp-expr中定义。
+通过make-config.sh --with-<feature> 以及--fancy， 可以打开一些feature。
+打开后的feature在local-target-features.lisp-expr中可以找到。
+
+如可以make-config.sh --with-sb-debug --fancy
+
+May 29, 2012 Racket reader
+在racket中宏扩展只能扩展语言，它表现出两个层面的限制：
+1. 不能限制或者修改所在上下文中的既有语法以及周围的form。
+2. 只能够在语言的词法规定允许的范围内进行扩展，但不能改变s-exp的使用，如()[]{}, 不能改变一些核心语法，如，identifier，keyword的写法。
+
+因此说宏扩展是在展开器层(expander layer)上的语言扩展。
+还有一种就是在读入器层(reader layer)上的语言扩展。
+
+在racket中，宏扩展使用define-syntax和define-syntax-rule，通过操作syntax-object实现扩展。
+
+- Reading via an Extension
+而reader则通过模块和readtable来进行扩展。
+#reader <module> 通过使用用户在module中自定义的read和read-syntax对其后续的代码的读入方式进行改变，这样就改变了reader原来的语法，按照用户自定义的方式读入。
+另一种类似的方式是通过#lang reader <module>，类似于#reader，但整个改变了后续的语法，要求<module>的read和read-syntax产生的结果必须是个module form。
+另外，若新语言是基于已有的语法的，可以使用#lang s-exp syntax/module-reader定义新语言的module，它可以在s-exp的基础上扩展部分的reader语法，这样简化了新语言的创造。
+（通过重新provide新的绑定read和read-syntax以及使用readtable）。
+
+实际上#lang reader类似于#lang s-exp，后者允许#lang使用独立的模块语言，s-exp在这里表示在reader层上使用s-exp作为基本语法，而前者则一开始就指名使用用户自定义的reader语法而不是s-exp。
+在racket的scribble中就有类似的使用，@-exp, #lang @-exp 表示使用@表达式，这里reader, @exp, s-exp都被叫做meta-language。
+
+最后，如果你想直接使用#lang <module language name>来代替#lang reader <module>，你必须安装这些<module>到collection中。
+具体方法可以是：
+把module文件改名，并放入如下：<module language name>/lang/reader.rkt路径中。
+使用raco link <module language name>安装到collection
+或
+使用raco pack --collect <module language name>.plt <module language name>打包到一个.plt文件中
+使用raco setup -A <module language name>.plt安装
+
+- Readtable
+默认的reader是一个递归下降分析器（recursive-descent parser）。（想像根据不同的case递归调用自己完成parse的过程）
+默认的reader定义了基本的语法，包括哪些字符拥有特殊的含义。可能将(){}[]",`';以及空格定义为分隔符，另外#会是一般的宏分派字符，|\则定义了基本的转义功能。
+但这些语法可以通过readtable以及其他一些参数来进行扩展。
+
+如，修改(在readtable中的含义，通常情况下，当遇到(时，都会递归的读取后续的subform直到遇到)符号。
+通过parameterize current-readtable以及make-readtable就可以修改默认的readtable来实现一些小的语法变化。
+
+和CL readtable中众多的char type相比，racket中只有三种，
+terminating-macro 使得char类似于delimiter，即便在标示符中间也会引起readtable相应的proc进行特殊处理
+non-terminating-macro 仅仅出现在标示符开头时才会引起proc特殊处理
+dispatch-macro如同non-terminating-macro,不过他必须出现在#后面，或者准确的说，任何行为被定义为#hash的符号后面。
+
+- Racket的read chain
+通过read读取racket的代码时，当遇到#lang 或者#reader的时候，read就会递归的调用这些语言扩展机制的模块中新定义的read，这样就完成了对不同语法的一致的read。
+个人觉得这个是站在比较高的抽象层次上的一种语言机制(比起CL的reader就更加general。)
+通常情况下，读取也许不被允许，这可以通过改变read-accept-lang和read-accept-reader参数来改变。
+
+May 29, 2012 SBCL编译器术语辨析
+local call指的是functional和combination在同一个component中的调用。
+XEP指的是external entry point, 函数调用都是通过entry point调入被调函数体的。但是如果不是local call的时候，就需要一个外部的entry point。这个XEP就是给非local call的调用提供的entry point。
+cleanup一般对应entry，它主要用于处理dynamic extent在退出范围时候的清理工作，entry就是它的messup。
+
+
+May 30, 2012 racket hygeinic macro
+racket的define-syntax, define-syntax-rule, syntax-rules, syntax-case, 还有with-syntax
+前两个都用来引入新的macro，后面的都是辅助函数。
+在racket中有两种方式可以定义hygienic macro，一个是syntax-rule，通过简单的pattern<->template match方式实现
+另一个则比较复杂，syntax-case，通过操作syntax-object来实现。可以说后者就是前者的更底层。
+
+syntax-object可以看成是包括了代码的literal表示，以及srcloc, col, pos这类代码信息的结构。
+在racket中通过#'操作符可以将一个代码变成syntax-object, 我个人感觉是，这个操作符类似于quote，只不过是在语法层面上的quote。
+syntax-case会将一个syntax-object与一个pattern进行match，并将pattern中的变量绑定在后续的操作中，这样就可以在后续通过pattern variable重新访问syntax-object中的对象。
+with-syntax和syntax-case功能基本一样，只不过前者是用来一个一个match的，后者则match其中的一个pattern case。
+
+在hygeinic macro中 ... 符号非常特殊，它在match pattern中用来表示一些一类，这样的概念，作为pattern variable的一种。
+
+最后需要注意的是，由于macro是在编译期展开的，定义的helper function必须能够在编译期被访问。(理解：因为通常情况racket没有toplevel的函数定义，而modulelevel在编译期不会求值，所以必须要由个途径在编译期对helper求值。这类似于CL中的eval-when)
+这就要求helper function通过begin-for-syntax或者require for-syntax这样的form将其包裹起来，前者类似begin，后者通常是用于将helper function作为独立的module使用时引入。
+
+常用函数：
+define-syntaxes, define-syntax, syntax-case, syntax-case*, with-syntax, with-syntax*, syntax-rules, syntax-id-rules
+identifiers?, syntax?, syntax, quote-syntax, quasisyntax, unsyntax, unsyntax-splicing, syntax->datum, syntax-e, syntax->list, datum->syntax
+syntax-source, syntax-line, syntax-column, syntax-span, generate-temporaries
+bound-identifiers=?, free-identifiers=?
+set!-transformer?, make-set!-transformer, set!-transformer-procedure, rename-transformer?, make-rename-transformer, rename-transformer-target, local-expand
+define-syntax-parameter, syntax-parameterize, splicing-syntax-parameterize, splicing-let-syntax
+syntax-property, syntax-property-keys
+syntax-arm, syntax-protect, syntax-disarm, syntax-taint, syntax-tainted?
+expand, expand-syntax, expand-once, format-id, define-for-syntax, begin-for-syntax, require for-syntax
+
+May 31, 2012 racket的syntax model
+racket中reader负责将文本代码转化为syntax object(通常是通过read-syntax)，
+而expander主要负责将syntax object进行展开(根据它的binding information)，使得代码达到fully parsed的程度。
+
+展开过程expansion process是由syntax object的绑定binding驱使的，当expander遇到一个绑定binding form的时候，
+它会扩展子表达式的syntax object并加入新的绑定信息binding information。
+
+* identifiers binding
+  标示符identifiers在racket中可以被理解为代表程序的实体，比如代表某个变量引用，表达式form引用，或者甚至被quoted起来代表symbol或syntax object。（理解：这里的理解identifiers就是symbol或者quoted expressions）
+  当一个identifiers bind另外一个identifiers的时候，前者就是后者的variable,后者就是bounded identifiers。
+  绑定能够作用的代码构成了绑定的范围scope。一段代码所处在的环境environment就是包围该段代码的所有绑定构成的集合。
+
+  绑定可以分为: top-level, module, local三种。
+
+* phase level
+  每个绑定在racket中都有一个phase level。
+  模块内部宏展开期的绑定phase level为1, 这些绑定构成的环境叫transformer environment
+  模块内部运行期的绑定phase level为0，这些绑定构成的环境叫base environment
+  如果一个模块为了自己的phase level 1引入了另一个模块，另一个模块相对以这个模块处于phase level -1，它构成的环境叫template environment。
+
+  local绑定只能在特定的phase level被访问。top-level和module可以构成不同phase的绑定(理解：通过require for-syntax？)
+
+* syntax object
+  就是将symbol或者form与lexical information, syntax property, tamper status, src-loc information等信息组合在一起构成的对象。
+  特别的讲，identifiers本身就是将symbol与lexical及其他information组合在一起构成的syntax object。
+
+  free-identifiers?用来判断两个identifiers是否有相同的binding
+  bound-identifiers?用来判断两个identifiers是否有绑定关系
+
+  每个syntax object有三种tamper状态，tainted, armed, 和clean。
+  当处于tainted状态的时候，expander拒绝使用它作为binding或者变量。
+  armed状态下，任何使用syntax-e, syntax->datum之类的操作会使得armed变成tainted, 除非先disarm
+
+* Expansion
+  展开是递归的针对某个syntax object进行的，起始时的phase level为0. syntax object的lexical information中的binding information会
+  驱使展开的进行，并可能将新的binding引入其子表达式的lexical information中。
+
+  只有三种绑定是可能能够继续下去的：
+  - transformer binding
+  - variable binding
+  - core syntactic form
+
+  展开的每一步还和上下文有关，对于transformer和core syntactic form，不同的上下文，展开都可能不同：
+  - top-level context 代表top-level
+  - module-begin context 代表在module体内唯一的begin form
+  - module context 代表在module begin体内
+  - internal definition context 代表在define之类的定义内
+  - expression context 代表在一般表达式内
+
+* syntax transformer (a.k.a macro)
+  当使用define-syntax之类的form的时候，会在phase level 0引入transformer binding，
+  如果该绑定是一个单参的procedure的话，那它就是一个syntax transformer。syntax transformer接受一个syntax object， 返回一个syntax object。
+  而expander会使用其返回的syntax object继续parse。
+
+  另外对这个单参procedure的求值是需要先展开然后再求值的，但这些都是在phase level 1中进行的。(理解：这就是为什么define-syntax syntax-case的时候，helper function要使用begin-for-syntax引入）
+
+  在expander将一个syntax object传给syntax transformer的时候，这个syntax object是要被syntax mark的，只有当mark和binding都相同的时候，才认为是bound-identifiers?
+  （理解：这个mark的过程，就是保证hygeinic macro的过程）
+
+  hygeinic导致的问题是，在输出的syntax object(template)中，引入的变量都会重新命名(或者叫做mark)，使得不会和周围的identifier冲突，但如果需要突破这种hygeinic的限制（某些情况下想要某个id不被hygeinic）
+  通常都可以在syntax-case中，使用with-syntax创建固定名称的identifier，或者仍然使用hygeinic但是使用syntax-parameter构成一个dynamically scoped的id。
+
+Jun 1, 2012 SBCL IR1 Conversion	Call Flow
+ir1tran.lisp
+ir1-translators.lisp
+ir1tran-lambda.lisp
+main.lisp
+
+	 +---------------------------+		         +-------------------------+-+
+	 |             	       	     +--------->---------+ ir1-convert-inline-lambda |
+	 |  ir1-convert-lambdalike   |	                 |                           |
+	 |                           |    	 +-------+                           |
+	 +-----------------------+---+        	 |       +---------------------------+
+				 |	         |                                                       	                                    		                                                       							    |               |                       							                                          							                                               |               |
+				 |		 |
+				 |		 |
+			      +--+---------------+----+
+			      |                       |
+			      |  ir1-convert-lambda   |
+			      |                       |
+			      +---------+-------------+
+					|
+					|
+				+-------+----------+
+				| make-lambda-vars |								+-----------------------------------+
+				|                  |								|      	      	   	      	    |
+				+-------+----------+								|  process-type-decl	      	    |
+					|									|  process-package-lock-decl  	    |
+					|									|  process-optimize-decl      	    |
+				+-------+----------+				 +-----------------+		|  process-extent-decl	      	    |
+				| process-decls    +-----------------------------+  process-1-decl +------------+  process-inline-decl	      	    |
+				|                  |	                      	 |                 |		|  process-ignore-decl	      	    |
+				+------------------+	            		 +-----------------+		|  process-unmuffle-condition-decl  |
+				  +--------------------------------------<--------------------------------------+  process-muffle-condition-decl    |
+				  |		                     						|  process-ftype-decl	      	    |
+	   +----------------------+----+		    +------------------------------+			|  process-special-decl	      	    |
+	   |                   	       |		    |          	       	       	   +-----------<--------+                                   |
+	   |  ir1-convert-lambda-body  | 		    |   ir1-convert-hairy-lambda   |           		+-----------------------------------+
+	   |                   	       |		    |          	       	       	   |
+	   |                   	       |		    |                          	   |
+	   +---------------+-----------+		    +--------------------------+---+
+			   |							       |
+			   |							       |
+			   |	     +------<----+				       |
+			   |	     |		 |				       |	       +-----<------+
+	   +---------------+---------+------+	 |				       |	       |	    |
+	   |           	       	      	    |	 ^				  +----+---------------+-------+    ^
+	   |           	       	      	    |	 |				  |    	      	               |    |
+	   |  ir1-convert-special-bindings  +----|				  |   ir1-convert-hairy-args   +----+
+	   |           	       	      	    |					  |                            +-----------------<------------+
+	   |                                |					  +-------------------+-------++			      |
+	   +--------------+-----------------+							      |	      |				      |
+			  |									      |	      +-------->-----------+	      ^
+			  |									      |				   |	      |
+	   +--------------+-----------------+							      |				   |	      |
+	   |                   	       	    |						      +-------+----------+	  +--------+----------+-------------+
+	   |  ir1-convert-aux-bindings 	    +---------------+				      |	                 |	  |                            	    |
+	   |                   	       	    |		    |				      | ir1-convert-more | 	  | generate-optional-default-entry |
+	   +--------------+-----------------+		    |				      |                  |	  |                            	    |
+			  |				    |				      +-------+----------+	  +------------------+--------------+
+			  |				    |					      |					     |
+       +---------+	  |				    |					      |					     |
+       | 	 |	  |				    |				     +--------+-------------+    	+------------+--------------+
+       ^   +-----+--------+-------------+		  +-+------------------------+	     |  convert-more-entry  |    	|   convert-optional-entry  |
+       |   |                            |		  |            	       	     |	     +----------------------+    	+---------------------------+
+       +-<-+  ir1-convert-lambda-body   |		  | ir1-convert-progn-body   |
+	   |                            |		  |            	       	     |
+	   +--------------+-------------+		  +---+----------------------+
+			  |				      |
+			  |				      |
+	   +--------------+-----------------+		      |
+	   |  ir1-convert-combination-args  |		  +---+-----------+
+	   |           	       	            |		  |            	  |
+	   +--------------------------------+		  | ir1-convert	  |-----------------------------+---------------------+-------------------------+
+							  |               |				|		      |				|
+							  +---+-----------+				|		      |				|
+							      | 					|		      |				|
+							      | 					|		      |				|
+							      |  			    +-----------+--------+    +-------+----------+     +--------+---------------+
+							      |  			    |          	         |    |        	       	 |     |       	       	        |
+							      |  			    |   ir1-convert-var  |    |  reference-leaf	 |     |   reference-constant   |
+							      |  			    |                    |    |        	       	 |     |       	       	        |
+							      |  			    +--------------------+    +------------------+     +------------------------+
+							      |
+					    +-----------------+--------+
+					    |          	     	       |
+  +-----------------------+                 |   ir1-convert-functoid   +---------------+
+  | %%allocate-closures   |		    |                	       |	       |
+  | multiple-value-prog1  | 		    +-----+--------------------+      +--------+-----------------+
+  | progn                 |                       |                           |   careful-macro-expand   |
+  | multipl-value-call    | 			  | 			      |              	         |
+  | unwind-protect        | 			  | 			      +--------+-----------------+
+  | quote                 | 			  | 				       |
+  | function              |    +------------------+-----+	  +--------------------+----------+
+  | macrolet              |    |                        |	  |            	       	       	  |
+  | eval-when             |    |special-form translator |         |  ir1-convert-common-functoid  +---------------------------------+
+  | global-function       +-<--+                        |	  |                    	       	  |				    |
+  | let                   |    +------------------------+	  +--------+------------------+---+				    |
+  | %funcall              | 						   |		      |					    |
+  | %primitive            | 						   |		      |					    |
+  | let*                  | 						   |		      |					    |
+  | locally               | 						   |		      |					    |
+  | flet                  | 			     +---------------------+--------+	   +--+------------------------------+ +----+-----------------+
+  | labels                | 			     |             	      	    |	   |                   	    	     | |                      |
+  | the	                  |                          |  ir1-convert-global-functoid |      |  ir1-convert-local-combination  | | ir1-convert-srctran  |
+  | truly-the             | 			     |             	      	    |	   |                                 | |                      |
+  | setq                  | 			     +---+--------------------+-----+	   +---------------+-----------------+ ++-----------+---------+
+  | throw                 | 				 |	 	      |				   | 			|	    |
+  | %with-cleanup         | 	                         |                    |                +-----------+---------------+	|	    |
+  | %escape-fun           |                              |                    |                |  ir1-convert-combination  +--<-+	    |
+  | %cleanup-fun          |             +----------------+-----+       +------+-------------+  +------------+--------------+		    |
+  | catch                 |	        |                      |       |                    |   	    |				    |
+  | if                    |	        |careful-macro-expand  |       |ir1-convert-srctran |   	    |				    |
+  | block                 |             |                      |       |                    |  +------------+------------------+	+---+---+------------------------+	    +----------------------------------------+
+  | return-from	          |	        |ir1-convert           |       |                    |  |                    	       |	|                                |	    |        	     	              	     |
+  | tagbody               |             |                      |       |                    |  |  ir1-convert-combination-args |	|  ir1-convert-maybe-predicate   +----------+ ir1-convert-combination-checking-type  |
+  | go                    |	        |                      |       |                    |  |                    	       |	|                                |	    |        	     	              	     |
+  | symbol-macrolet	  |	        +----------------------+       +--------------------+  +-------------------------------+	+--------------------------------+	    +----------------------------------------+
+  +-----------------------+
+
+
+注释：
+ir1-convert-lambdalike 用于转换lambda, named-lambda, global-function (lambda-with-lexenv)
+ir1-convert-special-binding 如果由special binding，该函数会递归的处理每个special var，为每个svar创建special binding的cleanup，如果没有svar，就进入ir1-convert-aux-binding
+ir1-convert-aux-binding 处理aux bindings, 对每个aux var创建一层lambda，然后创建一个combination用aux var的value作为参数调用lambda。如果没有aux var， 就进入ir1-convert-progn
+ir1-convert-functoid 使用translator处理special form，或者如果碰到编译器宏，展开后使用ir1-convert-common-functoid处理。
+ir1-convert-common-functoid 处理除了special form和compiler macro的其他情况。
+ir1-convert-combination 处理combination中的fun部分，ir1-convert-combination-args实际创建combination并链接args和fun的lvar。
+ir1-convert-srctran处理全局函数，可能进行代码变换（内联处理），或者和普通local combination处理一样（当是notinline的时候）。
+ir1-convert-global-functoid 处理任何看上去像是个全局函数调用（没判断出来是个ir1-convert-srctran的情况，或者本身就是个宏的情况），如果是宏，就展开后继续处理，如果是个函数，就如同ir1-convert-src处理。
+每个不同的special form translator会进行特别的处理，可能会递归的调用ir1-convert, ir1-convert-lambda（special form: function）等。
+
+
+Jun 4, 2012 SBCL内部的“函数”
+在IR1中函数被存在四种不同的地方：
+1. *lexenv*， 通过lexenv-find可以找到这种定义在词法环境中的函数, 多为局部函数
+2. *free-funs*, 在*free-funs*中的函数，为全局:defined或者是assumed的函数
+3. global-var，这种就是全局的函数了
+4. defined-fun，这种是定义在同一个编译块中，并且是expansion或者inline优化选项被声明的全局函数
+   (注意，不管是inline还是notinline，只要声明的。)
+
+具体有这么以下几个函数可以取得它们：
+find-lexically-apparent-fun  --> find-free-fun  --> find-global-fun
+			     	      +-----------> make-defined-fun
+
+另外，在全局info数据库中，函数有三种类型，四种出处：
+三种类型是：function, macro, special-from
+四种出处是：assumed(还未定义，在一个函数内部调用，可能会产生warning), defined(已经定义出来的), defined-method(由CLOS定义的), declared（可能没有定义出来，但是函数类型已经通过declaim之类声明了）
+通过(info :function :where-from <fun name>)取得。
+
+最后，在最早的处理中(ir1-convert-lambdalike)其实有三种不同的lambda:
+lambda			--- 普通的lambda， 这个和ANSI标准中的那个相同。
+named-lambda 		--- 这个就是附带了一个名字的lambda, defun以及sb-c::%simple-eval都会生成这种lambda。
+lambda-with-lexenv 	--- 这个和inline函数有关，当函数声明为inline，并且符合inline条件的时候，编译器需要保存一个inline版本的lambda，所以就会生成一个此类lambda。（生成代码在defun中。）
+			    该lambda携带了其所在环境的信息，这包括decl, macro, symbol macro等信息（见maybe-inline-syntactic-closure函数）。
+
+			    
+Jun 4, 2012 SBCL INFO数据库
+globaldb.lisp文件
+INFO数据库提供一个函数接口来访问编译器全局的信息，这些信息可以跨编译访问。
+
+从概念上讲，INFO被划分为class, 每个class再被划分为type, 可以针对某个符号name访问某个class的某个type的信息。
+class是一个class-info结构，type是一个type-info结构。
+*info-classes*存储所有class的{名字,class-info结构}哈希对。
+*info-types*存储每个class的每个type, 并为其每一个分配一个type number(数组索引)。
+通过define-info-class和define-info-type，可以添加新的class和info。
+
+全局信息被存储在info-env结构中，*info-environment*中存储了所有{name, class, type}构成可以查询的信息。
+通过(info class type name)函数来访问信息，通过(setf info)来存储信息，通过clear-info来清除信息。
+常见的class type类型有：
+
+|-----------------------+------------------------------|
+| class                 | type                         |
+|-----------------------+------------------------------|
+| :function             | :type                        |
+|                       | :assumed-type                |
+|                       | :kind                        |
+|                       | :where-from                  |
+|                       | :inline-expansion-designator |
+|                       | :inlinep                     |
+|                       | :source-transform            |
+|                       | :macro-function              |
+|                       | :compiler-macro-function     |
+|                       | :ir1-convert                 |
+|                       | :info                        |
+|                       | :definition                  |
+|                       | :structure-accessor          |
+|-----------------------+------------------------------|
+| :variable             | :kind                        |
+|                       | :always-bound                |
+|                       | :type                        |
+|                       | :where-from                  |
+|                       | :macro-expand                |
+|                       | :alien-info                  |
+|                       | :documentation               |
+|-----------------------+------------------------------|
+| :type                 | :kind                        |
+|                       | :expander                    |
+|                       | :documentation               |
+|                       | :translator                  |
+|                       | :builtin                     |
+|                       | :compiler-layout             |
+|                       | :lambda-list                 |
+|                       | :source-location             |
+|-----------------------+------------------------------|
+| :typed-structure      | :info                        |
+|                       | :documentation               |
+|-----------------------+------------------------------|
+| :declaration          | :recognized                  |
+|                       | :handler                     |
+|-----------------------+------------------------------|
+| :alien-type           | :translator                  |
+|                       | :definition                  |
+|                       | :struct                      |
+|                       | :union                       |
+|                       | :kind                        |
+|                       | :enum                        |
+|-----------------------+------------------------------|
+| :setf                 | :inverse                     |
+|                       | :documentation               |
+|                       | :expander                    |
+|-----------------------+------------------------------|
+| :random-documentation | :stuff                       |
+|-----------------------+------------------------------|
+| :source-location      | :variable                    |
+|                       | :constant                    |
+|                       | :typed-structure             |
+|                       | :symbol-macro                |
+|-----------------------+------------------------------|
