@@ -139,7 +139,7 @@
  '(quack-global-menu-p nil)
  '(quack-pretty-lambda-p t)
  '(quack-programs (quote ("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
- '(rainbow-delimiters-generate-rainbow-faces-p 25)
+ '(rainbow-delimiters-generate-rainbow-faces-p 44)
  '(rainbow-delimiters-stop-cyclic-depth-highlighting-p t)
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
