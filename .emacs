@@ -820,7 +820,7 @@ Return a list of one element based on major mode."
 	  "Dired")
 	 ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
 	  "Help")
-	 ((or (memq major-mode '(lisp-mode slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode slime-sprof-browser-mode))
+	 ((or (memq major-mode '(lisp-mode slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode slime-sprof-browser-mode slime-xref-mode))
 	      (search "*inferior-lisp*" (buffer-name))
 	      (search "*slime-events*" (buffer-name)))
 	  "Common Lisp")
