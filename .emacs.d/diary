@@ -1477,3 +1477,866 @@ class是一个class-info结构，type是一个type-info结构。
 |                       | :typed-structure             |
 |                       | :symbol-macro                |
 |-----------------------+------------------------------|
+
+Jun 6, 2012 有趣的递归、迭代
+1. 阴阳问题
+
+(let* ((yin
+        ((lambda (cc)
+           (display #\@) cc)
+         (let/cc c
+           c)))
+       (yang
+        ((lambda (cc)
+           (display #\#) cc)
+         (let/cc c
+           c))))
+  (yin yang))
+
+这段代码会不停的输出@#@##@###@####@#####......下去，
+通过分析，运行的过程如同：
+(yin yang)	输出@#
+(yang yang')  	输出@#
+(yin yang')   	输出#
+(yang' yang'')	输出@#
+(yang yang'') 	输出#
+(yin yang'')  	输出#
+(yang'' yang''')输出@#
+(yang' yang''')	输出#
+(yang yang''')	输出#
+(yin yang''')	输出#
+。。。。
+
+理解这段代码的关键点在于理解每一次yang的continuation保存了该次对应的yin，只有yang对应的是yin, ying'以后的对应的都是实际上的yang。
+所以就形成了一种循环的关系。
+
+2. 尾递归与迭代不变式
+loop invariant是用来研究迭代正确性的理论。loop invariant theorem说不变式在迭代前若为真，则在迭代后仍为真,并且在迭代的每一步都为真。
+一般，递归变换成尾递归的关键就是寻找这个不变式，通过将不变式的计算在递归前完成就可以达实现尾递归。
+
+比如下面三种不同的尾递归乘方算法：
+;x^n => x*x*x...x 乘以n次， 不变式是x^(i+1) = x^i * x
+(define (fast-exp-iter-v1 x n)
+  (define depth 0)
+  (define (iter x n r)
+    (set! depth (+ depth 1))
+    (cond ((= n 0) r)
+          (else (iter x (- n 1) (* r x)))))
+  (display (iter x n 1))
+  (newline)
+  (display depth)
+  (newline))
+
+;利用一个不变式是当n为2的整数倍时，x^n => x^2i => (x^2)^i => x^2*x^2*x^2...*x^2 乘以i次, 利用不变式x^2^(i+1) = x^2^i * x^2
+(define (fast-exp-iter-v2 x n)
+  (define depth 0)
+  (define (iter x n r)
+    (set! depth (+ depth 1))
+    (cond ((= n 0) r)
+          ((even? n) (iter (* x x) (/ n 2) r))
+          (else (iter (* x x) (/ (- n 1 ) 2) (* r x)))))
+  (display (iter x n 1))
+  (newline)
+  (display depth)
+  (newline))
+
+;该版本和上面的版本类似，只是在奇数倍时不变换。
+(define (fast-exp-iter-v3 x n)
+  (define depth 0)
+  (define (iter x n r)
+    (set! depth (+ depth 1))
+    (cond ((= n 0) r)
+          ((even? n) (iter (* x x) (/ n 2) r))
+          (else (iter x (- n 1) (* r x)))))
+  (display (iter x n 1))
+  (newline)
+  (display depth)
+  (newline))
+
+好好体会不变式的感觉，有助于编写更好的尾递归函数。
+
+Jun 6, 2012 SBCL IR1对&optional, &rest, &key, &aux, special var的处理变换结果：
+
+- 对于&optioanl, &rest, &key都是用optional-dispatch代替了原有的函数,(ir1-convert-hairy-args中完成)
+  并生成了多个可接受不同参数个数的entry functional，比如
+
+(lambda (a &optional b (c cd cs)) body)，生成的结果是:
+
+	optional-dispatch: main, entries, more-entry
+	main: (lambda (a b c cs) body)
+
+	entry-optional1: (lambda (a b c)
+	     	            (funcall
+         	               (lambda (a b c cs) body)
+		                  a b c t))
+
+	entry-optional2: (lambda (a b)
+			    (funcall
+			       (lambda (a b c cs) body)
+			          a b cd nil))
+
+	entry-optional3: (lambda (a)
+			     (funcall
+			        (lambda (a b) body)
+			           a nil))
+
+  如果还有个&rest d参数，那么还会多一个more entry，并且，main entry也会随之被修改：
+        main: (lambda (a b c cs &aux (keyword arg bindings) ...) body)
+	
+	entry-more: (lambda (a b c restcontext)
+		       (loop-cond for analyzing keyword args and later
+                          (funcall
+			     (lambda (a b c cs &aux (keyword arg bindings) ...) body)
+			        a b c t)))
+
+- 对于&aux来说，其实它不是参数，而是额外的绑定，变换后成为一层一层的lambda和combination对(ir1-convert-aux-bindings中完成)
+
+(lambda (a b &aux (c 1) (d 2)) body)，生成的结果是：
+
+	(lambda (a b)
+	   (funcall
+	      (funcall
+	         (lambda (c)
+		    (lambda (d) body)) 
+                 1)
+	      2))
+
+	
+- 最后special var，会加入额外的cleanup code，并将其注册到当前的lexenv中：
+
+(lambda (a b c) body),如果b为special var，那么变换后的结果是：
+
+	(lambda (a b c)
+		(%special-bind specvar-b b)
+		(%cleanup-point)
+		body)
+
+Jun 7, 2012 On Lisp Notes
+Chapter 2. Functions
+--------------------------------------------------------------------------------
+1. Common Lisp has distinct name-spaces for variables and functions. (P12)
+
+2. A difference between lexical and dynamic scope comes down to how an
+   implementation deals with free variables. (P16)
+
+3. Closure are functions with local state. (P18)
+
+4. A function which isn't tail-recursive can often be transformed into one
+   that is by embedding in it a local function which uses an accumulator.
+   In this context, an accumulator is a parameter representing the value
+   computed so far. (P23)
+
+5. However, calling compile explicitly is a drastic measure, comparable to
+   calling eval, and should be viewed with the same suspicion. (P25)
+
+6. There are two sorts of functions which you can't give as an argument to
+   compile. ... , you can't compile a function "defined interpretively in
+   a non-null lexical environment." ... . You also can't call compile on
+   a function which is already compiled. ... "the consequences...are unspecified". (P25)
+
+Chapter 3. Functional Programming
+--------------------------------------------------------------------------------
+1. Functional programming means writing programs which work
+   by returnning values instead of by performing side-effects. (P28)
+
+2. An imperative program is a functional program turned inside-out.
+   An functional program is a imperative program turned outside-in. (P34)
+
+3. Instead of treating all side-effects as equally bad, ... , we could
+   say that it's harmless for a function to modify something that no
+   one else own. 
+   ...
+   In the general case, we have to talk about ownership not by functions,
+   but by invocations of functions. 
+   ...
+   The convension in Lisp seems to be that an invocation owns objects
+   it receives as return values, but not objects passed to it as arguments.
+   ...
+   To write programs that are really indistinguishable from functional code,
+   we have to add one more condition. Functions can't share objects with
+   other code that doesn't follow the rules.
+   ...
+   A corollary of the convertion above is that functions shouldn't return
+   anything that isn't safe to modify. Thus one should avoid writing functions
+   whose return values incorporate quoted objects.
+
+Chapter 4. Function Utilities
+--------------------------------------------------------------------------------
+1. Learning to write utilities would be better described as learning the habit of
+   writing them, rather than the technique of writing them. (P41)
+
+2. One of the unique characteristics of Lisp programming is the important role of
+   functions as arguments. This is part of why Lisp is well-adapted to bottom-up
+   programming. It's easier to abstract out the bones of a function when you can
+   pass the flesh back as a functional argument. (P42)
+
+3. If brevity is the soul of wit, it is also, along with the efficiency, the essence
+   of good software. ... All other things being equal, the shorter program is the
+   better. (P43)
+
+4. a new utility must be written for the general case, not just for the problem at
+   hand. Finally, like any capital expenditure, we need not be in a hurry about it. (P43)
+
+5. In any language, the "tendency towards brevity" will cause trouble unless it is
+   allowed to vent itself in new utilities. The shortest idioms are rarely the most
+   efficient ones. ... it's especially important to write utilities for situations
+   we might otherwise handle inefficiently. A language augmented with the right utilities
+   will lead us to write more abstract programs. If these utilities are properly defined,
+   it will also lead us to write more efficient ones. (P44)
+
+6. So yes, reading a bottom-up program requires one to understand all the new operators
+   defined by the author. But this will nearly always be less work than having to understand
+   all the code that would have been required without them. 
+   ...
+   Bottom-up programming makes what would otherwise be a large program look like a small,
+   simple one. This can give the impression that the program doesn't do much, and
+   should therefore be easy to read. When inexperienced readers look closer and find
+   that this isn't so, they react with dismay.
+   ...
+   Bottom-up programs are conceptually denser.(P60)
+
+7. in a small program, a utility might not be used enough to justify including it. (P60)
+
+Chapter 5. Returning Functions
+--------------------------------------------------------------------------------
+1. By defining functions to build and return new functions, we can magnify the effect
+   of utilities which take functions as arguments. (P61)
+
+2. Scheme was the first Lisp to make functions lexical closures, and it is this which
+   makes it interesting to have functions as return values. (P62)
+
+3. However, returning constant functions is the limit of what we can do with dynamic scope.
+   ...
+   Under lexical scope, instead of merely choosing among a group of constant functions,
+   we can build new closures at runtime. With dynamic scope this technique is impossible. (P61-62)
+
+4. Being able to pass functions as arguments is a powerful tool for abstraction.
+   The ability to write functions which return functions allows us to make the most
+   of it. (P62)
+
+5. An orthogonal language is one in which you can express a lot by combining a small
+   number of operators in a lot of different ways. (P63)
+
+   "e.g. complement to *-if-not functions, setf to reading/writing datas"
+
+6. If some function is expensive to compute, and we expect sometimes to make the
+   same call more than once, then it pays to memorize: to cache the return values
+   of all the previous calls, and each time the funciton is about to be called, to
+   look first in the cache to see if the value is already known. (P65)
+   
+7. The complement of a function f is denoted ~f. Another Common operation on functions
+   is composition, denoted by the operator o.
+   ...
+   All the functions given as arguments to compose must be functions of one argument,
+   except the last. (P66)
+
+8. Expressing functions by calls to constructors instead of sharp-quoted lambda-expressions could,
+   unfortunately, entail unnecessary work at runtime. ...
+   By using #., the sharp-dot read macro, we can have the new functions built at read-time. (P75)
+
+Chapter 6. Functions as Representation
+--------------------------------------------------------------------------------
+1. Generally, data structures are used to represent. ... In Lisp we can sometimes
+   use closures as a representation. With a closure, variable bindings can store
+   information and can also play the role that pointers play in constructing complex
+   data structures. By making a group of closures wich share bindings, or can refer
+   to one another, we can create hybrid objects which combine the advantage of data
+   structures and programs.
+   Beneath the surface, shared bindings are pointers. Closures just bring us the 
+   convenience of dealing with them at a higher level of abstraction. ... we can often 
+   expect substantial improvements in elegance and efficiency. (P76)
+
+2. Closures have three useful properties: they are active, they have local state, and
+   we can make multiple instances of them. (P76)
+
+3. Many programs involving networks can be implemented by compiling the nodes into
+   closures. Closures are data objects, and they can be used to represent things just
+   as structures can. Doing so requires some unconventional thinking, but the rewards
+   are faster and more elegant programs. 
+   Macros help substantially when we use closures as representations. "To represent
+   with closures" is another way of saying "to compile," and since macros do their work
+   at compile-time, they are a natural vehicle for this technique. (P81)
+
+
+Sightworthy code
+--------------------------------------------------------------------------------
+1. defun same as setf symbol-function
+
+(defun frob () ...) = (setf (symbol-function 'frob) (lambda () ...))
+
+2. compiled defun same as compile
+
+(defun frob () ...) = (compile 'frob (lambda () ...))
+
+3. Utilities
+
+   a. Operation on Lisst
+      
+      (defun last-car (lst)
+		(car (last lst)))
+
+      (defun singleton (lst)
+		(and (consp lst) (null (cdr lst))))
+
+      (defun appendr (lst obj)
+		(append lst (list obj)))
+					
+      (defun nconcr (lst obj)
+		(nconc lst (list obj)))
+
+      (defun ensure-list (obj)
+		(if (listp obj) obj (list obj)))
+
+      (defun longer (x y)
+		(labels ((compare (x y)
+			   (and (consp x)
+				(or (null y)
+				    (compare (cdr x) (cdr y))))))
+		  (if (and (listp x) (listp y))
+		      (compare x y)
+		      (> (length x) (length y)))))
+
+      (defun filter (fn lst)
+		(let ((acc nil))
+		  (dolist (x lst)
+		    (let ((val (funcall fn x)))
+		      (if val 
+			  (push val acc))))
+		  (nreverse acc)))		      
+
+      (defun group (source n)
+		(if (zerop n) (error "zero length"))
+		(labels ((rec (source acc)
+			   (let ((rest (nthcdr n source)))
+			     (if (consp rest)
+				 (rec rest (cons (subseq source 0 n) acc))
+				 (nreverse (cons source acc))))))
+		  (and source (rec source nil))))
+
+      (defun flatten (x)
+		(labels ((rec (x acc)
+			   (cond ((null x) acc)
+				 ((atom x) (cons x acc))
+				 (t (rec (car x) (rec (cdr x) acc))))))
+		  (rec x nil)))
+
+      (defun prune (test tree)
+		(labels ((rec (tree acc)
+			   (cond ((null tree) (nreverse acc))
+				 ((consp (car tree)) (rec (cdr tree)
+							  (cons (rec (car tree) nil) acc)))
+				 (t (rec (cdr tree) (if (funcall test (car tree))
+							acc
+							(cons (car tree) acc)))))))
+		  (rec tree nil)))
+
+   
+   b. Search
+   
+      (defun find2 (fn lst)
+		(if (null lst)
+		    nil
+		    (let ((val (funcall fn (car lst))))
+		      (if val
+			  (values (car lst) val)
+			  (find2 fn (cdr lst))))))   
+      
+      (defun before (x y lst &key (test #'eql))
+		(and lst
+		     (let ((first (car lst)))
+		       (cond ((funcall test y first) nil)
+			     ((funcall test x first) lst)
+			     (t (before x y (cdr lst) :test test))))))
+      
+      (defun after (x y lst &key (test #'eql))
+		(let ((rest (before y x lst :test test)))
+		  (and rest (member x rest :test test))))
+
+      (defun duplicate (obj lst &key (test #'eql))
+		(member obj (cdr (member obj lst :test test)) :test test))
+
+
+      (defun split-if (fn lst)
+		(let ((acc nil))
+		  (do ((src lst (cdr src)))
+		      ((or (null src) (funcall fn (car src)))
+		       (values (nreverse acc) src))
+		    (push (car src) acc))))
+
+
+      (defun most (fn lst)
+		(if (null lst)
+		    (values nil nil)
+		    (let* ((win (car lst))
+			   (max (funcall fn win)))
+		      (dolist (obj (cdr lst))
+			(let ((score (funcall fn obj)))
+			  (when (> score max)
+			    (setq win obj
+				  max score))))
+		      (values win max))))
+
+      (defun best (fn lst)
+		(if (null lst)
+		    nil
+		    (let* ((win (car lst)))
+		      (dolist (obj (cdr lst))
+			(if (funcall fn obj win)
+			    (setq win obj)))
+		      win)))
+
+   c. Mapping
+
+      (defun map0-n (fn n)
+             (mapa-b fn 0 n))
+
+      (defun mapa-b (fn a b &optional (step 1))
+             (do ((i a (+ i step))
+                  (restul nil))
+                 ((> i b) (nreverse result))
+                 (push (funcall fn i) result)))
+
+      (defun map-> (fn start test-fn succ-fn)
+             (do ((i start (funcall succ-fn i))
+	          (result nil))
+                 ((funcall test-fn i) (nreverse result))
+                 (push (funcall fn i) result)))
+
+      (defun mappand (fn &rest lsts)
+             (apply #'append (apply #'mapcar fn lsts)))
+
+      (defun rmapcar (fn &rest args)
+             (if (some #'atom args)
+                 (apply fn args)
+                 (apply #'mapcar
+                        #'(lambda (&rest args)
+                             (apply #'rmapcar fn args))
+                        args)))
+
+   d. I/O
+
+      (defun prompt (&rest args)
+            (apply #'format *query-io* args)
+            (read *query-io*))
+
+   e. Symbols and Strings
+
+      (defun mkstr (&rest args)
+        (with-output-to-string (s)
+           (dolist (obj args) (princ obj s))))
+
+      (defun symb (&rest args)
+        (values (intern (apply #'mkstr args))))
+
+      (defun reread (&rest args)
+        (values (read-from-string (apply #'mkstr args))))
+
+4. Unify destructuring and non-destructuring interface (better orthogonality)
+   Utilities:
+   (defvar *!equivs* (make-hash-table))
+   (defun ! (fn)
+   	  (or (gethash fn *!equivs*) fn))
+   (defun def! (fn fn!)
+          (setf (gethash fn *!equivs*) fn!))
+
+   Usage Code:	  
+   (def! #'remove-if #'delete-if)
+   (funcall (! #'remove-if) #'oddp lst)
+   
+5. Memoizing results
+   (defun memoize (fn)
+      (let ((cache (make-hash-table :test #'equal)))
+         #'(lambda (&rest args)
+              (multiple-value-bind (val win) (gethash args cache)
+                 (if win
+                     val
+                     (setf (gethash args cache)
+		           (apply fn args)))))))
+
+6. Composing functions
+   (defun compose (&rest fns)
+   	  (if fns
+	      (let ((fn1 (car (last fns)))
+	      	    (fns (butlast fns)))
+		    #'(lambda (&rest args)
+		          (reduce #'funcall fns
+			          :from-end t
+                                  :initial-value (apply fn1 args))))
+              #'identity))
+
+    (defun complement (pred)
+          (compose #'not pred))
+
+    (defun fif (if then &optional else)
+          #'(lambda (x)
+               (if (funcall if x)
+                   (funcall then x)
+                   (if else (funcall else x)))))
+
+    (defun fint (fn &rest fns)
+          (if (null fns)
+              fn
+              (let ((chain (apply #'fint fns)))
+                 #'(lambda (x)
+                      (and (funcall fn x) (funcall chain x))))))
+
+    (defun fun (fn & rest fns)
+          (if (null fns)
+              fn
+              (let ((chain (apply #'fun fns)))
+                 #'(lambda (x)
+                      (or (funcall fn x)  (funcall chain x))))))
+
+7. Recurser
+   (defun trec (rec &optional (base #'identity))
+          (labels ((self (tree)
+                     (if (atom tree)
+                         (if (functionp base) 
+                             (funcall base tree)
+                             base)
+                         (funcall rec tree #'(lambda () (self (car tree)))
+                                           #'(lambda () (if (cdr tree) (self (cdr tree))))))))
+                  #'self))
+
+8. Compiling networks
+
+   (defvar *nodes* nil)
+   (defun defnode (&rest args)
+   	  (push args *nodes*)
+	  args)
+   (defun compile-net (root)
+          (let ((node (assoc root *nodes)))
+	       (if (null node)
+	           nil
+                   (let ((conts (second node))
+		         (yes (third node))
+			 (no (fourth node)))
+			(if yes ; 
+			    (let ((yes-fn (compile-net yes))
+                                  (no-fn (compile-net no)))
+                                #'(lambda ()
+                                      (format t "~a~%>>" conts)
+                                      (funcall (if (eq (read) 'yes)
+                                                   yes-fn
+                                                   no-fn))))
+                            #'(lambda () conts))))))
+
+  
+  Usage code:
+  (defnode 'people "Is the person a man?" 'male 'female)
+  (defnode 'male "Is he living?" 'liveman 'deadman)
+  ...
+
+Jun 7, 2012 TLS & TSS Notes
+The Little Schemer
+--------------------------------------------------------------------------------
+The First Commandment (P22)
+    (preliminary)
+    Always ask null? as the first question in epxressing any function.
+
+The Second Commandment (P37)
+    Use cons to build lists.
+
+The Third Commandment (P45)
+    When building a list, describe the first typical element,
+    and then cons it onto the natural recursion.
+
+The Fourth Commandment (P57)
+    (priliminary)
+    Always change at least one argument while recurring. It
+    must be changed to be closer to termination. The changing
+    argument must be tested in the termination condition:
+    when using cdr, test termination with null?
+
+The First Commandment (P64)
+    (first revision)
+    When recurring on a list of atoms, lat, ask two questions about it:
+    (null? lat) and else.
+    When recurring on a number, n, ask two questions about it:
+    (zero? n) and else.
+
+The Fourth Commandment (P65)
+    (first revision)
+    Always change at least onw argument while recurring. It must be changed to 
+    be closer to termination. The changing argument must be tested in termination
+    condition:
+    when using cdr, test termination with null? and
+    when using sub1, test termination with zero?.
+
+The Fifth Commandment (P67)
+    When building a value with +, always use 0 for the value of the terminating line, 
+    for adding 0 does not change the value of an addition.    
+    When building a value with *, always use 1 for the value of the terminating line,
+    for multiplying by 1 does not change the value of a multiplication.
+    When building a value with cons, always consider () for the value of terminating line.
+
+The First Commandment (P83)
+    (final revision)
+    When recurring on a list of atoms, lat, ask two questions about it:
+    (null? lat) and else.
+    When recurring on a number, n, ask two questions about it:
+    (zero? n) and else.
+    When recurring on a list of S-expressions, l, ask three question about it:
+    (null? l), (atom? (car l)) and else.
+
+The Fourth Commandment (P84)
+    (final revision)
+    Always change at least one argument while recurring. When recurring on a list of atoms,
+    lat, use (cdr lat). When recurring on a number, n, use (sub1 n). And when recurring on
+    a list of S-expressions, l, use (car l) and (cdr l) if neither (null? l) nor (atom? (car l))
+    are true.
+    It must be changed to be closer to termination. The changing argument must be tested in
+    the termination condition.
+    when using cdr, test termination with null? and
+    when using sub1, test termination with zero?.
+
+The Sixth Commandment (P93)
+    Simplify only after the function is correct.
+
+The Seventh Commandment (P103)
+    Recur on the subparts that area of the same nature:
+    - On the sublists of a list.
+    - On the subexpression of an arithmetic expression.
+
+The Eighth Commandment (P107)
+    Use help functions to abstract from representations.
+
+The Ninth Commandment (P133)
+    Abstract common patterns with a new function.
+
+The Tenth Commandment (P140)
+    Build functions to collect more than one value at a time.
+    
+The Seasoned Schemer
+--------------------------------------------------------------------------------
+The Eleventh Commandment (P11)
+    Use additional arguments when a function needs to know what other arguments to the
+    function have been like so far.
+
+The Twelfth Commandment (P22)
+    Use (letrec ...) to remove arguments that do not change for
+    recursive applications.
+
+The Thirteenth Commandment (P31)
+    Use (letrec ...) to hide and to protect functions.
+
+The Fourteenth Commandment (P44)
+    Use (letcc ...) to return values abruptly and promptly.
+
+The Fifteenth Commandment (P69)
+    (priliminary version)
+    Use (let ...) to name the values of repeated expressions.
+
+The Fifteenth Commandment (P74)
+    (revised version)
+    Use (let ...) to name the values of repeated expressions in a function definition
+    if they may be evaluated twice for one and the same use of the function.
+
+The Sixteenth Commandment (P98)
+    Use (set! ...) only with names defined in (let ...)s.
+
+The Eighteenth Commandment (P104)
+    Use (set! x ...) only when the value that x refers to is no longer needed.
+
+The Nineteenth Commandment (P112)
+    Use (set! ...) to remember valuable things between two distinct uses of a function.
+
+The Twentieth Commandment (P160)
+    When thinking about a value created with (letcc ...), write down the function
+    that is equivalent but does not forget. Then, when you use it, remember to forget.
+
+Sightworthy code
+--------------------------------------------------------------------------------
+1. 3x+1 problem
+
+(define 3x+1
+  (lambda (n)
+    (letrec ((C (lambda (n d)
+                  (cond
+                    ((= n 1) 
+                     (displayln d)
+                     'convergent)
+                    (else
+                     (cond
+                       ((even? n) (C (/ n 2) (add1 d)))
+                       (else (C (add1 (* 3 n)) (add1 d)))))))))
+      (C n 0))))
+
+2. Ackermann Function
+
+(define ackermann
+  (lambda (n m)
+    (cond
+      ((zero? n) (add1 m))
+      ((zero? m) (ackermann (sub1 n) 1))
+      (else
+       (ackermann (sub1 n)
+                  (ackermann n (sub1 m)))))))
+
+3. Tail recursion with collector
+
+(define copy-tree-nt
+  (lambda (tree)
+    (cond ((null? tree) tree)
+          ((not (or (pair? (car tree))
+                    (null? (car tree))))
+           (cons (car tree) (copy-tree-nt (cdr tree))))
+          (else
+           (cons (copy-tree-nt (car tree))
+                 (copy-tree-nt (cdr tree)))))))
+
+(define copy-tree
+  (lambda (tree)
+    (letrec ((cp (lambda (t col)
+                   (cond ((null? t) (col t))
+                         ((not (or (pair? (car t))
+                                   (null? (car t))))
+                          (cp (cdr t)
+                              (lambda (st)
+                                (col (cons (car t) st)))))
+                         (else
+                          (cp (car t)
+                              (lambda (a-st)
+                                (cp (cdr t)
+                                    (lambda (d-st)
+                                      (col (cons a-st d-st)))))))))))
+      (cp tree identity))))
+
+4. Halting problem
+
+(define will-stop?
+  (lambda (proc)
+    ...))
+
+(define eternity
+  (lambda (x)
+    (eternity x)))
+
+(define last-try
+  (lambda (x)
+    (and (will-stop? last-try)
+         (eternity x))))
+
+5. Applicative-order Y-combinator
+
+(define Y
+  (lambda (one-step)
+    ((lambda (f) (f f))
+     (lambda (f)
+       (one-step (lambda (x) ((f f) x)))))))
+
+(define length-one-step
+  (lambda (length)
+    (lambda (l)
+      (cond ((null? l) 0)
+            (else (add1 (length (cdr l))))))))
+
+(define length (Y length-one-step))
+
+6. Functional cons
+
+- immutable cons
+
+(define cons
+  (lambda (car cdr)
+    (lambda (selector)
+      (selector car cdr))))
+
+(define car
+  (lambda (cons)
+    (cons (lambda (car cdr) car))))
+
+(define cdr
+  (lambda (cons)
+    (cons (lambda (car cdr) cdr))))
+
+- mutable cons
+
+(define cons-car-on-empty
+  (lambda (car)
+    (let ((cdr empty))
+      (lambda (selector)
+        (selector (lambda (new-cdr) (set! cdr new-cdr)) car cdr)))))
+
+(define set-cdr!
+  (lambda (cons new-cdr)
+    ((cons (lambda (set-cdr! car cdr) set-cdr!)) new-cdr)))
+
+(define cons
+  (lambda (car cdr)
+    (let ((cons (cons-car-on-empty car)))
+      (set-cdr! cons cdr)
+      cons)))
+
+(define car
+  (lambda (cons)
+    (cons (lambda (set-cdr! car cdr) car))))
+
+(define cdr
+  (lambda (cons)
+    (cons (lambda (set-cdr! car cdr) cdr))))
+
+Jun 13, 2012 Git plumbing commands
+- Git main structure
+  .git/objects for 3 Objects: Blob, Tree, Commit
+  .git/refs for 3 Refs: head, tag, remote           (reference to commit object or other refs)
+  .git/HEAD for symbolic reference to .git/refs/heads/master
+  .git/index for staging area
+  .git/hooks for hook scripts
+  .git/config for local config
+  .git/info for keep ignored files and packfiles
+  .git/pack-refs packed refs
+  .git/log	 storing reflogs information, if delete, git reflog will show nothing.
+  .git/refs/remotes/origin/ the refs here is the same as the refs in remote's .git/refs/heads/  see refspec
+
+- Plumbing commands
+echo <content> | git hash-object -w --stdin    Store plan blob object
+git cat-file -p <objects' SHA-1>               View object content
+git cat-file -p master^{tree}                  View tree object last commit object pointint to
+git cat-file -t <objects' SHA-1>	       View object type
+git update-index --add <file>		       Add new file to staging area
+git update-index --add --cacheinfo <100644|120000|100755> <SHA-1> <file>  Add blob to staging area
+git write-tree	       		   	       Write staging area to a tree object
+git read-tree <tree SHA-1>		       Read a tree to staging area
+echo "commit msg" | git commit-tree <tree SHA-1> Create a commit object pointing to specified tree
+git update-refs <refs/path> <commit SHA-1>	 Create a refs to a commit
+git symbolic-ref <refs path>	    		 Find the target of the symbolic reference
+git gc --auto	       				 Collect loose objects and make packfiles
+git verify-pack -v <path/to/packfile>		 Look into packed objects in a packfile
+git reflog	   				 HEAD change history, useful when recover some lost commit or HEAD
+git log -g					 like git reflog but more information
+git fsck --full					 show dangling commit, useful when reflog has nothing to tell you.
+git count-objects				 count size and objects
+git rev-list --objects				 list all chronological commits and its related files
+git filter-branch --index-filter "filter commands" -- <commit SHA>^..  do filter on each commit since specified one.
+git rev-parse	  		 	 	 show the commit the ref pointing to
+git ls-tree <treeish>				 list content of tree
+
+- refspecs
+  format [+]<remote's refs/heads/>:<local's refs/remotes/origin/>
+  + is optional and refers to forcibly fetch even non-fastforward.
+  
+git fetch origin <refspecs> [\ <refspecs]...    Fetch remotes according to refspecs
+git push origin <refspecs>     			Push to remotes according to refspecs
+git push origin :<remote refs>			Delete remotes' refs
+
+Jun 13, 2012 Git　常用命令和revision selection
+git clean -ffxd 删除目录中没有track的文件，包括ignored那些
+rm -rf * && git reset --hard  清空工作目录并重新从repo中取得HEAD
+git archive --format=tar <refs>:<tree path> 对某个ref的某个目录下的文件打包
+git blame 查看每一行代码都是谁改的
+git branch --merged 查看已经合并过的分支，可以删除它了意味着。
+git show <object>   显示对象
+
+版本指定
+revision 可以是 commit或者ref
+revision^ 显示早它前一个的revision的第一个parent
+revision^2 早它前一个的revision的第二个parent
+revision~ 显示早它前一个的revision的第一个parent
+revision~3 显示早它前三个的revision的第一个parent
+ref@{<time> or <order>} 显示引用日志中的引用以前的历史，这对于HEAD来说比较有用。
+
+提交范围
+refa..refb 所有在refb中，但不在refa中的提交
+^refa 所有不在refa中的提交
+refa...refb 被两者包含，都又不都在两者中的提交
