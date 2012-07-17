@@ -57,6 +57,7 @@
 (require 'highlight-current-line)
 (require 'pack-windows)
 (require 'quack)
+(require 'scribble)
 
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
@@ -1375,7 +1376,7 @@ The advice call MODE-push-curpos by current major-mode"
       (list 'scheme-mode-hook))
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
-(defun ielm-quit-sentinel (proc change)
+(defun repl-quit-sentinel (proc change)
   "Clean up of buffers, when eilm quit."
   (when (string-match "\\(finished\\|exited\\|killed\\|quit\\)" change)
     (condition-case nil
@@ -1428,7 +1429,15 @@ This command assumes point is not in a string or comment."
 		  (lambda ()
 		    (paredit-mode 1)
 		    (rainbow-delimiters-mode 1))))
-      (list 'emacs-lisp-mode-hook 'ielm-mode-hook 'lisp-interaction-mode-hook 'lisp-mode-hook 'slime-repl-mode-hook 'inferior-lisp-mode-hook 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
+      (list 'emacs-lisp-mode-hook 
+	    'ielm-mode-hook 
+	    'lisp-interaction-mode-hook 
+	    'lisp-mode-hook 
+	    'slime-repl-mode-hook 
+	    'inferior-lisp-mode-hook 
+	    'scheme-mode-hook 
+	    'geiser-repl-mode-hook 
+	    'inferior-scheme-mode-hook))
 
 ;; (mapc (lambda (hook)
 ;; 	(add-hook hook 
@@ -1447,7 +1456,12 @@ This command assumes point is not in a string or comment."
 	    (eldoc-mode)
 	    (let ((process (get-buffer-process (current-buffer))))
 	      (when (processp process)
-		(set-process-sentinel process 'ielm-quit-sentinel)))))
+		(set-process-sentinel process 'repl-quit-sentinel)))))
+(add-hook 'inferior-scheme-mode-hook 
+	  (lambda ()
+	    (let ((process (get-buffer-process (current-buffer))))
+	      (when (processp process)
+		(set-process-sentinel process 'repl-quit-sentinel)))))
 
 (add-hook 'emacs-lisp-mode-hook
 	  (lambda ()
@@ -1462,6 +1476,12 @@ This command assumes point is not in a string or comment."
 (mapc (lambda (map)
 	(define-key map (kbd "TAB") 'slime-indent-and-complete-symbol))
       (list lisp-mode-map))
+
+(setq magic-mode-alist nil)
+(add-to-list 'magic-mode-alist '("#lang[[:space:]]+racket" . scheme-mode))
+(add-to-list 'magic-mode-alist '("#!\\(.+/\\)*racket[[:space:]]*$" . scheme-mode))
+(add-to-list 'magic-mode-alist '("#lang[[:space:]]+scribble" . scribble-mode))
+(add-to-list 'magic-mode-alist '("#!\\(.+/\\)*sbcl[[:space:]]+--script$" . lisp-mode))
 
 					; Switching () and [] keys, I don't like it. 
 					; But it really relieves my fingers' wrick :P
