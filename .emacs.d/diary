@@ -674,6 +674,10 @@ Jan 5, 2012 CL语言，参数
 - lambda-list-keywords 可以显示实现支持的lambda list关键字都有那些
 - lambda-parameters-limit 可以显示实现支持的输入参数个数最大限制。
 
+另外，对于defstruct创建的constructor，还有一种叫做boa lambda list的东西，它其实相当于ordinary lambda list, 只不过
+该参数列表中的参数用于constructor中初始化成员，而这个初始化是要与成员的顺序一一对应的。BOA的意思是By Order of Arugments。
+对于deftype中使用到的deftype lambda list，它相当于macro lambda list，只是&optional和&keyword的默认值没有指定时，默认为*而不是nil。
+
 P.S.
 在SBCL中，编译前端会将lambda list参数表转换为IR1中的lambda-vars和arg-info结构(在make-lambda-vars函数中)，
 每一个参数都会有自己的lambda-vars，如果是&optional, &keyword诸如这类特殊的参数，还会有对应的arg-info记录它们的额外信息（如默认值、是否提供判断，关键字等）
@@ -2339,4 +2343,2101 @@ ref@{<time> or <order>} 显示引用日志中的引用以前的历史，这对�
 提交范围
 refa..refb 所有在refb中，但不在refa中的提交
 ^refa 所有不在refa中的提交
-refa...refb 被两者包含，都又不都在两者中的提交
+refa...refb 被两者包含，但又不同时在两者中的提交
+Jul 20, 2012 修改mysql管理员密码
+方法一：
+$ mysqladmin -u root NEWPASSWORD
+或者
+$ mysqladmin -u root -p'oldpassword' password NEWPASSWORD
+
+方法二：
+1) Login mysql server
+$ mysql -u root -p
+
+2) Use mysql database
+mysql> use mysql;
+
+3) Change password
+mysql> update user set password=PASSWORD("NEWPASSWORD") where user='root';
+
+4) Finally, reload the privildegs;
+mysql> flush privileges;
+mysql> quit;
+
+Jul 20, 2012 mysql 常用命令
+help 列出帮助
+     - help show;
+show 显示状态
+     - show tables;
+     - show databases;
+
+Jul 23, 2012 Racklog语言 和 Datalog语言 以及 Production system
+Racklog是Racket语言中支持prolog风格的逻辑编程范式的语言。
+它除了支持racket的对象外，还有两类特殊的对象，就是目标goal和断言predicate。
+
+目标是可以判别真假性的对象，基本对象是%true和%fail，
+通过%which和%more可以判断一个goal的真假。
+
+断言是用来构建目标的对象，当把断言作用于其他对象时就创建了一个对象（断言类似于一个函数）。
+基本的断言有%=!=, %<, %>等算数断言，%is支持使用普通的racket表达式作为断言， %member判断成员的断言，
+%constant， %compound对象类型断言，%and, %or 组合断言。
+
+Racklog中的断言不同于Racket断言的一点是它产生的是目标，而不是真假值。
+通常可以使用%rel关系来创造新断言，可以创造fact或者rule两类。
+
+在逻辑推演过程中Unification的目的就是匹配输入查询和目标语句左式，只有当匹配的时候，才会
+继续subgoal的推演。判断匹配的时候，总有一些未被绑定的逻辑变量，这些变量在这个时候就
+必须绑定到左式的某些值上，这个过程就是Unification。这有点类似于racket中的match作的事情。
+racklog提供了一个断言%=来完成Unification的过程，因此Unification其实也是一类目标。而且
+是在推演中非常基本的一类目标。（因为推演过程就是目标-子目标的一级一级拆分，而Unification在其中
+起到了粘合剂的作用）
+
+cut目标用来去除后续不必要的查询或者逻辑推演过程。它的返回类似于一个%true目标，但是在这之后将不再会有%more。
+可以把它想象成在一个树上作元素查找，当找到某个后面有cut的匹配元素后，这个查找就将结束，不会继续后续的查找过程。
+cut通常比较危险，所以一般隐藏在一些construct之后，比如%if-then-else，或者%not
+e.g.
+(define %if-then-else
+  (%rel (p q r)
+    [(p q r) p ! q]
+    [(p q r) r]))
+
+这个断言是个接受断言的断言。因此不属于first-order。
+
+(define %not
+  (%rel ()
+    [(g) g ! %fail]
+    [(g) %true]))
+
+注意这种 ! %fail 用法，它是让cut返回%fail的common idiom。
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Datalog是一种基于逻辑范式的声明式语言又是一个推演数据库系统。它既可以用于查询，也可以直接加入新的规则更新数据库。
+它的语法是prolog语言语法的子集。它可以根据显示Explicit的Fact和隐含Implicit的Rule来完成对数据库查询的推演。
+
+在datalog中，一个literal就是一个predicate(字符串或者标示符)加上括号后面跟着逗号分割的term，
+term可以是变量(大写字母开头)或者常量（字符串或者标示符）。
+
+一个clause就是由左式literal :- 右式literals ...构成的语句，没有右式的语句就是fact，有右式的语句就是rule
+对于一个clause变成一条statement只要给其后加上. ? 或者~即可。.表示assert，即加入一条clause到数据库中。
+~表示retraction将clause从数据库中去除。而? - query则是对数据库进行查询。
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Production System是一类提供某种形式人工智能的系统，它由描述了系统行为的规则rules构成，。
+规则正式称为productions，由两部分组成：前提条件precondition和动作action。如果一个前提条件满足了
+世界的当前状态(the current state of the world)，该条规则就被触发trigger，如果规则的action被执行
+就说这个规则被发动fire。通常production system都有一个数据库，称为working memory，包含当前状态或知识，
+而动作通常会改变这个working memory。
+
+Jul 23, 2012 CLIM中的重要概念
+
+CLIM 是一个分层的GUI toolkit。
+顶层通常由frames, panes, gadgets这些与传统视窗系统中概念相类似的内容构成。
+在该层之下，则是由command, presentation, stream, sheet, medium, output recording这些更加基本的概念构成。
+
+- sheet, stream, medium
+
+  sheet在CLIM中是基本的类视窗对象，它主要有两个性质：区域region和相对父sheet的坐标系统的坐标系统变换transformation。
+  stream扩展了sheet(可以理解为sheet的子类)，除了上述性质外，它还包括了诸如当前光标位置(current cursor position)这类状态。
+
+  medium在CLIM中是基本的画图对象，相当于画板的概念。它有如下属性：画图平面drawing plane，medium的前后景foreground/background，
+  画图墨水drawing ink，变换transformation，剪裁区域clipping region，线风格line style，文本风格text style等。
+  
+  通常支持描画的sheet或stream都有一个medium对象。
+
+- input-context
+  
+  就是某种要求用户输入，并对用户输入的内容加以限制的上下文。这种限制是通过presentation-type来实现的。
+  通常使用with-input-context来创建input-context，而accept, accept-for-string, command的输入参数,
+  define-application-frame都是创建input-context的common idiom和应用场景。
+
+- presentation, presentation translator, command, command-table
+
+  - presentation
+
+    presentation是CLIM中的核心概念。
+
+    传统的GUI toolkit通常只包含了有限对象(button, checkbox之类)的图形化表示，而CLIM提供了更高级的抽象，它可以将应用程序的业务逻辑
+    application business logic中的任何对象（比如某个业务系统中的“会员”对象）图形化表示出来，这个就是presentation的作用。
+
+    presentation通过presentation-type将GUI在画图平面上的描画结果与应用程序内的对象相联系。这样画出的图形就是应用程序内部对象的外在的图形化表现。
+    CLIM中提供了基本的presentation-type，而每个通过defclass产生的新类都有与自己对应的presentation-type。
+
+    通过presentation-type，诸如command或者accept这类要求用户输入的construct
+    (提供了某种上下文敏感的input-context，即只有与之要求的presentation-type相一致的对象（的图形表示）才可以作为输入），就可以直接以
+    这些（对象或者）它的图形表示作为输入了。
+
+  - command
+    传统的GUI toolkit是基于事件驱动的模型，而CLIM通常情况下程序员不需要关心事件驱动，因为它在底层。
+    CLIM中的command是比事件驱动更加抽象的一个概念。它表示的是对用户交互的反应，对业务逻辑的更新操作，(可以把它理解为一个能与人交互的函数)。
+    command是在以presentation-type为'command'的对象作为要求输入的command-loop中被执行的，即command对象也是有自己的presentation-type的，
+    在被要求自己的input-context中被获取，被执行。它也被纳入CLIM基本的input-context和presentation的概念中。（这个对后续理解presentation translator很重要），
+    另外，command本身可能要求一些参数这些参数需以presentation-type作为限定，这就构成了这个command的input-context。
+
+    command的外在表现形式，即交互风格是与它具体动作执行分开的，每个command都可以有四种不同的交互风格：
+    - 用鼠标操作menu或者dialog,
+    - 用快捷键keystroke,
+    - 用鼠标和command translator交互，
+    - 从命令行command-line通过键盘输入。
+  
+  - command-table就是将command， command的交互风格， input-context（accept, top-level app frame）相联系的对象。
+    command-table可以以继承方式将若干command-table构建成更大的command集合。
+
+    每个input-context都可以有某个command-table，每个command-table中，都包含有若干command，每个command都可以不止一次出现在command-table中，
+    并拥有不同的style。
+
+    define-application-frame会默认创建一个command-table和command-definer用于增加在其input-context下的command。
+
+  - presentation translator
+    通常情况下，CLIM中除了command以外的presentation都是作为command的参数的。而业务逻辑的动作都靠command来完成，
+    如果你想实现点击某个“会员”的图标就显示他的详细信息这样简单了当的动作就必须使用presentation translator。
+    
+    对presentation translator的简单理解就是它能把input-context中对某个presentation的要求转化为对另一个presentation的要求。
+    打个比方： 当前command-loop等待查看会员详细信息的命令时，如果没有translator你就必须先输入这个命令，然后点击这个会员的头像。
+    而有translator时，你直接点击这个会员头像就可以显示详细信息了。
+
+    当然translator不只是将一种presentation翻译成命令，其实可以做为任意两种presentation之间的转换。
+
+- frame, pane, gadget and make-pane
+
+  - frame是CLIM中顶层的概念，相当于传统GUI Toolkit中的窗口的概念，frame中含有各种pane，pane可以是stream-pane或者各种gadget。
+    frame的内的所有GUI元素的显示风格是由frame-manager定义和管理的。
+  
+  - pane即stream pane也是CLIM中的顶层概念，相当于传统GUI Toolkit中的各种空间的概念，各种gadget即是使用pane表现出来的传统控件。
+    pane可以有composite pane用于控制布局，还有leaf pane用于实现各种功能控件或者用户交互。有一种abstract pane抽象pane，主要用来
+    定义pane的行为protocol，这类pane通常作为基类，其具体表现由子类实现。
+
+  - gadget即是实现各种传统GUI中的通用组件(如按钮，滚动条)的pane。它们通常是abstract pane，只定义这些通用组件的行为。这些行为一般是一些
+    回调函数（类似于事件驱动GUI中的event handler），如push-button提供activate-callback来响应按下的动作。
+
+    创建gadget具体对象的过程实际上是依赖于gadget类下面的实现类，因此，通常gadget使用make-pane函数来创建，该函数接受一个gadget类（抽象pane类）
+    来创建与之相应的具体类的对象。而这个创建过程是在with-look-and-feel-realization的词法上下文中进行的，define-application-frame自动创建这个环境。
+
+- output recording vs. incremental-redisplay
+
+  在CLIM里，当你使用各种描画函数进行描画的时候，不仅仅描画的结果体现在某个sheet的medium上。每个描画函数的调用的过程（作为closure）被记录在一个历史列表中。
+  这个历史列表叫做output history。这一过程就是output recording。
+
+  这一机制的目的是当需要在该sheet上重新描画的时候（比如re-exposure, slide bar的移动等），只需根据output history中的记录回放即可。
+
+  这一机制在stream上是默认开启的。你也可以创建额外的output-record来捕获或者重放描画。
+
+  对于application-pane (即stream)来说，重画的时间通常是command-loop中执行完一个command后，可以通过display-time和display-function来控制
+  在这个stream上的描画的时机。
+
+  如果整个描画内容都使用output recording来重画，这个过程可能会很抵消，导致不必要的闪屏。incremental-redisplay就是为了减少不必要的
+  重画而存在的机制，通过使用incremental-redisplay，程序员告诉CLIM图形中哪部分内容需要重画，哪些部分不需要，然后CLIM就只会重画要求的部分。
+  这通常是使用updating-output来实现的，它接受id来区分一次描画的各个部分，接受cache来区分前后两次某个部分是否有更新。
+
+- drawing options
+  
+  通常的描画，如画线、画矩形等都有许多不同的描画选项，如坐标的放射变换、线宽、颜色、字体等，这些都是由drawing options来控制的。
+  通常drawing options会创造一个dynamic extent的环境，在该环境下的所有描画都会默认应用该drawing option的描画选项。
+
+- 常用函数、宏
+
+  - frame相关
+    define-application-frame
+    make-application-frame
+    run-frame-top-level
+    find-application-frame
+    frame-exit
+    *application-frame*
+    with-application-frame
+    map-over-frames
+    raise-frame
+    bury-frame
+    frame-name
+    frame-pretty-name
+    frame-state
+    frame-current-panes
+    get-frame-pane
+    find-pane-named
+    frame-command-table
+    default-frame-top-level
+    redisplay-frame-panes
+    
+  - pane相关
+    pane-frame
+    make-clim-stream-pane
+    make-clim-interactor-pane
+    make-clim-application-pane
+    pane-viewport
+
+  - layout相关
+    make-space-requirement
+    compose-space
+    allocate-space
+    change-space-requirements
+    frame-current-layout
+    frame-all-layouts
+    vertically
+    horizontally
+    tabling
+    outlining
+    spacing
+    labelling
+    scrolling
+
+  - command
+     define-command
+     command-table-inherit-from
+     command-table-name
+     find-command-table
+     define-command-table
+     make-command-table
+     add-command-to-command-table
+     remove-command-from-command-table
+     command-present-in-command-table-p
+     command-accessible-in-command-table-p
+     map-over-command-table-commands
+     global-command-table
+     display-command-table-menu
+     display-command-menu
+     add-menu-item-to-command-table
+     remove-menu-item-from-command-table
+     find-menu-item
+     find-command-from-command-line-name
+     map-over-command-table-names
+     add-keystroke-to-command-table
+     find-keystroke-item
+     read-command
+     read-frame-command
+     execute-frame-command
+     
+   - presentation
+     with-output-as-presentation
+     present
+     present-to-string
+     presentation-object
+     presentation-type
+     *input-context*
+     with-input-context
+     accept
+     accept-from-string
+     t null boolean symbol keyword number complex real ratio character pathname
+     completion member-alist member-sequence subset-completion subset
+     sequence 
+     or and type-or-string null-or-type token-or-type
+     expression form
+     define-presentation-type
+     define-presentation-type-abbreviation
+     presentation-typep
+     presentation-subtypep
+     describe-presentation-type
+     highlight-presentation
+     read-token
+     write-token
+     complete-input
+     complete-from-generator
+     complete-from-possibilities
+     complete-from-suggestions
+     suggest
+     replace-input
+     textual-view
+     textual-dialog-view
+     gadget-view
+     gadget-dialog-view
+     pointer-document-view
+     stream-default-view
+     define-presentation-translator
+     define-presentation-to-command-translator
+     define-drag-and-drop-translator
+     find-presentation-translator
+     black-area
+     define-gesture-name
+     add-gesture-name
+     event-type
+     event-sheet
+     event-modifier-state
+     keyboard-event-key-name
+     keyboard-event-character
+     pointer-event-x
+     pointer-event-y
+     pointer-event-button
+     pointer-boundary-event-kind
+     
+  - gadget
+    gadget-id
+    gadget-client
+    armed-callback
+    disarmed-callback
+    activate-gadget
+    deactivate-gadget
+    gadget-value
+    value-changed-callback
+    drag-callback
+    activate-callback
+    gadget-orientation
+    gadget-rows
+    gadget-label
+    gadget-min-value
+    gadget-max-value
+    make-pane
+    with-radio-box
+    with-output-as-gadget
+    
+  - output recording
+    with-new-output-record
+    invoke-with-new-output-record
+    with-output-to-output-record
+    with-output-recording-options
+    replay
+    replay-output-record
+    output-record-parent
+    output-record-children
+    add-output-record
+    erase-output-record
+    map-over-output-records
+    map-over-output-records-containing-position
+    tree-recompute-extent
+    output-recording-stream-p
+    stream-output-history
+    stream-replay
+    copy-textual-output-history
+    
+  - drawing options
+    medium-foreground
+    medium-background
+    medium-ink
+    medium-transformation
+    medium-clipping-region
+    medium-line-style
+    medium-text-style
+    with-drawing-options
+    invoke-with-drawing-options
+    make-line-style
+    line-style-unit
+    make-translation-transformation
+    make-rotation-transformation
+    make-scaling-transformation
+    make-reflection-transformation
+    make-transformation
+    make-3-point-transformation
+    +identity-transformation+
+    compose-transformations
+    compose-translation-with-transformation
+    compose-scaling-with-transformation
+    compose-transformation-with-scaling
+    invert-transformation
+    with-rotation
+    with-translation
+    with-scaling
+    with-room-for-graphics
+    with-local-coordinates
+    with-first-quadrant-coordinates
+    transform-region
+    untransform-region
+    transform-position
+    transform-distance
+    transform-rectangle
+    with-text-style
+    
+Sep 20, 2012 在ubuntu等系统中添加启动时运行的脚本
+通过update-rc.d命令，可以快速的把在/etc/init.d/ 中自定义的脚本添加到某个RC级别中去。
+如 update-rc.d <script name> defaults 99
+
+Sep 20, 2012 Common Lisp Quiz
+
+======== backquote-comma-dot ====
+
+Something about ,. vs. ,@ in backquotes.
+
+A: ,. is destructive version of ,@
+
+======== binding-streams ====
+
+Which standardized stream variable may not be bound or assigned?
+
+- *debug-io*
+
+- *terminal-io*
+
+- *query-io*
+
+- None of the above
+
+Ref: 21.1.2: "User programs may assign or bind any standardized stream
+variable except *terminal-io*."
+
+======== boa-acronym ====
+
+For a "BOA constructor", what does BOA stand for?
+
+- Beginning Of Array
+
+- By Order of Arguments
+
+- Bounded Operation Accessor
+
+- Bidirectional Open Atom
+
+Ref: defstruct
+
+A: By Order of Arguments
+
+======== char-code ====
+
+What value is acceptable as the return value of (char-int #\a)?
+
+- 32
+
+- 97
+
+- 10
+
+- All of the above
+
+Ref: The manner in which the integer is computed is implementation-dependent. If 
+character has no implementation-defined attribute, the result of char-int and char-code are the same.
+
+A: All of the above
+
+======== cl-package-constraints-title ====
+
+What is the title of section 11.1.2.1.2 in the CLHS?
+
+- Constraints on the COMMON-LISP Package for Conforming Programs
+
+- LOOP Value Accumulation Clauses
+
+- Examples of Suppressing Keyword Argument Checking
+
+- None of the above
+
+Ref: 11.1.2.1.2
+
+A: Constraints on the COMMON-LISP Package for Conorming Programs
+
+======== cl-user-default-packages ====
+
+What packages are in the COMMON-LISP-USER package use list?
+
+- It is implementation-defined and no specific packages are specified
+
+- It is implementation-defined but must include the COMMON-LISP
+  package
+
+- No packages
+
+- COMMON-LISP and one of EXT, SYS, or IMPL
+
+Ref: 11.1.2.2
+
+A: It is implementation-defined but must include the COMMON-LISP package
+
+======== deftype-optional-default ====
+
+What is the default value for optional and keyword arguments in
+DEFTYPE where no default is explicitly provided in the deftype lambda
+list?
+
+- T
+
+- NIL
+
+- *
+
+- None of the above
+
+Ref: deftype
+
+A: *
+
+======== digit-char-p ====
+
+What function will return the integer 5 given the character #\5?
+
+- PARSE-INTEGER
+
+- CHAR-DIGIT-WEIGHT
+
+- DIGIT-CHAR-P
+
+- CHAR-CODE
+
+Ref: digit-char-p
+
+A: digit-char-p, PARSE-INTEGER is for string type.
+
+======== dot-dot-dot-reading ====
+
+11:01 [tcr] There's possibly another one: "Why is
+          '.. or '... not valid syntax to denote a symbol?" Answer: it's
+          explicitly forbidden so READ will choke on the attempt to read print
+          representations of forms where the printer introduced abbreviations
+          due to *print-length*/*print-level*
+11:04 [tcr]
+          http://www.lispworks.com/documentation/HyperSpec/Body/02_di.htm
+
+Note that the Lisp reader will generally signal an error of type read-error when reading
+an expression that been abbreviated because of length or level limits (see *print-level*,
+*print-length*, and *print-lines*) due to restrictions on "..", "...", "#" followed by whitespace, and "#)".
+
+======== eql-is-default ====
+
+What is the default test function for most operations? [be more
+precise, maybe per 17.2.1]
+
+- EQ
+
+- EQL
+
+- EQUALP
+
+- =
+
+Ref: 17.2.1
+
+A: EQL
+
+======== file-position-designator ====
+
+Which of the following is not a file position designator?
+
+- 42
+
+- :start
+
+- :end
+
+- None of the above
+
+Ref:
+file position designator n. (in a stream) a designator for a file position in that stream; that is, the symbol :statrt 
+(denoting 0, the first position in the stream) , the symbol :end (denoting the last file position in that stream; i.e.,
+ the position following the last element of the stream), or a file position (denoting itself)
+
+file position n. (in a stream) a non negative integer that represents a position in the stream. ...
+
+A: None of the above
+
+======== format-empty-curlybrace ====
+
+In a format string, what does "~{~}" mean?
+
+- Nothing, it is an error to have nothing between ~{ and ~}
+
+- Causes an infinite loop
+
+- Uses the next argument to FORMAT as the internal format control
+  string
+
+- None of the above
+
+Ref: 22.3.7.4
+
+A: Uses the next argument to FORMAT as the internal format control string
+
+
+======== format-hash-arg ====
+
+What does (format nil "~#,vD" #\8 0 0 0) return?
+
+- "8880"
+
+- "0008"
+
+- "0"
+
+- None of the above
+
+Ref: ~mincol, padchar, commachar, commaintervalD
+
+# in mincol means read from arguments, v in padchar means read from arguments.
+
+A: "8880"
+
+
+======== get-first-element ====
+
+Which of the following forms do NOT return the first element of LIST?
+
+- (first list)
+
+- (car list)
+
+- (nth 1 list)
+
+- None of the above
+
+Ref: nth
+
+(nth n list) ==  (car (nthcdr n list))
+
+A: nth
+
+======== implicit-tagbody ====
+
+Which of the following macros does NOT have an implicit PROGN?
+
+- DEFUN
+
+- WHEN
+
+- DOLIST
+
+- None of the above
+
+Ref: tagbody page
+
+The macros in the next figure have implicit tagbodies.
+
+do              do-external-symbols  dotimes  
+do*             do-symbols           prog     
+do-all-symbols  dolist               prog*    
+
+
+(prog variable-list declaration . body)
+    ==  (block nil (let variable-list declaration (tagbody . body)))
+
+Figure 5-10. Macros that have implicit tagbodies.
+
+Many places in Common Lisp involve syntax that uses implicit progns. 
+That is, part of their syntax allows many forms to be written that are to be evaluated sequentially, 
+discarding the results of all forms but the last and returning
+the results of the last form. Such places include, but are not limited to,
+the following: the body of a lambda expression; the bodies of various control and conditional forms (e.g., case, catch, progn, and when).
+
+A: DOLIST
+
+======== longest-function-name ====
+
+What is the longest exported symbol name in the COMMON-LISP package?
+
+- UPDATE-INSTANCE-FOR-REDEFINED-CLASS
+
+- UPDATE-INSTANCE-FOR-DIFFERENT-CLASS
+
+???
+
+A: LEAST-NEGATIVE-NORMALIZED-DOUBLE-FLOAT 38
+======== make-package-defaults ====
+
+If you do not provide an explicit :USE argument to MAKE-PACKAGE, what
+can you say about the list of packages that the newly created package
+uses?
+
+- The list consists only of the COMMON-LISP package.
+
+- The list is implementation-dependent but always includes the
+  COMMON-LISP pacakge.
+
+- The list might be empty.
+
+- None of the above.
+
+use---a list of package designators. The default is implementation-defined.
+
+A: The list might be empty.
+
+======== not-a-function ====
+
+Which of the following symbols does not name a Common Lisp function?
+
+- PAIRLIS
+
+- REVAPPEND
+
+- CONJUGATE
+
+- None of the above
+
+Other possibilities: SCHAR, PHASE, MAKE-INSTANCES-OBSOLETE,
+MAKE-LOAD-FORM-SAVING-SLOTS (from tcr)
+
+A: None of the above.
+
+======== not-a-string-designator ====
+
+Which of the following is NOT a string designator?
+
+- :foo
+
+- #\x
+
+- #xBA5
+
+- None of the above
+
+Ref: glossary for string designator, string function
+
+string designator n. a designator for a string; that is, an object that
+denotes a string and that is one of: a character (denoting a singleton string that
+has the character as its only element), a symbol (denoting the string that is its name)
+, or a string (denoting itself). The intent is that this term be consistent with the behavior
+of string; implementations taht extend string must extend the meaning of this term in a 
+compatible way.
+
+A: #xBA5
+
+======== odd-forms ====
+
+Which form is illegal syntax? [not really syntax, but]
+
+- (defvar *foo*)
+
+- (aref array)
+
+- (*)
+
+- None of the above
+
+A: None of the above
+
+======== sharpquote-let ====
+
+13:51 <stassats`> i like (let (#'1) (+ function 2)) => 3
+13:51 <pjb> (let (#'1 '2) (+ function quote))
+
+haha, a joke. #'1 read transformed to (function 1) '2 transformed to (quote 2)
+
+(let (#'42) (+ . #'5))
+
+======== zero-dimensional-arrays ====
+
+Something about (aref thing) or (setf (aref thing) 42), and
+(make-array nil :initial-element 42), etc.
+
+Sep 20, 2012 Lisp History
+
+Lisp is a family of languages with a long history. Early key ideas in Lisp were
+developed by John McCarthy during the 1956 Dartmouth Summer Research Project on
+Artificial Intelligence. McCarthy's motivation was to develop an algebraic list
+processing language for artificial intelligence work. Implementation efforts for
+early dialects of Lisp were undertaken on the IBM 704, the IBM 7090, the Digital
+Equipment Corporation (DEC) PDP-1, the DEC PDP-6, and the PDP-10. The primary
+dialect of Lisp between 1960 and 1965 was Lisp 1.5. By the early 1970's there
+were two predominant dialects of Lisp, both arising from these early efforts:
+MacLisp and Interlisp. For further information about very early Lisp dialects,
+see The Anatomy of Lisp or Lisp 1.5 Programmer's Manual.
+
+MacLisp improved on the Lisp 1.5 notion of special variables and error
+handling. MacLisp also introduced the concept of functions that could take a
+variable number of arguments, macros, arrays, non-local dynamic exits, fast
+arithmetic, the first good Lisp compiler, and an emphasis on execution speed. By
+the end of the 1970's, MacLisp was in use at over 50 sites. For further
+information about Maclisp, see Maclisp Reference Manual, Revision 0 or The
+Revised Maclisp Manual.
+
+Interlisp introduced many ideas into Lisp programming environments and
+methodology. One of the Interlisp ideas that influenced Common Lisp was an
+iteration construct implemented by Warren Teitelman that inspired the loop macro
+used both on the Lisp Machines and in MacLisp, and now in Common Lisp. For
+further information about Interlisp, see Interlisp Reference Manual.
+
+Although the first implementations of Lisp were on the IBM 704 and the IBM 7090,
+later work focussed on the DEC PDP-6 and, later, PDP-10 computers, the latter
+being the mainstay of Lisp and artificial intelligence work at such places as
+Massachusetts Institute of Technology (MIT), Stanford University, and Carnegie
+Mellon University (CMU) from the mid-1960's through much of the 1970's. The
+PDP-10 computer and its predecessor the PDP-6 computer were, by design,
+especially well-suited to Lisp because they had 36-bit words and 18-bit
+addresses. This architecture allowed a cons cell to be stored in one word;
+single instructions could extract the car and cdr parts. The PDP-6 and PDP-10
+had fast, powerful stack instructions that enabled fast function calling. But
+the limitations of the PDP-10 were evident by 1973: it supported a small number
+of researchers using Lisp, and the small, 18-bit address space (2^18 = 262,144
+words) limited the size of a single program. One response to the address space
+problem was the Lisp Machine, a special-purpose computer designed to run Lisp
+programs. The other response was to use general-purpose computers with address
+spaces larger than 18 bits, such as the DEC VAX and the S-1 Mark IIA. For
+further information about S-1 Common Lisp, see ``S-1 Common Lisp
+Implementation.''
+
+The Lisp machine concept was developed in the late 1960's. In the early 1970's,
+Peter Deutsch, working with Daniel Bobrow, implemented a Lisp on the Alto, a
+single-user minicomputer, using microcode to interpret a byte-code
+implementation language. Shortly thereafter, Richard Greenblatt began work on a
+different hardware and instruction set design at MIT. Although the Alto was not
+a total success as a Lisp machine, a dialect of Interlisp known as Interlisp-D
+became available on the D-series machines manufactured by Xerox---the Dorado,
+Dandelion, Dandetiger, and Dove (or Daybreak). An upward-compatible extension of
+MacLisp called Lisp Machine Lisp became available on the early MIT Lisp
+Machines. Commercial Lisp machines from Xerox, Lisp Machines (LMI), and
+Symbolics were on the market by 1981. For further information about Lisp Machine
+Lisp, see Lisp Machine Manual.
+
+During the late 1970's, Lisp Machine Lisp began to expand towards a much fuller
+language. Sophisticated lambda lists, setf, multiple values, and structures like
+those in Common Lisp are the results of early experimentation with programming
+styles by the Lisp Machine group. Jonl White and others migrated these features
+to MacLisp. Around 1980, Scott Fahlman and others at CMU began work on a Lisp to
+run on the Scientific Personal Integrated Computing Environment (SPICE)
+workstation. One of the goals of the project was to design a simpler dialect
+than Lisp Machine Lisp.
+
+The Macsyma group at MIT began a project during the late 1970's called the New
+Implementation of Lisp (NIL) for the VAX, which was headed by White. One of the
+stated goals of the NIL project was to fix many of the historic, but annoying,
+problems with Lisp while retaining significant compatibility with MacLisp. At
+about the same time, a research group at Stanford University and Lawrence
+Livermore National Laboratory headed by Richard P. Gabriel began the design of a
+Lisp to run on the S-1 Mark IIA supercomputer. S-1 Lisp, never completely
+functional, was the test bed for adapting advanced compiler techniques to Lisp
+implementation. Eventually the S-1 and NIL groups collaborated. For further
+information about the NIL project, see ``NIL---A Perspective.''
+
+The first effort towards Lisp standardization was made in 1969, when Anthony
+Hearn and Martin Griss at the University of Utah defined Standard Lisp---a
+subset of Lisp 1.5 and other dialects---to transport REDUCE, a symbolic algebra
+system. During the 1970's, the Utah group implemented first a retargetable
+optimizing compiler for Standard Lisp, and then an extended implementation known
+as Portable Standard Lisp (PSL). By the mid 1980's, PSL ran on about a dozen
+kinds of computers. For further information about Standard Lisp, see ``Standard
+LISP Report.''
+
+PSL and Franz Lisp---a MacLisp-like dialect for Unix machines---were the first
+examples of widely available Lisp dialects on multiple hardware platforms.
+
+One of the most important developments in Lisp occurred during the second half
+of the 1970's: Scheme. Scheme, designed by Gerald J. Sussman and Guy L. Steele
+Jr., is a simple dialect of Lisp whose design brought to Lisp some of the ideas
+from programming language semantics developed in the 1960's. Sussman was one of
+the prime innovators behind many other advances in Lisp technology from the late
+1960's through the 1970's. The major contributions of Scheme were lexical
+scoping, lexical closures, first-class continuations, and simplified syntax (no
+separation of value cells and function cells). Some of these contributions made
+a large impact on the design of Common Lisp. For further information about
+Scheme, see IEEE Standard for the Scheme Programming Language or ``Revised^3
+Report on the Algorithmic Language Scheme.''
+
+In the late 1970's object-oriented programming concepts started to make a strong
+impact on Lisp. At MIT, certain ideas from Smalltalk made their way into several
+widely used programming systems. Flavors, an object-oriented programming system
+with multiple inheritance, was developed at MIT for the Lisp machine community
+by Howard Cannon and others. At Xerox, the experience with Smalltalk and
+Knowledge Representation Language (KRL) led to the development of Lisp Object
+Oriented Programming System (LOOPS) and later Common LOOPS. For further
+information on Smalltalk, see Smalltalk-80: The Language and its
+Implementation. For further information on Flavors, see Flavors: A
+Non-Hierarchical Approach to Object-Oriented Programming.
+
+These systems influenced the design of the Common Lisp Object System
+(CLOS). CLOS was developed specifically for this standardization effort, and was
+separately written up in ``Common Lisp Object System Specification.'' However,
+minor details of its design have changed slightly since that publication, and
+that paper should not be taken as an authoritative reference to the semantics of
+the object system as described in this document.
+
+In 1980 Symbolics and LMI were developing Lisp Machine Lisp; stock-hardware
+implementation groups were developing NIL, Franz Lisp, and PSL; Xerox was
+developing Interlisp; and the SPICE project at CMU was developing a MacLisp-like
+dialect of Lisp called SpiceLisp.
+
+In April 1981, after a DARPA-sponsored meeting concerning the splintered Lisp
+community, Symbolics, the SPICE project, the NIL project, and the S-1 Lisp
+project joined together to define Common Lisp. Initially spearheaded by White
+and Gabriel, the driving force behind this grassroots effort was provided by
+Fahlman, Daniel Weinreb, David Moon, Steele, and Gabriel. Common Lisp was
+designed as a description of a family of languages. The primary influences on
+Common Lisp were Lisp Machine Lisp, MacLisp, NIL, S-1 Lisp, Spice Lisp, and
+Scheme. Common Lisp: The Language is a description of that design. Its semantics
+were intentionally underspecified in places where it was felt that a tight
+specification would overly constrain Common Lisp esearch and use.
+
+In 1986 X3J13 was formed as a technical working group to produce a draft for an
+ANSI Common Lisp standard. Because of the acceptance of Common Lisp, the goals
+of this group differed from those of the original designers. These new goals
+included stricter standardization for portability, an object-oriented
+programming system, a condition system, iteration facilities, and a way to
+handle large character sets. To accommodate those goals, a new language
+specification, this document, was developed.
+
+Sep 21, 2012 Brief about difference among Schemes
+
+"The big differences between Scheme environments are about whether they compile,
+compile incrementally or interpret, how they do error handling, work with the network,
+the operating system, libraries external to the scheme environment, binary data,
+and to some extent characters beyond the range of A-Z (that is unicode characters)"
+
+from <<A Tour of Scheme in Gambit>>
+
+
+Sep 24, 2012 Meaning of "frobbing"
+
+v. Randomly adjusting the settings of an object, such as the dials on a piece of
+equipment or the options in a software program, in an effort to learn how the object
+works.
+
+"frobbing - fiddling aimlessly with the controls to see what happens" - Steven Pinker, The Language Instinct.
+
+
+Sep 24, 2012 CLOCK MONOTONIC vs. REALTIME
+
+see man page of clock_gettime
+
+CLOCK_REALTIME
+       System-wide real-time clock.  Setting this clock requires appropriate privileges.
+
+CLOCK_MONOTONIC
+       Clock that cannot be set and represents monotonic time since  some  unspecified  starting
+       point.
+
+
+Sep 24, 2012 Delimited Continuation
+又叫做Composable Continuation或者是Functional Continuation。
+它有不同的实现，比较常见的两种是felleisen的control/prompt和Fillinski的shift/reset，
+分别代表着dynamic和static两类delimited continuation。具体的区别有一些形式语言表示的研究论文可以学习下。
+
+基本思路是把表达式的外层计算(即它的continuation)保存到一个函数中，这样就能通过调用该函数模拟传统的Continuation。
+区别点是可以通过prompt或者reset来限制被保存的外层计算范围，因此得名delimtied。
+
+Delimited支持者认为传统Continuation仅仅将Continuation作为fisrt class object，但没有将其范围作为FCO。
+传统的Continuation一般会保存从顶层REPL或者叫prompt以下的所有计算，而delimited Continuation就是要将这个保存范围
+放开，让它变成可以控制的对象。(这就是为什么control/prompt中界限用prompt这个词的由来。)
+
+通过将延续计算的范围变成一级对象，它也不再像传统Continuation那样调用后将重置整个调用栈。而是可以在现有调用栈之上完成continuation的动作，
+这也是它得名composable的原因。delimited continuation作为原construction比传统continuation的表示能力也大大提升。
+
+以下是用control/prompt模拟call/cc的例子：
+
+(define-syntax-rule (abort exp)
+   (control (lambda (dummy) exp)))
+
+(define call/cc
+   (lambda (f)
+     (control (lambda (k) 
+                 (k (f (lambda (v) (abort (k v)))))))))
+
+Sep 26, 2012 Common Lisp Array Type 及 Character Type
+使用make-array是创建array的基本接口。它可以用来创建任何array及其子类型的对象。
+array的类型，根据其自身的性质以及其包含的元素的性质，按如下分类：
+
+array -> simple-array -+
+  |                    |---> simple-vector-+-+
+  -----> vector--------+		   | |
+           |				   |---> simple-bit-vector
+	   +---------------> bit-vector----+ |
+	   |				     |
+	   +---------------> string----------+-> simple-string
+	   		     	|
+				+--------------> base-string
+
+simple-array是:adjustable, :displaced-to, :fill-pointer均为nil的数组，
+即不可变更容量，没有fill pointer，不是指向其他数组的共享数组。
+
+vector是dimension为一维的数组。
+
+simple-string 是一维的含有字符类型或其子类型元素的simple array，它等同于(simple-array character (size))
+
+simple-bit-vector 元素是bit的simple array，它等同于(simple-array bit (size))
+
+base-string 等同于 (vector base-char)， 它代表着包含任意标准字符序列的最高效形式。
+
+Note1:
+array-dimension-limit 限制每个维度的上限，array-total-size-limit 限制所有维度总和的上限，
+array-rank-limit 限制维度个数的上限，但下限要求实现至少支持7个维度。
+
+Note2:
+只有vector类型和list类型属于sequence类型，而array类型并不属于。
+
+-----------
+character 按照类型 可以分为
+
+char -> base-char -> standard-char
+   	  |
+	  -----> extended-char
+
+standard-char 是X3J13标准要求的96个标准字符，每个CL实现必须遵从的。包括non-graphic newline, graphic space, 以及字母，数字，标点符号等剩余的94个符号。
+
+base-char 标准定义它为一个standard-char的增强类型，实现可以根据自己的需要，定义一些介于char和standard-char之间的字符。实现也可以选择让base-char等同于character。
+
+extended-char 等同于 (and character (not base-char))，在character = base-char 的实现中，extended-char可能为空。
+
+
+
+
+Sep 27, 2012 SBCL IR1中的用于新建、分割block的各种函数
+
+- start-block
+目的是把ctran（block的最后一个ctran）所在的block结束掉，
+然后用ctran创建一个新的block，并把这两个block连接起来。
+
+ctran必须是block的最后一个ctran。当它是第一个ctran即block-start时，
+它什么也不做，直接返回。当它是一个中间的ctran时，会报错。
+
+正确调用这个函数的结果是：
+ctran的node变成了block的block-last，ctran变成了新创建的block的block-start
+两个block通过link-blocks连接了起来。
+
+- ctran-starts-block
+目的是为ctran创建一个新的block。
+如果该ctran未被使用，它将会创建新的block，成为该block的block-start，
+新创建的block位于*current-component*的component-last-block前一个位置。
+
+如果ctran已经是block-start时，将会什么都不做；如果ctran不是block-start又被使用
+着将会报错。
+
+- ensure-block-start
+目的是保证ctran会是一个block的block-start
+
+当ctran未被使用时，它会创建block，让ctran作为该block的block-start，但和ctran-starts-block
+不同的时，该block不会加入*current-component*。（类似于不加入*current-component*的ctran-starts-block)
+
+当ctran被使用，但不是block-start时，会调用node-ends-block从ctran和它的ctran-use node
+间断开链接，新创建的block插入到原来block之后，而ctran变成了新创建的block的block-start。
+
+Sep 27, 2012 SBCL DEF Internal 之 sb-c::def-ir1-translator
+def-ir1-translator(定义于macro.lisp)是SBCL中用于定义 special form到IR1的翻译函数 的宏，
+这些特殊的翻译函数叫做IR1 custom translator，由该宏定义并存储在(info :function :translator <special form>)中。
+
+下面我们通过分析代码了解该宏的行为：
+
+(defmacro def-ir1-translator (name (lambda-list start-var next-var result-var)
+                              &body body)
+
+从参数列表看，该宏接受的参数包括：
+- name: special form的名字，如progn, go, block。
+- lambda-list: 一个macro-style lambda-list，即special form可以接受的form，如progn的是(&rest forms), go的是(tag)
+- start-var, next-var: 承接前面代码IR1表示的start ctran和连接后续代码IR1的next ctran。
+- result: 可能是null如果这个special form不会返回值的话，否则就是传递给后续代码的值的lvar。
+- body: 进行IR1翻译的具体代码
+
+
+  (let ((fn-name (symbolicate "IR1-CONVERT-" name))
+        (guard-name (symbolicate name "-GUARD")))
+
+首先创建两个函数名字：ir1-convert-<special form>和 <special-form>-guard
+前者就是翻译函数的名字，后者是当special form被apply或funcall时产生错误信息的保护函数。
+
+
+    (with-unique-names (whole-var n-env)
+      (multiple-value-bind (body decls doc)
+          (parse-defmacro lambda-list whole-var body name "special form"
+                          :environment n-env
+                          :error-fun 'compiler-error
+                          :wrap-block nil)
+        `(progn
+           (declaim (ftype (function (ctran ctran (or lvar null) t) (values))
+                           ,fn-name))
+           (defun ,fn-name (,start-var ,next-var ,result-var ,whole-var
+                            &aux (,n-env *lexenv*))
+             (declare (ignorable ,start-var ,next-var ,result-var))
+             ,@decls
+             ,body
+             (values))
+
+定义ir1-convert-<special form>:
+通过parse-defmacro解析参数列表，解析后的新body包含了必要的代码从whole-var中把lambda-list
+的参数抽取出来，并且let这些绑定到原来的body上。这样转换函数本身只需要固定的参数接口。
+
+转换函数的类型被声明为：(function (ctran ctran (or lvar null) t) (values))
+前两个参数是start和next ctran， 第三个是result lvar， 最后那个 t 就是special form包含的form，
+即lambda-list中的参数。
+
+
+           (progn
+             (defun ,guard-name (&rest args)
+               ,@(when doc (list doc))
+               (declare (ignore args))
+               (error 'special-form-function :name ',name))
+             (let ((fun #',guard-name))
+               (setf (%simple-fun-arglist fun) ',lambda-list
+                     (%simple-fun-name fun) ',name
+                     (symbol-function ',name) fun)
+               (fmakunbound ',guard-name)))
+
+定义<special form>-guard:
+该函数防止用户把special form当函数使用，当调用special form同名的函数时，
+会掷出special-form-function的错误信息。
+
+
+           (setf (info :function :ir1-convert ',name) #',fn-name)
+           (setf (info :function :kind ',name) :special-form)
+           ',name)))))
+
+最后，将翻译函数存入info数据库中。
+
+存入info数据库的翻译函数，会在ir1-convert-functoid(ir1tran.lisp)中被查询和调用。
+
+(defun ir1-convert-functoid (start next result form)
+  (let* ((op (car form))
+         (translator (and (symbolp op) (info :function :ir1-convert op))))
+    (cond (translator
+           (funcall translator start next result form))
+          (t ...))))
+
+该函数是IR1中翻译类似函数调用的form，如macro, compiler macro, special form, function的入口。
+
+Sep 27, 2012 SBCL DEF Internal 之 define-source-transform
+define-source-transform(定义于macro.lisp)是SBCL中定义 IR1阶段代码到代码变换函数 的宏。
+这些代码变换函数主要针对非:notinline的全局函数(global funcion)，
+由该宏定义并存储于(info :function :source-transform <function name>)中。
+
+define-source-transform类似于用defmacro，它们都是基于symbol manipulation的代码变换。
+但是有两点是和defmacro明显不同的：
+1. 它只针对非:notinline的全局函数。
+2. 它的第二个返回值为t时，变换将会失效。编译器将忽略代码变换，进行正常的函数调用。
+
+define-source-transform代码变换的目的是把某些函数的调用变换为编译器希望的某些标准形式的调用，如(first x) -> (car x)
+从而让编译器更好的处理和优化这些调用。这个就是所谓的open-coding，这也是为什么:notinline时，不进行变换的原因。
+（见srctran.lisp开头注释）
+
+下面我们通过代码分析下这个宏的行为：
+
+(defmacro source-transform-lambda (lambda-list &body body)
+  (with-unique-names (whole-var n-env name)
+    (multiple-value-bind (body decls)
+        (parse-defmacro lambda-list whole-var body "source transform" "form"
+                        :environment n-env
+                        :error-fun `(lambda (&rest stuff)
+                                      (declare (ignore stuff))
+                                      (return-from ,name
+                                        (values nil t)))
+                        :wrap-block nil)
+      `(lambda (,whole-var &aux (,n-env *lexenv*))
+         ,@decls
+         (block ,name
+           ,body)))))
+
+通过parse-defmacro分析参数列表，利用whole-var和附加在body外层的let绑定将调用的函数名、参数名绑定到该宏的lambda-list的参数上，
+最后返回一个执行body的匿名函数。
+
+
+(defmacro define-source-transform (name lambda-list &body body)
+  `(setf (info :function :source-transform ',name)
+         (source-transform-lambda ,lambda-list ,@body)))
+
+将变换函数保存到info数据库中。
+
+
+存入info数据库的变换函数，会在ir1-convert-srctran(ir1tran.lisp)中被查询和调用。
+
+(defun ir1-convert-srctran (start next result var form)
+  (let ((inlinep (when (defined-fun-p var)
+                   (defined-fun-inlinep var))))
+    (if (eq inlinep :notinline)
+        (ir1-convert-combination start next result form var)
+
+如果是:notinline，则不open-coding，进行正常的函数调用。
+
+
+        (let* ((name (leaf-source-name var))
+               (transform (info :function :source-transform name)))
+          (if transform
+              (multiple-value-bind (transformed pass) (funcall transform form)
+
+注意这里funcall transform后返回的是变换后的代码，这相当于defmacro的宏返回后还未被eval时的代码。
+
+
+                (cond (pass
+                       (ir1-convert-maybe-predicate start next result form var))
+
+当第二个返回值为t时，则忽略变换结果。
+
+
+                      (t
+                       (unless (policy *lexenv* (zerop store-xref-data))
+                         (record-call name (ctran-block start) *current-path*))
+                       (ir1-convert start next result transformed))))
+              (ir1-convert-maybe-predicate start next result form var))))))
+
+当使用代码变换时，ir1-convert-srctran会利用变换后的form完成IR1的翻译。
+
+另外，在IR1优化阶段，propogate-fun-change函数可能也会参考该代码变换。
+
+Sep 28, 2012 bit rot
+Bit rot, also known as bit decay, data rot, or data decay, is a colloquial computing
+term used most commonly to describe a gradual decay of storage media. It may also refer
+to the degradation of a software program over time.
+
+Sep 28, 2012 SBCL DEF Internals 之 !def-boolean-attribute
+SBCL编译器中诸如lambda-var, block, known function, VOP, instruction这些东西都是拥有属性的，
+编译器根据它们拥有的属性来决定优化动作。!def-boolean-attribute(定义于macro.lisp)就是用来为这些东西定义属性集合的宏。
+
+出于效率考虑，属性集合类似于C语言里以二进制整数、属性由不同的二进制位代表，通过位操作来查询和设置属性值是否含有属性集合里的某个属性。
+
+首先我们通过代码来了解下!def-boolean-attribute的实现：
+
+(deftype attributes () 'fixnum)
+(defun compute-attribute-mask (names alist)
+  (collect ((res 0 logior))
+    (dolist (name names)
+      (let ((mask (cdr (assoc name alist))))
+        (unless mask
+          (error "unknown attribute name: ~S" name))
+        (res mask)))
+    (res)))
+
+根据提供的 属性名字的列表 以及 属性名字/位值的对应表，产生一个属性所对应的二进制位置1的整数掩码，即属性值。
+
+
+  (def!macro !def-boolean-attribute (name &rest attribute-names)
+
+从参数来看，!def-boolean-attribue接受一个属性集合的名字，以及这个集合中全部属性名字的列表。
+从下面可以看到!def-boolean-attribute会定义出：
+1. *<name>-attribute-translations*全局变量： 属性名字/位值的对应表。
+2. <name>-attributep宏： 用于获取和设置属性值中包含某个属性的访问器。
+3. decode-<name>-attributes函数： 把属性值转换为属性名字列表。
+4. <name>-attributes宏： 把属性名字列表转换为属性值。
+
+
+    (let ((translations-name (symbolicate "*" name "-ATTRIBUTE-TRANSLATIONS*"))
+          (test-name (symbolicate name "-ATTRIBUTEP"))
+          (decoder-name (symbolicate "DECODE-" name "-ATTRIBUTES")))
+      (collect ((alist))
+        (do ((mask 1 (ash mask 1))
+             (names attribute-names (cdr names)))
+            ((null names))
+          (alist (cons (car names) mask)))
+
+从这里可以看到属性位值是从1开始，按位左移生成的，即每个二进制位代表一个属性。
+
+
+        `(progn
+           (eval-when (:compile-toplevel :load-toplevel :execute)
+             (defparameter ,translations-name ',(alist)))
+
+           (defmacro ,(symbolicate name "-ATTRIBUTES") (&rest attribute-names)
+             (compute-attribute-mask attribute-names ,translations-name))
+
+           (defmacro ,test-name (attributes &rest attribute-names)
+             `(logtest ,(compute-attribute-mask attribute-names
+                                                ,translations-name)
+                       (the attributes ,attributes)))
+
+           (!def-boolean-attribute-setter ,test-name
+                                          ,translations-name
+                                          ,@attribute-names)
+
+这里setter是通过define-setf-expander来实现的。详细请参考代码。
+
+           (defun ,decoder-name (attributes)
+             (loop for (name . mask) in ,translations-name
+                   when (logtest mask attributes)
+                     collect name))))))
+
+下面我们来看看lambda-var, block, known function, vop, instruction的属性集合以及不同属性对编译的影响：
+注释已经很好的解释了这些属性的含义。
+
+(!def-boolean-attribute lambda-var
+  ;; true if this variable has been declared IGNORE
+  ignore
+  ;; This is set by physical environment analysis if it chooses an
+  ;; indirect (value cell) representation for this variable because it
+  ;; is both set and closed over.
+  indirect
+  ;; true if the last reference has been deleted (and new references
+  ;; should not be made)
+  deleted
+  ;; This is set by physical environment analysis if, should it be an
+  ;; indirect lambda-var, an actual value cell object must be
+  ;; allocated for this variable because one or more of the closures
+  ;; that refer to it are not dynamic-extent.  Note that both
+  ;; attributes must be set for the value-cell object to be created.
+  explicit-value-cell
+  )
+
+(def!struct (lambda-var (:include basic-var))
+  (flags (lambda-var-attributes)
+         :type attributes)
+  ...)
+
+;;; Flags that are used to indicate various things about a block, such
+;;; as what optimizations need to be done on it:
+;;; -- REOPTIMIZE is set when something interesting happens the uses of a
+;;;    lvar whose DEST is in this block. This indicates that the
+;;;    value-driven (forward) IR1 optimizations should be done on this block.
+;;; -- FLUSH-P is set when code in this block becomes potentially flushable,
+;;;    usually due to an lvar's DEST becoming null.
+;;; -- TYPE-CHECK is true when the type check phase should be run on this
+;;;    block. IR1 optimize can introduce new blocks after type check has
+;;;    already run. We need to check these blocks, but there is no point in
+;;;    checking blocks we have already checked.
+;;; -- DELETE-P is true when this block is used to indicate that this block
+;;;    has been determined to be unreachable and should be deleted. IR1
+;;;    phases should not attempt to examine or modify blocks with DELETE-P
+;;;    set, since they may:
+;;;     - be in the process of being deleted, or
+;;;     - have no successors.
+;;; -- TYPE-ASSERTED, TEST-MODIFIED
+;;;    These flags are used to indicate that something in this block
+;;;    might be of interest to constraint propagation. TYPE-ASSERTED
+;;;    is set when an lvar type assertion is strengthened.
+;;;    TEST-MODIFIED is set whenever the test for the ending IF has
+;;;    changed (may be true when there is no IF.)
+(!def-boolean-attribute block
+  reoptimize flush-p type-check delete-p type-asserted test-modified)
+
+(def!struct (cblock (:include sset-element)
+                    (:constructor make-block (start))
+                    (:constructor make-block-key)
+                    (:conc-name block-)
+                    (:predicate block-p))
+  ...
+  ;; This block's attributes: see above.
+  (flags (block-attributes reoptimize flush-p type-check type-asserted
+                           test-modified)
+         :type attributes)
+  ...)
+
+(!def-boolean-attribute ir1
+  ;; may call functions that are passed as arguments. In order to
+  ;; determine what other effects are present, we must find the
+  ;; effects of all arguments that may be functions.
+  call
+  ;; may fail to return during correct execution. Errors are O.K.
+  ;; UNUSED, BEWARE OF BITROT.
+  unwind
+  ;; the (default) worst case. Includes all the other bad things, plus
+  ;; any other possible bad thing. If this is present, the above bad
+  ;; attributes will be explicitly present as well.
+  any
+  ;; all arguments are safe for dynamic extent.
+  ;; (We used to have an UNSAFE attribute, which was basically the inverse
+  ;; of this, but it was unused and bitrotted, so when we started making
+  ;; use of the information we flipped the name and meaning the safe way
+  ;; around.)
+  dx-safe
+  ;; may be constant-folded. The function has no side effects, but may
+  ;; be affected by side effects on the arguments. e.g. SVREF, MAPC.
+  ;; Functions that side-effect their arguments are not considered to
+  ;; be foldable. Although it would be "legal" to constant fold them
+  ;; (since it "is an error" to modify a constant), we choose not to
+  ;; mark these functions as foldable in this database.
+  foldable
+  ;; may be eliminated if value is unused. The function has no side
+  ;; effects except possibly cons. If a function might signal errors,
+  ;; then it is not flushable even if it is movable, foldable or
+  ;; unsafely-flushable. Implies UNSAFELY-FLUSHABLE. (In safe code
+  ;; type checking of arguments is always performed by the caller, so
+  ;; a function which SHOULD signal an error if arguments are not of
+  ;; declared types may be FLUSHABLE.)
+  flushable
+  ;; unsafe call may be eliminated if value is unused. The function
+  ;; has no side effects except possibly cons and signalling an error
+  ;; in the safe code. If a function MUST signal errors, then it is
+  ;; not unsafely-flushable even if it is movable or foldable.
+  unsafely-flushable
+  ;; return value is important, and ignoring it is probably a mistake.
+  ;; Unlike the other attributes, this is used only for style
+  ;; warnings and has no effect on optimization.
+  important-result
+  ;; may be moved with impunity. Has no side effects except possibly
+  ;; consing, and is affected only by its arguments.
+  ;; UNUSED, BEWARE OF BITROT.
+  movable
+  ;; The function is a true predicate likely to be open-coded. Convert
+  ;; any non-conditional uses into (IF <pred> T NIL). Not usually
+  ;; specified to DEFKNOWN, since this is implementation dependent,
+  ;; and is usually automatically set by the DEFINE-VOP :CONDITIONAL
+  ;; option.
+  predicate
+  ;; Inhibit any warning for compiling a recursive definition.
+  ;; (Normally the compiler warns when compiling a recursive
+  ;; definition for a known function, since it might be a botched
+  ;; interpreter stub.)
+  recursive
+  ;; The function does explicit argument type checking, so the
+  ;; declared type should not be asserted when a definition is
+  ;; compiled.
+  explicit-check
+  ;; The function should always be translated by a VOP (i.e. it should
+  ;; should never be converted into a full call).  This is used strictly
+  ;; as a consistency checking mechanism inside the compiler during IR2
+  ;; transformation.
+  always-translatable)
+
+(defstruct (fun-info #-sb-xc-host (:pure t))
+  ;; boolean attributes of this function.
+  (attributes (missing-arg) :type attributes)
+  ...）
+
+(!def-boolean-attribute vop
+  any)
+
+(!def-boolean-attribute instruction
+  ;; This attribute is set if the scheduler can freely flush this
+  ;; instruction if it thinks it is not needed. Examples are NOP and
+  ;; instructions that have no side effect not described by the
+  ;; writes.
+  flushable
+  ;; This attribute is set when an instruction can cause a control
+  ;; transfer. For test instructions, the delay is used to determine
+  ;; how many instructions follow the branch.
+  branch
+  ;; This attribute indicates that this ``instruction'' can be
+  ;; variable length, and therefore had better never be used in a
+  ;; branch delay slot.
+  variable-length)
+
+(def!struct (instruction
+            (:include sset-element)
+            (:conc-name inst-)
+            (:constructor make-instruction (number emitter attributes delay))
+            (:copier nil))
+  ...
+  ;; The attributes of this instruction.
+  (attributes (instruction-attributes) :type sb!c:attributes)
+  ...)
+
+注意上面的这些属性定义中，只有known function的没有默认值（它会产生missing-arg的错误），
+block的默认值是所有属性，其他的默认值都是空。
+
+最后，让我们来看看针对known function的foldable属性到底意味着什么。
+
+首先，在ir1-optimize-combination中我们找到如下代码：
+
+(defun ir1-optimize-combination (node)
+  ...
+  (let (...
+        (kind (basic-combination-kind node))
+        ...)
+    (ecase kind
+      ...
+      (:known
+       ...
+       (let ((attr (fun-info-attributes info)))
+         (when (and (ir1-attributep attr foldable)
+                    (not (ir1-attributep attr call))
+                    (every #'constant-lvar-p args)
+                    (node-lvar node))
+           (constant-fold-call node)
+           (return-from ir1-optimize-combination)))
+       ...)))
+  (values))
+
+核心代码在when判断中，当被调函数已知，fun-info-attributes中含有foldable属性且每个参数都是常量时，可以对原被调函数进行常量替换，
+即编译时计算出被调函数的返回结果，以直接返回该结果的函数或node代替原被调函数。
+
+下面是常量替换详细过程：
+(defun constant-fold-call (call)
+  (let ((args (mapcar #'lvar-value (combination-args call)))
+        (fun-name (combination-fun-source-name call)))
+    (multiple-value-bind (values win)
+        (careful-call fun-name
+                      args
+                      call
+                      #-sb-xc-host #'compiler-style-warn
+                      #+sb-xc-host #'compiler-warn
+                      "constant folding")
+
+首先从调用node中取出函数名和参数，通过careful-call在编译期对函数调用求值，计算其调用结果。(careful-call是可以产生编译期warning的apply函数（它其实内部调用apply）)，
+并将结果放在values。
+
+
+      (cond ((not win)
+             (setf (combination-kind call) :error))
+
+foldable函数可能会抛出error。针对抛出error的函数，我们把它的类型改为:error，它就没有一般意义上的返回值，后续也不再对其进行优化。
+
+
+            ((and (proper-list-of-length-p values 1))
+
+当返回值是单值时，进行必要的替换动作，
+
+
+             (with-ir1-environment-from-node call
+               (let* ((lvar (node-lvar call))
+                      (prev (node-prev call))
+                      (intermediate-ctran (make-ctran)))
+                 (%delete-lvar-use call)
+                 (setf (ctran-next prev) nil)
+                 (setf (node-prev call) nil)
+                 (reference-constant prev intermediate-ctran lvar
+                                     (first values))
+                 (link-node-to-previous-ctran call intermediate-ctran)
+                 (reoptimize-lvar lvar)
+
+将调用求值结果加入到ir1中，注意这里lvar的变化，原先call的node value的lvar现在成为call求值结果constant ref（常量值引用）的lvar。
+
+
+                 (flush-combination call))))
+
+最后call被从ir1中移除。该函数会调用flush-dest，先断掉call引用的fun和args等输入lvar，这会引起以这些lvar作为结果的block的再优化。
+最后调用unlink-node把call移除掉。
+
+
+            (t (let ((dummies (make-gensym-list (length args))))
+                 (transform-call
+                  call
+                  `(lambda ,dummies
+                     (declare (ignore ,@dummies))
+                     (values ,@(mapcar (lambda (x) `',x) values)))
+                  fun-name))))))
+  (values))
+
+如果返回结果是多值，就用一个返回该多值的匿名函数调用代替call。transform-call实际上在define-source-transform那里
+已经有涉及到。我们来看看它具体的动作：
+
+(defun transform-call (call res source-name)
+  (declare (type combination call) (list res))
+  (aver (and (legal-fun-name-p source-name)
+             (not (eql source-name '.anonymous.))))
+
+call是要被变换的调用的combination node。
+res参数相当于define-source-transform返回的内容，即变换后的目标代码(由编译期计算出来的inline lambda)。
+
+  (node-ends-block call)
+  ...
+  (with-ir1-environment-from-node call
+    (with-component-last-block (*current-component*
+                                (block-next (node-block call)))
+
+      (let ((new-fun (ir1-convert-inline-lambda
+                      res
+                      :debug-name (debug-name 'lambda-inlined source-name)
+                      :system-lambda t))
+            (ref (lvar-use (combination-fun call))))
+        (change-ref-leaf ref new-fun)
+        (setf (combination-kind call) :full)
+
+ir1-convert-inline-lambda的一个典型应用就是用于代码变换（或者叫inline或者叫open-coding）中对目标代码lambda的IR1的翻译。
+用目标代码的IR1翻译代替原先的call中引用的fun lvar, 这样就替换掉了原先的函数。
+        (locall-analyze-component *current-component*))))
+  (values))
+
+到此，我们基本已经对属性，属性的处理有了基本的了解。
+
+Sep 29, 2012 SBCL中的link-node-to-previous-ctran, use-ctran, %use-ctran, use-continuation
+这三个函数都用于node和ctran的连接：箭头代表ctran, 方框代表node，大方框代表block。
+
+link-node-to-previous-ctran将node变成ctran的下一个node, ctran变成node的上一个ctran。
+如图：
+         +----+
+   --c-->| n  |
+   	 +----+
+
+
+use-ctran的作用是当ctran未被使用过时，ctran变成node的下一个ctran，node变成ctran的上一个node。
+node的block变成了ctran的block，ctran类型变成了:inside-block。
+而当ctran是另一个block的开头时，会调用%use-ctran。
+
+%use-ctran的作用是当ctran是另一个block的开头时，会连接node所在的block和ctran所在的block。
+node将变成所在block的block-last，ctran所在的block变成node所在block的下一个block。
+
+如图：
+ctran未被使用时：
+
+    +----+
+    |  n |--c-->
+    +----+
+
+ctran是另一个block的block-start时
+
+    +------+-p<->s-+-------+
+    |  b1  |       |   b2  |
+    |    +---+     |       |
+    |    | n |   --c-->    |
+    |    +---+     |       |
+    |      |       |       |
+    +------+       +-------+
+
+use-continuation等同于对ctran调用use-ctran，对lvar调用use-lvar
+
+Sep 29, 2012 SBCL DEF Internal 之 defknown
+
+defknown(定义于macro.lisp)主要目的就是针对性质已知的特定的函数（如标准中定义的函数），
+让编译器知道这些函数的相关性质，包括，函数类型、函数属性等。 编译器可以利用这些已知信息来
+进行相应的优化处理，如constant propogation, source-to-souce transform等。
+
+defknown函数会在info数据库中新增
+(info :function :type <fun name>)   specifier-type
+(info :function :where-from <fun name>)  固定为:declared
+(info :function :kind <fun name>)   固定为:function
+(info :function :info <fun name>)   函数attribute、derive-type、optimizer相关信息
+
+下面，我们来看看defknown的代码来了解下它的行为：
+(defmacro defknown (name arg-types result-type &optional (attributes '(any))
+                    &body keys)
+
+从参数来看，
+name： 可以是单个source-name或者以列表形式的多个source-name，因此一个defknown可以声明多个函数。
+arg-types， result-type： 函数的参数和返回值类型。
+attributes: 函数的属性，默认包含any，即最坏情况。
+keys:为其余%defknown所需的参数。
+
+  #-sb-xc-host
+  (when (member 'unsafe attributes)
+    (style-warn "Ignoring legacy attribute UNSAFE. Replaced by its inverse: DX-SAFE.")
+    (setf attributes (remove 'unsafe attributes)))
+  (when (and (intersection attributes '(any call unwind))
+             (intersection attributes '(movable)))
+    (error "function cannot have both good and bad attributes: ~S" attributes))
+
+好的和坏的属性不能共存。我一直好奇movable的作用，注释上不是说它不再用了吗？
+
+
+  (when (member 'any attributes)
+    (setq attributes (union '(call unwind) attributes)))
+  (when (member 'flushable attributes)
+    (pushnew 'unsafely-flushable attributes))
+
+正如known function的属性集合定义中的注释所言，当any存在时，call和unwind都必须存在。
+flushable存在时，unsafely-flushable必然存在。
+
+
+  `(%defknown ',(if (and (consp name)
+                         (not (legal-fun-name-p name)))
+                    name
+                    (list name))
+              '(sfunction ,arg-types ,result-type)
+              (ir1-attributes ,@attributes)
+              ,@keys))
+
+调用%defknown完成真正的info数据库注册工作。
+
+(defun %defknown (names type attributes &key derive-type optimizer destroyed-constant-args result-arg)
+  (let ((ctype (specifier-type type))
+        (info (make-fun-info :attributes attributes
+                             :derive-type derive-type
+                             :optimizer optimizer
+                             :destroyed-constant-args destroyed-constant-args
+                             :result-arg result-arg)))
+    (dolist (name names)
+      ...
+      (setf (info :function :type name) ctype)
+      (setf (info :function :where-from name) :declared)
+      (setf (info :function :kind name) :function)
+      (setf (info :function :info name) info)))
+  names)
+
+info数据库中四种不同type信息的注册。
+
+Oct 8, 2012 SBCL DEF Internals之deftransform
+
+在IR1优化中，有一类针对:known类型函数的调用的IR1变换，这类变换主要利用函数调用的参数及返回值的特定类型，有针对性的对调用进行变换优化。
+deftransform(定义在macro.lisp)就是定义这些变换优化的宏。
+
+针对已知函数的特定参数及返回值类型的调用，通过deftransform将会在(info :function :info <name>)的fun-info-transforms列表中存储相应的
+变换结构。变换结构中保存了变换所需的类型条件transform-type，变换函数（接受combination，返回变换结果lambda)transform-function
+以及与编译警告相关的内容transform-note, transform-important。
+
+下面我们通过分析代码进一步了解deftransform是怎么工作的：
+
+(defmacro deftransform (name (lambda-list &optional (arg-types '*)
+                                          (result-type '*)
+                                          &key result policy node defun-only
+                                          eval-name important)
+                             &body body-decls-doc)
+  (when (and eval-name defun-only)
+    (error "can't specify both DEFUN-ONLY and EVAL-NAME"))
+
+从参数来看，
+name：被优化的调用的函数名、lambda-list：被优化的调用的函数形参列表、
+arg-types和result-type：被优化调用的参数和返回值类型(这里指的是derived-type)，
+这三个参数相当于优化的大条件，即只有同时满足这三个条件的调用才会被优化。
+
+policy：针对调用所处的环境的编译策略加以限制，即只有满足policy的调用才会被优化。
+
+
+  (multiple-value-bind (body decls doc) (parse-body body-decls-doc)
+    (let ((n-args (sb!xc:gensym))
+          (n-node (or node (sb!xc:gensym)))
+          (n-decls (sb!xc:gensym))
+          (n-lambda (sb!xc:gensym))
+          (decls-body `(,@decls ,@body)))
+      (multiple-value-bind (parsed-form vars)
+          (parse-deftransform lambda-list
+                              (if policy
+                                  `((unless (policy ,n-node ,policy)
+                                      (give-up-ir1-transform))
+                                    ,@decls-body)
+                                  body)
+                              n-args
+                              '(give-up-ir1-transform))
+
+通过parse-deftransform（类似于parse-defmacro）将deftransform的body包装在一个外层的let绑定中，
+将被优化的调用的参数与deftransform的lambda-list中的参数形成绑定关系。
+
+这里需要指出的是deftransform的lambda-list参数列表有两重作用，
+其一，它作为与要被优化的调用的参数对应的deftransform体内使用的参数的列表；其二，它作为transform-function对combination
+变换后的结果lambda的参数列表。这里parse-deftransform的绑定是针对前者来说的。
+
+另外，注意当policy不满足时，就会通过give-up-ir1-transform放弃本变换优化。
+
+
+        (let ((stuff
+               `((,n-node)
+                 (let* ((,n-args (basic-combination-args ,n-node))
+                        ,@(when result
+                            `((,result (node-lvar ,n-node)))))
+                   (multiple-value-bind (,n-lambda ,n-decls)
+                       ,parsed-form
+                     (if (and (consp ,n-lambda) (eq (car ,n-lambda) 'lambda))
+                         ,n-lambda
+                       `(lambda ,',lambda-list
+                          (declare (ignorable ,@',vars))
+                          ,@,n-decls
+                          ,,n-lambda)))))))
+
+创建变换结构中的transform-function变换函数的body，这个body可以看成是deftransform的body的展开。
+如果deftransform的body的最后一个form是lambda表达式，则该表达式就是变换函数返回的变换后的结果lambda。
+否则deftransform返回一个quoted form（以及一个可选的声明quoted form作为第二个返回值），变换函数将
+把这个quoted form组装在一个空的lambda表达式中作为返回值。
+
+          (if defun-only
+              `(defun ,name ,@(when doc `(,doc)) ,@stuff)
+              `(%deftransform
+                ,(if eval-name name `',name)
+                ,(if eval-name
+                     ``(function ,,arg-types ,,result-type)
+                     `'(function ,arg-types ,result-type))
+                (lambda ,@stuff)
+                ,doc
+                ,(if important t nil))))))))
+
+通过%deftransform，创建变换结构并将其加入(info :function :info <name>)的fun-info-transforms中。
+
+
+(defun %deftransform (name type fun &optional note important)
+  (let* ((ctype (specifier-type type))
+         (note (or note "optimize"))
+         (info (fun-info-or-lose name))
+         (old (find-if (lambda (x)
+                         (and (type= (transform-type x) ctype)
+                              (string-equal (transform-note x) note)
+                              (eq (transform-important x) important)))
+                       (fun-info-transforms info))))
+    (cond (old
+           (style-warn 'sb!kernel:redefinition-with-deftransform
+                       :transform old)
+           (setf (transform-function old) fun
+                 (transform-note old) note))
+
+针对note, type, important都相同的优化变换，我们替换之。
+
+
+          (t
+           (push (make-transform :type ctype :function fun :note note
+                                 :important important)
+                 (fun-info-transforms info))))
+
+否则，将其加入fun-info-transforms列表。
+
+
+    name))
+
+通过deftransform定义优化变换函数，将会在ir1-optimize-combination中发挥作用，下面我们来分析下这一优化过程。
+
+(defun ir1-optimize-combination (node)
+  ...
+  (let (...
+        (kind (basic-combination-kind node))
+        ...)
+    (ecase kind
+      ...
+      (:known
+       ...
+       (let ((fun (fun-info-optimizer info)))
+         (unless (and fun (funcall fun node))
+           ;; First give the VM a peek at the call
+           (multiple-value-bind (style transform)
+               (combination-implementation-style node)
+             (ecase style
+               (:direct
+                ;; The VM knows how to handle this.
+                )
+               (:transform
+                ;; The VM mostly knows how to handle this.  We need
+                ;; to massage the call slightly, though.
+                (transform-call node transform (combination-fun-source-name node)))
+               (:default
+                ;; Let transforms have a crack at it.
+                (dolist (x (fun-info-transforms info))
+                  (unless (ir1-transform node x)
+                    (return)))))))))))
+  (values))
+
+在针对known类型函数的调用的优化中，ir1-transform将遍历尝试fun-info-transforms中的
+优化变换，直到其中有一个成功完成优化变换为止。
+
+(defun ir1-transform (node transform)
+  (declare (type combination node) (type transform transform))
+  (let* ((type (transform-type transform))
+         (fun (transform-function transform))
+         (constrained (fun-type-p type))
+         (table (component-failed-optimizations *component-being-compiled*))
+
+该table记录了所有IR1优化过程中失败的优化，这些失败的优化会在IR1 finalize阶段产生警告或者提示信息。
+
+
+         (flame (if (transform-important transform)
+                    (policy node (>= speed inhibit-warnings))
+                    (policy node (> speed inhibit-warnings))))
+         (*compiler-error-context* node))
+    (cond ((or (not constrained)
+               (valid-fun-use node type))
+
+要求调用node符合type时，才可以进行下面的优化变换。
+当constrained为nil时，表明该变换是built-in function类型，在参数和返回值上并没有对优化进行限制。
+
+           (multiple-value-bind (severity args)
+               (catch 'give-up-ir1-transform
+                 (transform-call node
+                                 (funcall fun node)
+                                 (combination-fun-source-name node))
+                 (values :none nil))
+
+进行变换，变换成功则是:none，否则，give-up-ir1-transform会catch到各种失败的原因。
+这些失败的原因分为三类：:aborted, :failure, :delayed。
+
+
+             (ecase severity
+               (:none
+                (remhash node table)
+                nil)
+               (:aborted
+                (setf (combination-kind node) :error)
+                (when args
+                  (apply #'warn args))
+                (remhash node table)
+                nil)
+               (:failure
+                (if args
+                    (when flame
+                      (record-optimization-failure node transform args))
+                    (setf (gethash node table)
+                          (remove transform (gethash node table) :key #'car)))
+                t)
+               (:delayed
+                 (remhash node table)
+                 nil))))
+
+:aborted代表放弃对该调用的变换优化，fun-info-transforms中的后续变换也将不再尝试。
+:failure代表本变换优化失败，将尝试fun-info-transforms中的后续优化。
+:delayed代表优化将被推迟到目前的IR1 优化阶段之后，或者constraint propogation之后。
+
+注意上面ecase中每个分支的返回值，只有:failure将记录优化失败，其余都将移除失败记录。
+
+          ((and flame
+                (valid-fun-use node
+                               type
+                               :argument-test #'types-equal-or-intersect
+                               :result-test #'values-types-equal-or-intersect))
+           (record-optimization-failure node transform type)
+           t)
+          (t
+           t))))
+
+如果类型都不匹配，必然无法进行优化，这时将根据transform-important来决定是否记录这个失败的优化。
+
+最后，我们来看看在变换优化中的三种失败原因的实现函数：
+
+(defun give-up-ir1-transform (&rest args)
+  (throw 'give-up-ir1-transform (values :failure args)))
+(defun abort-ir1-transform (&rest args)
+  (throw 'give-up-ir1-transform (values :aborted args)))
+(defun delay-ir1-transform (node &rest reasons)
+  (let ((assoc (assoc node *delayed-ir1-transforms*)))
+    (cond ((not assoc)
+            (setf *delayed-ir1-transforms*
+                    (acons node reasons *delayed-ir1-transforms*))
+            (throw 'give-up-ir1-transform :delayed))
+          ((cdr assoc)
+            (dolist (reason reasons)
+              (pushnew reason (cdr assoc)))
+            (throw 'give-up-ir1-transform :delayed)))))
+
+以上三个函数都极为直白，这里就不解释了。
+
+注， 最后的最后，辨析一下deftransform和define-source-transform的区别：
+前者针对的是函数调用，后者针对的是函数。
+前者在IR1翻译之后，是IR1优化的一个过程。后者是IR1翻译过程的一部分，目的是将某些函数的调用(标准化)变换成编译器更容易优化的另一些函数的调用。
+前者在语义基础上变换，依赖于类型、值。 后者在代码结构的基础上通过symbol manipulation进行变换。
+前者针对:known函数。后者针对非:notinline函数。
+
+两者相似处是：
+都是一种变换操作，都可以放弃变换，都是针对函数调用的，两者变换返回的结果都是lambda函数。
+
+Oct 10, 2012 git删除tag和branch
+删除tag
+git tag -d <tag name>
+git push origin :refs/tag/<tag name>
+
+删除branch
+git tag -d <branch name>
+git push origin :<branch name>
+
+Oct 10, 2012 Common Lisp 中 Array的adjustable属性
+在Common Lisp中，创建array时通常有一个:adjustable关键字参数。该参数与array的adjustable有关。
+Common Lisp中对array有两种adjustable，
+- expressly adjustable，指的是明确以:adjustable t指定并创建array
+- actually adjustable，这个是依赖特定实现的。即对于没有明确指定为adjustable的array，实现可以选择它的属性。
+
+那么，什么是adjustable属性呢？其实就是adjust-array函数对array来说是destructive还是functional的。
+对于非adjustable的array，该函数将会返回一个修改的array副本，原array不发生变化。否则，修改将发生在原array身上，
+返回的array就是被修改后的原array。
+
+最后，通常对于actually adjustable的array，都是通过array-adjustable-p来判定的。
+
+Oct 10, 2012 Common Lisp 中 的Array Upgrading
+在CLHS中对Array Upgrading有如下绕口令似的解释：
+"The upgraded array element type of a type T1 is a type T2 that is a supertype of T1 and 
+that is used instead of T1 whenever T1 is used as an array element type for object creation
+or type discrimination"
+
+简而言之，在创建array的时候，你指定的:element-type仅仅是你期望被安排的类型。根据这个期望类型计算出实际的类型
+这个类型可能会比你期望的要宽泛，当发生这种事情时，实际的类型就是你期望类型的upgraded type，这时候array就upgrading了。
+
+通常可以使用upgraded-array-element-type函数来查看实现将会upgrade的类型。
+
+最后，这种事情在complex中也同样存在。
+
+Oct 12, 2012 SBCL DEF Internals 之 defoptimizer
+
+defoptimizer(定义于macro.lisp)可谓是SBCL编译器中定义优化函数的多功能工具。
+通过defoptimizer可以定义四种不同的优化，它们分别是derive-type, optimizer, ltn-annotate和ir2-convert。
+- derive-type类型的优化存储于fun-info-derive-type中，它的作用是在IR1中根据函数调用的参数类型推导函数调用的返回结果类型，
+  即根据参数的lvar类型推导lvar-dest的combination node的value类型。
+- optimizer类型的优化存储于fun-info-optimizer中，是一类针对:known类型函数的调用的变换优化，它的目的与一般的
+  deftransform定义的IR1变换优化的目的相同，但它不受编译器后端影响。优先度高于deftransform定义的IR1变换优化。
+- ltn-annotate和ir2-convert都是针对IR2的，它们也都存储与fun-info结构中，这里暂时不深入讨论它们。
+
+下面我们从代码上来详细了解一下defoptimizer：
+
+(defmacro defoptimizer (what (lambda-list &optional (n-node (sb!xc:gensym))
+                                          &rest vars)
+                             &body body)
+  (let ((name (if (symbolp what) what
+                  (symbolicate (first what) "-" (second what) "-OPTIMIZER"))))
+
+what参数支持两种形式: name 或者 (name kind)，我们可以看到根据这个参数，defoptimizer会为优化函数创建名字，
+形如: <name>或者<name>-<kind>-optimizer。下面代码将创建并注册优化函数。
+
+
+    (let ((n-args (gensym)))
+      `(progn
+        (defun ,name (,n-node ,@vars)
+          (declare (ignorable ,@vars))
+          (let ((,n-args (basic-combination-args ,n-node)))
+            ,(parse-deftransform lambda-list body n-args
+                                 `(return-from ,name nil))))
+
+可以看到，defoptimizer和deftransform一样，通过parse-deftransform分析调用的参数，并将其绑定到lambda-list的参数上。
+
+
+        ,@(when (consp what)
+            `((setf (,(let ((*package* (symbol-package 'sb!c::fun-info)))
+                        (symbolicate "FUN-INFO-" (second what)))
+
+将不同种类的优化保存到fun-info-<kind>中去。
+
+
+                     (fun-info-or-lose ',(first what)))
+                    #',name)))))))
+
+
+接下来，我们以针对+函数的derive-type优化为例，来看看defoptimizer是如何被使用的。
+
+(defoptimizer (+ derive-type) ((x y))
+  (two-arg-derive-type x y #'+-derive-type-aux #'+))
+
+首先，通过defoptimizer定义+函数的derive-type优化函数，
+这里two-arg-derive-type将根据+-derive-type-aux辅助函数返回根据x和y的类型推导后的返回值的numeric-type。
+
+(defun +-derive-type-aux (x y same-arg)
+  (if (and (numeric-type-real-p x)
+           (numeric-type-real-p y))
+
+如果x 和 y有一个不是实数类型（目前运算有复数参加的情况不进一步优化），那么就只是进行numeric contagion（具体规则参考CLHS）。
+
+
+      (let ((result
+             (if same-arg
+                 (let ((x-int (numeric-type->interval x)))
+                   (interval-add x-int x-int))
+                 (interval-add (numeric-type->interval x)
+                               (numeric-type->interval y))))
+            (result-type (numeric-contagion x y)))
+
+分别计算返回值的类型(通过numeric-contagion)以及返回值可能的范围(根据参数的数值范围相叠加)
+
+
+        ;; If the result type is a float, we need to be sure to coerce
+        ;; the bounds into the correct type.
+        (when (eq (numeric-type-class result-type) 'float)
+          (setf result (interval-func
+                        #'(lambda (x)
+                            (coerce-for-bound x (or (numeric-type-format result-type)
+                                                    'float)))
+                        result)))
+
+如果是浮点数类型，要确保范围落在类型允许的边界内。
+
+
+        (make-numeric-type
+         :class (if (and (eq (numeric-type-class x) 'integer)
+                         (eq (numeric-type-class y) 'integer))
+                    ;; The sum of integers is always an integer.
+                    'integer
+                    (numeric-type-class result-type))
+         :format (numeric-type-format result-type)
+         :low (interval-low result)
+         :high (interval-high result)))
+
+最后，产生返回结果的numeric-type结构。
+
+
+      ;; general contagion
+      (numeric-contagion x y)))
+
+
+我们已经很熟悉ir1-optimize-combination函数了，针对:known和:full类型的调用，
+依据fun-info-drive-type，对调用的返回结果类型进行推导：
+
+(defun ir1-optimize-combination (node)
+   ...
+          (let ((fun (fun-info-derive-type info)))
+                (when fun
+                  (let ((res (funcall fun node)))
+                    (when res
+                      (derive-node-type node (coerce-to-values res))
+                      (maybe-terminate-block node nil)))))
+   ...)
+
+在IR1变换发生以后，derive-node-type是唯一正确的更新node类型的方法，直接修改node-derived-type是错误的。
+
+
+(defun derive-node-type (node rtype)
+  (declare (type valued-node node) (type ctype rtype))
+  (let ((node-type (node-derived-type node)))
+    (unless (eq node-type rtype)
+      (let ((int (values-type-intersection node-type rtype))
+            (lvar (node-lvar node)))
+
+首先，获取node原有类型，并与新的类型进行intersection，以产生新的derived-type。
+
+
+        (when (type/= node-type int)
+          (when (and *check-consistency*
+                     (eq int *empty-type*)
+                     (not (eq rtype *empty-type*)))
+            (let ((*compiler-error-context* node))
+              (compiler-warn
+               "New inferred type ~S conflicts with old type:~
+                ~%  ~S~%*** possible internal error? Please report this."
+               (type-specifier rtype) (type-specifier node-type))))
+
+如果新的derive-type变成*empty-type*，说明这个更新是有冲突的，derive-type只可能尽可能的详细，但不应该是空。
+
+
+          (setf (node-derived-type node) int)
+
+更新node-derived-type字段
+
+
+          ;; If the new type consists of only one object, replace the
+          ;; node with a constant reference.
+          (when (and (ref-p node)
+                     (lambda-var-p (ref-leaf node)))
+            (let ((type (single-value-type int)))
+              (when (and (member-type-p type)
+                         (eql 1 (member-type-size type)))
+                (change-ref-leaf node (find-constant
+                                       (first (member-type-members type)))))))
+
+如果新产生的derive-type是只含有一个对象的member类型，说明返回值已知是member中的这个对象了，没有必要进行函数调用了，进行常量替换。
+
+
+          (reoptimize-lvar lvar)))))
+
+因为，node返回值node-lvar的类型发生了变化，所以需要安排再优化。
+
+
+  (values))
+
+至此，我们以初步了解了defoptimizer以及通过defoptimizer定义derive-type优化的内容。
+
+补充：
+其实defoptimizer能够定义的derive-type以及optimizer优化函数，也能够通过defknown函数的&key参数指定。
