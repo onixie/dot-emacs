@@ -418,8 +418,35 @@ switch()
     RET_CODE=$RET_OK
     return $RET_OK
 }
+init_submodule()
+{
+    local SAVE=$(pwd)
+    echo "Initializing submodules"
+    git submodule init && git submodule update
+    echo "done."
+
+    echo "Rebuilding submodules"
+    echo "Cedet"
+    cd $SRC_DOT_DIR/contrib/cedet/ && make clean-all && make
+
+    echo "Ibus"
+    cd $SRC_DOT_DIR/contrib/ibus/ && ./make-dist.sh
+
+    if [ $? = $RET_ERR ]
+    then
+	echo "Failed!"
+	echo "Sorry, dot-emacs dependency breaks. Manual fix is required."
+	cd $SAVE
+	exit $RET_ERR
+    fi
+    
+    cd $SAVE
+    echo "OK"
+}
 install()
 {
+    init_submodule
+
     echo "Make links from $TARGET_DOT_FILE to $SRC_DOT_FILE"
     echo "     links from $TARGET_DOT_DIR to $SRC_DOT_DIR"
 
