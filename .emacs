@@ -1,6 +1,6 @@
 ;;; .emacs --- dot emacs configuration
 
-;; Copyright (C) 2010, 2011, 2012
+;; Copyright (C) 2010, 2011, 2012, 2013
 ;;   Nixie Shen
 
 ;; Author: Nixie Shen <onixie@gmail.com>
@@ -830,6 +830,8 @@ Return a list of one element based on major mode."
 	  "Scheme")
 	 ((memq major-mode '(c-mode c++-mode objc-mode))
 	  "C/C++")
+	 ((or (search "*haskell*" (buffer-name)))
+	  "Haskell")
 	 ((memq major-mode '(rmail-mode
 			     rmail-edit-mode vm-summary-mode vm-mode mail-mode
 			     mh-letter-mode mh-show-mode mh-folder-mode
@@ -1487,6 +1489,24 @@ This command assumes point is not in a string or comment."
 					; But it really relieves my fingers' wrick :P
 ;; (swap-key-translation (kbd "(") (kbd "["))
 ;; (swap-key-translation (kbd ")") (kbd "]"))
+;;;;;;;;;;;;;;;; Haskell Programming ;;;;;;;;;;;;;;;;
+(defun inf-haskell-quit-sentinel (proc change)
+  "Clean up of buffers, when ghci quit."
+  (when (string-match "\\(finished\\|exited\\|killed\\|quit\\)" change)
+    (condition-case nil
+	(let ((b (process-buffer proc)))
+	  (kill-buffer b)
+	  (delete-window (get-buffer-window b)))
+      (error (print "error")))))
+
+(add-hook 'inferior-haskell-mode-hook 
+	  (lambda ()
+	    (eldoc-mode)
+	    (let ((process (get-buffer-process (current-buffer))))
+	      (when (processp process)
+		(set-process-query-on-exit-flag process nil)
+		(set-process-sentinel process 'inf-haskell-quit-sentinel)))))
+
 ;;;;;;;;;;;;;;;; C/C++ Programming ;;;;;;;;;;;;;;;;
 (fset 'kill-c-comment
       (lambda (&optional arg) 
