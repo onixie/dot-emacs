@@ -830,7 +830,8 @@ Return a list of one element based on major mode."
 	  "Scheme")
 	 ((memq major-mode '(c-mode c++-mode objc-mode))
 	  "C/C++")
-	 ((or (search "*haskell*" (buffer-name)))
+	 ((or (search "*haskell*" (buffer-name))
+	      (memq major-mode '(haskell-mode haskell-cabal-mode haskell-c-mode ghc-core-mode)))
 	  "Haskell")
 	 ((memq major-mode '(rmail-mode
 			     rmail-edit-mode vm-summary-mode vm-mode mail-mode

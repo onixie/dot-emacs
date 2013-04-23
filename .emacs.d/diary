@@ -4441,3 +4441,10 @@ what参数支持两种形式: name 或者 (name kind)，我们可以看到根据
 
 补充：
 其实defoptimizer能够定义的derive-type以及optimizer优化函数，也能够通过defknown函数的&key参数指定。
+
+Feb 6, 2013 Agent admitted failure to sign using the key
+When using authorized pubkey to access remote ssh server, if there is error like above,
+run ssh-add <path-to-your-private-key>
+
+Apr 23, 2013 Yesod approot cause IE slow
+If IE acts slowly on loading pages from a Yesod webapp, check if this is a problem caused by approot.
