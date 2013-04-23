@@ -116,6 +116,7 @@
  '(ido-mode (quote buffer) nil (ido))
  '(ido-record-commands nil)
  '(ielm-noisy nil)
+ '(indent-tabs-mode nil)
  '(inhibit-startup-buffer-menu t)
  '(inhibit-startup-echo-area-message "nixie")
  '(inhibit-startup-screen t)
