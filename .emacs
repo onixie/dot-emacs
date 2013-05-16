@@ -19,6 +19,9 @@
 ;; CEDET must be first loaded explicitly, otherwise the old version will mess up new version
 (load-file "~/.emacs.d/contrib/cedet/cedet-devel-load.el")
 
+;; Haskell-Mode
+(load-file "~/.emacs.d/contrib/haskell-mode/haskell-site-file.el")
+
 (require 'ede)
 (require 'semantic)
 (require 'srecode)
@@ -185,12 +188,15 @@
  '(ac-selection-face ((t (:background "steelblue" :foreground "white" :height 120))))
  '(ac-yasnippet-candidate-face ((t (:background "sandybrown" :foreground "black" :height 120))))
  '(ac-yasnippet-selection-face ((t (:background "coral3" :foreground "white" :height 120))))
- '(highlight-current-line-face ((t (:background "black" :slant italic :weight bold :height 1.1))))
+ '(highlight-current-line-face ((t (:background "gray15"))))
  '(org-hide ((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
  '(pp^L-highlight ((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
  '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
  '(tabbar-separator ((t (:inherit tabbar-default :height 0.1))))
  '(tabbar-unselected ((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button))))))
+
+(set-face-font 'menu "-adobe-newcenturyschlbk-medium-r-normal--17-*-100-*-*-*-*-*")
+(set-face-font 'default "-adobe-courier-medium-r-normal--17-*-100-*-*-*-*-15")
 
 (pushnew "~/.emacs.d/" image-load-path :test #'string=)
 
