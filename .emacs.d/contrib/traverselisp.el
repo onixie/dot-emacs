@@ -377,7 +377,7 @@ Example of use:
  (traverse-walk-directory \"~/foo\" :file-fn #'(lambda (x) (princ x) (terpri)))
 
 See `traverse-ignore-files' and `traverse-ignore-dirs'."
-  (labels
+  (cl-labels
       ((walk (name)
          (cond (;; Is a directory and not a symlink.
                 (eq t (car (file-attributes name)))

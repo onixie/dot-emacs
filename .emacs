@@ -323,7 +323,7 @@
 
 (defun frame-smart-fill-workarea (&optional frame)
   (interactive)
-  (flet ((collect-ffw-state (frame)
+  (cl-flet ((collect-ffw-state (frame)
 			    (let* ((di (frame-desktop frame))
 				   (fl (remove-if #'(lambda (fr)
 						      (/= di (frame-desktop fr)))
@@ -343,7 +343,7 @@
 	    ((member 'fill ffw-states) (frame-unfill-workarea frame))
 	    ;; ((member 'unfill ffw-states) (frame-unfill-workarea frame))
 	    (t
-	     (flet ((remove-mb (dirs s1 &rest ss)
+	     (cl-flet ((remove-mb (dirs s1 &rest ss)
 			       (if (member s1 ffw-states)
 				   (remove-states dirs (list* s1 ss))
 				 dirs)))

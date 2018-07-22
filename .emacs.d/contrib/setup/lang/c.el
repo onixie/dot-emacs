@@ -33,7 +33,7 @@
 (defsubst* walk-directory (dirname &key operation (collectp nil) excludes (excludes-subp t) (by-full-pathname t))
   (let ((collector-sym (gensym)))
     (fset collector-sym (symbol-function (if collectp 'cons 'ignore)))
-    (labels
+    (cl-labels
 	((walk (name)
 	       (cond
 		((excludesp name) nil)

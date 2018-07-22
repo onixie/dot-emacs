@@ -11,7 +11,7 @@
 (defun muse-project-publish-and-preview-this-file ()
   (interactive)
   (let ((muse-project-published-file nil))
-    (flet ((setq-published-file () (setq muse-project-published-file output-path)))
+    (cl-flet ((setq-published-file () (setq muse-project-published-file output-path)))
       (add-hook 'muse-before-publish-hook #'setq-published-file)
       (muse-project-publish-this-file t)
       (remove-hook 'muse-before-publish-hook #'setq-published-file)

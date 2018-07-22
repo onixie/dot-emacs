@@ -52,7 +52,7 @@
   	    (lambda ()
   	      (unless (slime-connected-p)
 		(when (eq major-mode 'lisp-mode)
-		  (labels ((src-revisit
+		  (cl-labels ((src-revisit
 			    ()
 			    (remove-hook 'slime-connected-hook #'src-revisit)
 			    (switch-to-buffer (slime-recently-visited-buffer 'lisp-mode))))
