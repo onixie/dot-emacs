@@ -1,6 +1,6 @@
 ;;; .emacs --- dot emacs configuration
 
-;; Copyright (C) 2010, 2011, 2012, 2013
+;; Copyright (C) 2010, 2011, 2012, 2013, 2018
 ;;   Nixie Shen
 
 ;; Author: Nixie Shen <onixie@gmail.com>
@@ -8,67 +8,53 @@
 
 ;;;;;;;;;;;;;;;; Load Packages ;;;;;;;;;;;;;;;;
 
-(require 'cc-mode)
-(require 'asm-mode)
-(require 'sh-script)
-(require 'gud)
-(require 'ido)
-(require 'linum)
-(require 'org)
-
-;; CEDET must be first loaded explicitly, otherwise the old version will mess up new version
-(load-file "~/.emacs.d/contrib/cedet/cedet-devel-load.el")
-
-;; Haskell-Mode
-(load-file "~/.emacs.d/contrib/haskell-mode/haskell-site-file.el")
-
-(require 'ede)
-(require 'semantic)
-(require 'srecode)
-(require 'cogre)
-
 ;; Scan all directories under .emacs.d
 (let ((default-directory "~/.emacs.d/"))
   (normal-top-level-add-subdirs-to-load-path))
 
-(require 'color-theme)
-(require 'maxframe)
-(require 'traverselisp)
+(require 'setup/package)
+(require 'setup/theme)
+(require 'setup/fwb)
+(require 'setup/linum)
+(require 'setup/search-at-point)
+(require 'setup/session)
+
+(require 'setup/lang/common)
+(require 'setup/lang/asm)
+(require 'setup/lang/c)
+(require 'setup/lang/lisp)
+(require 'setup/lang/sh)
+
+(require 'setup/org)
+(require 'setup/muse)
+(require 'setup/erc)
+(require 'setup/gnuplot)
+(require 'setup/ess)
+;(require 'setup/flim)
+
+(require 'ido)
+;; Haskell-Mode
+(load-file "~/.emacs.d/contrib/haskell-mode/haskell-site-file.el")
+
 (require 'tab-display)
 (require 'weekly-view)
-(require 'yasnippet)
-(require 'auto-complete-config)
-(require 'ecb-autoloads)
-(require 'muse-mode)
-(require 'muse-publish)
-(require 'muse-html)
 (require 'emacs-wiki)
-(require 'w3m-load)
-;; (require 'session)
 (require 'cups-dif)
-(require 'erc)
-(require 'paredit)
-;; (require 'parenface)
-(require 'ibus)
-(require 'pp-c-l)
-(require 'geiser)
-(require 'rainbow-delimiters)
+
 (require 'doxymacs)
 
 ;; Use emacs-goodies-el packages
 (require 'tabbar)
 (require 'highlight-current-line)
 (require 'pack-windows)
-(require 'quack)
-(require 'scribble)
 
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ac-auto-show-menu 0.1)
  '(ac-menu-height 30)
  '(ac-quick-help-delay 0.8)
@@ -77,11 +63,10 @@
  '(ac-use-menu-map nil)
  '(auto-image-file-mode t)
  '(before-save-hook (quote (copyright-update time-stamp)))
- '(browse-url-browser-function (quote w3m-browse-url))
+ '(browse-url-browser-function (quote eww-browse-url))
  '(calendar-after-frame-setup-hook nil)
  '(calendar-mark-diary-entries-flag t)
  '(calendar-mark-holidays-flag t)
- '(calendar-mode-hook (quote ((lambda nil (unless (eq org-agenda-diary-file (quote diary-file)) (define-key calendar-mode-map org-calendar-insert-diary-entry-key (quote org-agenda-diary-entry)))) (lambda nil (toggle-truncate-lines 1)) (lambda nil (load "~/.emacs.d/contrib/more-calendar.el")) (lambda nil (progn (setq scroll-margin 0) (setq scroll-step 0) (setq scroll-conservatively 0))))))
  '(calendar-move-hook (quote (calendar-update-mode-line (lambda nil (scroll-down)))) nil nil "Use scroll-down to make it better for auto scrolled when scroll-margin is bigger")
  '(calendar-week-start-day 1)
  '(column-number-mode t)
@@ -100,12 +85,10 @@
  '(display-time-world-time-format "%A %B %d %T %Z")
  '(display-time-world-timer-second 1)
  '(doxymacs-doxygen-style "C++")
- '(ecb-options-version "2.40")
  '(ede-project-placeholder-cache-file "~/.emacs.d/.projects.ede")
  '(eval-expression-print-length nil)
  '(eval-expression-print-level nil)
  '(gdb-many-windows nil)
- '(geiser-repl-use-other-window nil)
  '(highlight-current-line-globally t nil (highlight-current-line))
  '(highlight-current-line-ignore-regexp "Faces\\|Colors\\| \\*Mini\\|\\*Calendar\\*")
  '(highlight-current-line-whole-line t)
@@ -131,33 +114,12 @@
  '(make-backup-files nil)
  '(max-specpdl-size 1048576)
  '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
- '(org-export-docbook-xsl-fo-proc-command "fop %s %s")
- '(org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s")
- '(org-hide-leading-stars nil nil nil "Clean View is done by org-startup-indented, this variable has little usage in future.")
- '(org-hierarchical-todo-statistics nil)
- '(org-startup-indented t)
- '(pp^L-^L-string "                              -* Next Page *-                              ")
- '(pp^L-^L-string-pre "")
- '(quack-browse-url-browser-function (quote quack-w3m-browse-url-other-window))
- '(quack-default-program "racket")
- '(quack-fontify-style (quote emacs))
- '(quack-global-menu-p nil)
- '(quack-pretty-lambda-p t)
- '(quack-programs (quote ("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
- '(rainbow-delimiters-generate-rainbow-faces-p 44)
- '(rainbow-delimiters-stop-cyclic-depth-highlighting-p t)
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)
  '(scroll-preserve-screen-position nil)
  '(scroll-step 1)
- '(semantic-idle-scheduler-idle-time 0.5)
- '(semantic-inhibit-functions (quote ((lambda nil (or (eq major-mode (quote lisp-mode)) (eq major-mode (quote scheme-mode)) (eq major-mode (quote emacs-lisp-mode)))))))
  '(show-paren-mode t)
- '(slime-header-line-p nil)
- '(slime-kill-without-query-p t)
- '(slime-repl-history-remove-duplicates t)
- '(slime-repl-history-trim-whitespaces t)
  '(speedbar-default-position (quote right))
  '(speedbar-frame-parameters (quote ((minibuffer) (width . 40) (border-width . 0) (menu-bar-lines . 0) (tool-bar-lines . 0) (unsplittable . t) (left-fringe . 0))))
  '(speedbar-frame-plist (quote (minibuffer nil width 40 border-width 0 internal-border-width 0 unsplittable t default-toolbar-visible-p nil has-modeline-p nil menubar-visible-p nil default-gutter-visible-p nil)))
@@ -171,16 +133,15 @@
  '(tabbar-separator (quote (0.2)))
  '(time-stamp-format "%:y-%02m-%02d %02H:%02M:%02S %u@%s")
  '(uniquify-buffer-name-style (quote forward) nil (uniquify))
- '(w3m-use-cookies t)
  '(x-select-enable-clipboard t)
  '(yank-pop-change-selection t)
  '(yas/trigger-key (kbd "C-x C-y"))
  '(zoneinfo-style-world-list (quote (("America/Los_Angeles" "Seattle") ("America/New_York" "New York") ("Europe/London" "London") ("Europe/Paris" "Paris") ("Asia/Calcutta" "Bangalore") ("Asia/Tokyo" "Tokyo") ("Asia/BeiJing" "BeiJing")))))
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ac-candidate-face ((t (:background "lightgray" :foreground "black" :height 120))))
  '(ac-completion-face ((t (:foreground "darkgray" :underline t :height 120))))
  '(ac-gtags-candidate-face ((t (:background "lightgray" :foreground "navy" :height 120))))
@@ -189,14 +150,10 @@
  '(ac-yasnippet-candidate-face ((t (:background "sandybrown" :foreground "black" :height 120))))
  '(ac-yasnippet-selection-face ((t (:background "coral3" :foreground "white" :height 120))))
  '(highlight-current-line-face ((t (:background "gray15"))))
- '(org-hide ((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
  '(pp^L-highlight ((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
  '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
  '(tabbar-separator ((t (:inherit tabbar-default :height 0.1))))
  '(tabbar-unselected ((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button))))))
-
-(set-face-font 'menu "-adobe-newcenturyschlbk-medium-r-normal--17-*-100-*-*-*-*-*")
-(set-face-font 'default "-adobe-courier-medium-r-normal--17-*-100-*-*-*-*-15")
 
 (pushnew "~/.emacs.d/" image-load-path :test #'string=)
 
@@ -206,131 +163,8 @@
 (put 'set-goal-column 'disabled nil)
 (setq ielm-header "")
 
-;;;;;;;;;;;;;;;; Common ;;;;;;;;;;;;;;;;
-(defun name-glue (&rest nameparts)
-  "Make a symbol by concating the strings/symbols as its name"
-  (intern (apply #'concat (mapcar #'(lambda (name)
-				      (cond ((symbolp name)
-					     (symbol-name name))
-					    ((numberp name)
-					     (number-to-string name))
-					    ((stringp name) name)
-					    (t (error "can't be glue together"))))
-				     nameparts))))
-
-(defun swap-key-translation (key1 key2)
-  "Swap key bindings in key-translation-map"
-  (define-key key-translation-map key1 key2)
-  (define-key key-translation-map key2 key1))
-
-(defun insert-date ()
-  (interactive)
-  (insert-string (shell-command-to-string "date")))
-
-;;;;;;;;;;;;;;;; Color-Theme ;;;;;;;;;;
-(defvar even-day-p (evenp (time-to-day-in-year (current-time))))
-
-(defun theme-rule-select ()
-  (cond
-   (even-day-p (color-theme-matrix))
-   (t (color-theme-calm-forest))))
-
-(eval-after-load "color-theme"
-  '(progn (color-theme-initialize)
-	  (theme-rule-select)))
-
-;;;;;;;;;;;;;;;; ibus  ;;;;;;;;;;;;;;;;
-(add-hook 'after-init-hook 'ibus-mode-on)
-(global-set-key (kbd "C-|") 'ibus-toggle)
-
 ;;;;;;;;;;;;;;;; IDO ;;;;;;;;;;;;;;;;
 (ido-mode 1)
-
-;;;;;;;;;;;;;;;; CEDET ;;;;;;;;;;;;;;;;
-(semantic-load-enable-excessive-code-helpers)
-(semantic-load-enable-semantic-debugging-helpers)
-(global-srecode-minor-mode 1)
-(global-semantic-stickyfunc-mode -1)
-
-(global-ede-mode 1)
-(remove-hook 'find-file-hook 'ede-turn-on-hook)
-(add-hook 'find-file-hook 'ede-turn-on-hook t)
-
-(when (require 'semantic-tag-folding nil 'noerror)
-  (global-semantic-tag-folding-mode 1)
-  (remove-hook 'semantic-init-hook 'semantic-tag-folding-mode)
-  (add-hook 'semantic-init-hook 'semantic-tag-folding-mode t)
-
-  (define-key semantic-tag-folding-mode-map (kbd "C-c -") 'semantic-tag-folding-fold-block)
-  (define-key semantic-tag-folding-mode-map (kbd "C-c =") 'semantic-tag-folding-show-block)
-  (define-key semantic-tag-folding-mode-map (kbd "C-c M--") 'semantic-tag-folding-fold-all)
-  (define-key semantic-tag-folding-mode-map (kbd "C-c M-=") 'semantic-tag-folding-show-all))
-
-(defsubst* walk-directory (dirname &key operation (collectp nil) excludes (excludes-subp t) (by-full-pathname t))
-  (let ((collector-sym (gensym)))
-    (fset collector-sym (symbol-function (if collectp 'cons 'ignore)))
-    (labels
-	((walk (name)
-	       (cond
-		((excludesp name) nil)
-		((eq t (car (file-attributes name)))
-		 (apply collector-sym
-			(list (funcall (or operation #'identity) name)
-			      (mapcan #'walk (traverse-list-directory name t)))))))
-	 (excludesp (name)
-		    (and excludes
-			 (cond ((not excludes-subp)
-				(member (if by-full-pathname
-					    name
-					  (file-name-nondirectory name))
-					excludes))
-			       (t (find name excludes
-					:test (lambda (n ex)
-						(let ((pos (search ex n)))
-						  (and (not (null pos))
-						       (or (not by-full-pathname)
-							   (= pos 0)))))))))))
-      (walk (expand-file-name dirname)))))
-
-(defun add-path-to-sys-include (path)
-  (semantic-add-system-include path 'c-mode)
-  (semantic-add-system-include path 'c++-mode))
-
-(defvar semantic-user-local-include
-  (list "include" "inc" "common" "public"
-	"../include" "../inc" "../common" "../public"
-	"../../include" "../../inc" "../../common" "../../public"))
-
-(defvar semantic-sys-spec-include
-  (list "/usr/include"
-	"/usr/local/include"
-	;; "/usr/src"
-	;; "/usr/local/src"
-	))
-
-(require 'semantic-c nil 'noerror)
-(dolist (dirname semantic-sys-spec-include)
-  (walk-directory dirname :operation #'add-path-to-sys-include))
-
-(add-hook 'semantic-init-hook
-	  (lambda ()
-	    (dolist (dirname semantic-user-local-include)
-	      (walk-directory dirname
-			      :operation #'add-path-to-sys-include
-			      :excludes semantic-sys-spec-include))))
-
-(add-hook 'semantic-init-mode-hook (lambda () (senator-force-refresh)) t)
-
-(enable-visual-studio-bookmarks)
-;;;;;;;;;;;;;;;; Yasnippet ;;;;;;;;;;;;;;;;
-(yas/initialize)
-(yas/load-directory "~/.emacs.d/contrib/yasnippet/snippets")
-
-;;;;;;;;;;;;;;;; Auto-Complete ;;;;;;;;;;;;;;;;
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/contrib/auto-complete/dict/")
-(ac-config-default)
-
-(setq help-xref-following nil) ;Prevent quick-help yields warning and destroy the C-h function
 
 ;;;;;;;;;;;;;;;; Easy-Frame ;;;;;;;;;;;;;;;;
 (defcustom default-unfillness 0.85
@@ -385,8 +219,8 @@
 (defmacro precisely-do (frame &rest body)
   "Get rid of the effect from wm"
   `(macrolet ((redo (&rest body)
-		     (let ((i (gensym "precisely-do-is-redo")))
-		       `(loop for ,i from 1 to ,precise-1 do (progn ,@body)))))
+                    (let ((i (gensym "precisely-do-is-redo")))
+                      `(loop for ,i from 1 to ,precise-1 do (progn ,@body)))))
      (progn
        (redo
 	(x-send-client-message nil 0 ,frame "_NET_WM_STATE" 32 '(0 "_NET_WM_STATE_FULLSCREEN" 0))
@@ -399,10 +233,10 @@
   "Resize the frame in pixel size."
   (precisely-do frame
 		(let ((flags (cond ((and (integerp height) (integerp width)) #x0001FC0A)
-		      ((integerp width) #x0001F40A)
-		      ((integerp height) #x0001F80A)
-		      (t #x0001F000))))
-     (x-send-client-message nil 0 frame "_NET_MOVERESIZE_WINDOW" 32 `(,flags 0 0 ,(or width 0) ,(or height 0))))))
+                                   ((integerp width) #x0001F40A)
+                                   ((integerp height) #x0001F80A)
+                                   (t #x0001F000))))
+                  (x-send-client-message nil 0 frame "_NET_MOVERESIZE_WINDOW" 32 `(,flags 0 0 ,(or width 0) ,(or height 0))))))
 
 (defmacro with-frame-sizing-info (frame &rest body)
   `(let* ((extents (frame-extents ,frame))
@@ -422,64 +256,64 @@
 (defun frame-fill-workarea (&optional frame dir ratio)
   (interactive)
   (precisely-do frame
-   (with-frame-sizing-info frame
-    (let ((ratio (if (and (numberp ratio) (<= ratio 1))
-		      ratio
-		    0.5)))
-      (if (>= ratio 1)
-	  (frame-fill-workarea frame)
-	(modify-frame-parameters frame `((ffw-state . ,(case dir
-							((upper down left right upper-left upper-right down-left down-right)
-							 dir)
-							(t
-							 'fill)))))
-	(multiple-value-bind (x y w h) (case dir
-					((upper)
-					 (values left top
-						 (- width left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
-					((down)
-					 (values left (+ top (* height (- 1 ratio)))
-						 (- width left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
-					((left)
-					 (values left top
-						 (- (* width ratio) left-extent right-extent) (- height top-extent bottom-extent)))
-					((right)
-					 (values (+ left (* width (- 1 ratio)) ) top
-						 (- (* width ratio) left-extent right-extent) (- height top-extent bottom-extent)))
-					((upper-left)
-					 (values left top
-						 (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
-					((upper-right)
-					 (values (+ left (* width (- 1 ratio))) top
-						 (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
-					((down-left)
-					 (values left (+ top (* height (- 1 ratio)))
-						 (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
-					((down-right)
-					 (values (+ left (* width (- 1 ratio))) (+ top (* height (- 1 ratio)))
-						 (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
-					(t 
-					 (values left top (- width left-extent right-extent) (- height top-extent bottom-extent))))
-	 ;; (princ-list x ", " y ", " w ", " h)
-	 (frame-resize (floor w) (floor h) frame)
-	 (set-frame-position (or frame (selected-frame)) (floor x) (floor y))))))))
+                (with-frame-sizing-info frame
+                                        (let ((ratio (if (and (numberp ratio) (<= ratio 1))
+                                                         ratio
+                                                       0.5)))
+                                          (if (>= ratio 1)
+                                              (frame-fill-workarea frame)
+                                            (modify-frame-parameters frame `((ffw-state . ,(case dir
+                                                                                             ((upper down left right upper-left upper-right down-left down-right)
+                                                                                              dir)
+                                                                                             (t
+                                                                                              'fill)))))
+                                            (multiple-value-bind (x y w h) (case dir
+                                                                             ((upper)
+                                                                              (values left top
+                                                                                      (- width left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+                                                                             ((down)
+                                                                              (values left (+ top (* height (- 1 ratio)))
+                                                                                      (- width left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+                                                                             ((left)
+                                                                              (values left top
+                                                                                      (- (* width ratio) left-extent right-extent) (- height top-extent bottom-extent)))
+                                                                             ((right)
+                                                                              (values (+ left (* width (- 1 ratio)) ) top
+                                                                                      (- (* width ratio) left-extent right-extent) (- height top-extent bottom-extent)))
+                                                                             ((upper-left)
+                                                                              (values left top
+                                                                                      (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+                                                                             ((upper-right)
+                                                                              (values (+ left (* width (- 1 ratio))) top
+                                                                                      (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+                                                                             ((down-left)
+                                                                              (values left (+ top (* height (- 1 ratio)))
+                                                                                      (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+                                                                             ((down-right)
+                                                                              (values (+ left (* width (- 1 ratio))) (+ top (* height (- 1 ratio)))
+                                                                                      (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent)))
+                                                                             (t 
+                                                                              (values left top (- width left-extent right-extent) (- height top-extent bottom-extent))))
+                                              ;; (princ-list x ", " y ", " w ", " h)
+                                              (frame-resize (floor w) (floor h) frame)
+                                              (set-frame-position (or frame (selected-frame)) (floor x) (floor y))))))))
 
 (defun frame-unfill-workarea (&optional frame ratio)
   (interactive)
   (precisely-do frame
-   (with-frame-sizing-info frame
-    (let ((ratio (if (and (numberp ratio) (<= ratio 1))
-		     ratio
-		   default-unfillness)))
-      (if (>= ratio 1)
-	  (frame-fill-workarea frame)
-	(modify-frame-parameters frame '((ffw-state . unfill)))
-	(multiple-value-bind (x y w h)
-	    (values (+ left (/ (* width (- 1 ratio)) 2)) (+ top (/ (* height (- 1 ratio)) 2))
-		    (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent))
-	  ;; (princ-list x ", " y ", " w ", " h)	  
-	  (frame-resize (floor w) (floor h) frame)
-	  (set-frame-position (or frame (selected-frame)) (floor x) (floor y))))))))
+                (with-frame-sizing-info frame
+                                        (let ((ratio (if (and (numberp ratio) (<= ratio 1))
+                                                         ratio
+                                                       default-unfillness)))
+                                          (if (>= ratio 1)
+                                              (frame-fill-workarea frame)
+                                            (modify-frame-parameters frame '((ffw-state . unfill)))
+                                            (multiple-value-bind (x y w h)
+                                                (values (+ left (/ (* width (- 1 ratio)) 2)) (+ top (/ (* height (- 1 ratio)) 2))
+                                                        (- (* width ratio) left-extent right-extent) (- (* height ratio) top-extent bottom-extent))
+                                              ;; (princ-list x ", " y ", " w ", " h)	  
+                                              (frame-resize (floor w) (floor h) frame)
+                                              (set-frame-position (or frame (selected-frame)) (floor x) (floor y))))))))
 
 (defun frame-toggle-unfill (&optional frame)
   (interactive)
@@ -567,11 +401,11 @@
 
 (defmacro define-frame-fill-workarea-key (map key dir)
   `(progn
-     (unless (fboundp ',(name-glue "frame-fill-" dir "-workarea"))
-       (defun ,(name-glue "frame-fill-" dir "-workarea") ()
+     (unless (fboundp ',(dot-emacs--name-glue "frame-fill-" dir "-workarea"))
+       (defun ,(dot-emacs--name-glue "frame-fill-" dir "-workarea") ()
 	 (interactive)
 	 (frame-fill-workarea nil ',dir)))
-     (define-key ,map ,key #',(name-glue "frame-fill-" dir "-workarea"))))
+     (define-key ,map ,key #',(dot-emacs--name-glue "frame-fill-" dir "-workarea"))))
 
 (defvar easy-frame-mode-map
   (let ((map (make-sparse-keymap)))
@@ -634,15 +468,15 @@ If the arguements are nil, all buffers except current buffer will be killed"
       (let ((key (concat "<" (symbol-name direction) ">")))
 	(define-key (eval keymap) (read-kbd-macro key)
 	  ((lambda (direction)
-	     (name-glue "kill-" direction "-window")) 
+	     (dot-emacs--name-glue "kill-" direction "-window")) 
 	   direction))))
   
-  `(defun ,(name-glue "kill-" direction "-window") ()
+  `(defun ,(dot-emacs--name-glue "kill-" direction "-window") ()
      (interactive)
      (save-selected-window
        (if (not (null (condition-case err 
 			  (,((lambda (direction)
-			       (name-glue "windmove-" direction)) direction))
+			       (dot-emacs--name-glue "windmove-" direction)) direction))
 			(error nil))))
 	   ;; Do not kill buffer as such simple way, 
 	   ;; or you might lose origninal window.
@@ -720,13 +554,13 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (kill-window-along-direction down map)
 
     (macrolet ((tabbar-dwim-move (direction)
-				 `(defun ,(name-glue "tabbar-dwim-" direction) ()
+				 `(defun ,(dot-emacs--name-glue "tabbar-dwim-" direction) ()
 				    (interactive)
 				    (if tabbar--buffer-show-groups
 					(progn
-					  (call-interactively #',(name-glue "tabbar-" direction "-group"))
+					  (call-interactively #',(dot-emacs--name-glue "tabbar-" direction "-group"))
 					  (call-interactively #'tabbar-press-home))
-				      (call-interactively #',(name-glue "tabbar-" direction))))))
+				      (call-interactively #',(dot-emacs--name-glue "tabbar-" direction))))))
       (define-key map (kbd "S-<left>") (tabbar-dwim-move backward))
       (define-key map (kbd "S-<right>") (tabbar-dwim-move forward)))
 
@@ -744,7 +578,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
     (define-key map (kbd "<C-kp-down>") 'windmove-down)
 
     (macrolet ((windmove-diagonal (hori vert)
-				  `(defun ,(name-glue "windmove-" hori "-" vert) ()
+				  `(defun ,(dot-emacs--name-glue "windmove-" hori "-" vert) ()
 				     (interactive)
 				     (condition-case nil
 					 (windmove-do-window-select ',hori)
@@ -795,7 +629,7 @@ If the arguements are nil, all buffers except current buffer will be killed"
 
     (define-key map (kbd "<kp-left>") 'switch-to-scratch)
     (define-key map (kbd "<kp-up>") 'eshell)
-    (define-key map (kbd "<kp-begin>") 'w3m)
+    (define-key map (kbd "<kp-begin>") 'eww)
     (define-key map (kbd "<kp-down>") 'erc)
 
     map))
@@ -922,26 +756,6 @@ Return the the first group where the current buffer is."
 
 (define-key Buffer-menu-mode-map (kbd "e") (kbd "C-m"))
 
-;;;;;;;;;;;;;;;; Session ;;;;;;;;;;;;;;;;
-;;(add-hook 'after-init-hook 'session-initialize)
-
-;;;;;;;;;;;;;;;; Search At Point ;;;;;;;;;;;;;;;;
-(defun isearch-current-word-forward (&optional regexp-p no-recursive-edit)
-  (interactive "P\np")
-  (isearch-mode t (not (null regexp-p)) nil (not no-recursive-edit))
-  (isearch-yank-string (current-word)))
-
-(defun isearch-current-word-backward (&optional regexp-p no-recursive-edit)
-  (interactive "P\np")
-  (isearch-mode nil (not (null regexp-p)) nil (not no-recursive-edit))
-  (isearch-yank-string (current-word)))
-
-(global-set-key (kbd "C-*") 'isearch-current-word-forward)
-(global-set-key (kbd "C-#") 'isearch-current-word-backward)
-
-(define-key isearch-mode-map (kbd "C-*") 'isearch-repeat-forward)
-(define-key isearch-mode-map (kbd "C-#") 'isearch-repeat-backward)
-
 ;;;;;;;;;;;;;;;; Point History BackTrace ;;;;;;;;;;;;;;;;
 (defvar group-mode-alist nil
   "A replacement for push curpos when mode-across curpos comes into trouble. e.g. c, c++ mode")
@@ -959,10 +773,10 @@ Return the the first group where the current buffer is."
 
 (defsubst current-mode-curpos-push ()
   "Return the symbol of which function definition is MODE-push-curpos"
-  (name-glue major-mode "-push-curpos"))
+  (dot-emacs--name-glue major-mode "-push-curpos"))
 
 (defsubst group-mode-curpos-push ()
-  (name-glue (group-mode-name major-mode) "-push-curpos"))
+  (dot-emacs--name-glue (group-mode-name major-mode) "-push-curpos"))
 
 (defsubst curpos-buffer (curpos)
   (car curpos))
@@ -987,7 +801,7 @@ Return the the first group where the current buffer is."
 The advice call MODE-push-curpos by current major-mode"
   `(progn
      ,@(mapcar (lambda (func)
-		 (list 'defadvice func (list 'around (name-glue group-mode "-push-curpos") 'activate)
+		 (list 'defadvice func (list 'around (dot-emacs--name-glue group-mode "-push-curpos") 'activate)
 		       (list 'cond
 			     (list (list 'and (list 'called-interactively-p ''interactive) (list 'string-equal (symbol-name group-mode) '(group-mode-name major-mode)))
 				   '(cond ((fboundp (current-mode-curpos-push))
@@ -1008,91 +822,91 @@ The advice call MODE-push-curpos by current major-mode"
 (defmacro mode-local-curpos (mode &rest adviced-function)
   "Define mode local curpos, each curpos has MODE name prefixed"
   `(progn
-     (defvar ,(name-glue mode "-curpos-history") nil
+     (defvar ,(dot-emacs--name-glue mode "-curpos-history") nil
        "Record the positions of the cursor in the form of (buffer . point)")
-     (defvar ,(name-glue mode "-curpos-bottom") nil
+     (defvar ,(dot-emacs--name-glue mode "-curpos-bottom") nil
        "Oldest curpos in history")
-     (defvar ,(name-glue mode "-curpos-top") nil
+     (defvar ,(dot-emacs--name-glue mode "-curpos-top") nil
        "Current push curpos")
-     (defvar ,(name-glue mode "-curpos-cur") nil
+     (defvar ,(dot-emacs--name-glue mode "-curpos-cur") nil
        "Current backtrack curpos")
-     (defvar ,(name-glue mode "-curpos-max-count") 5120
+     (defvar ,(dot-emacs--name-glue mode "-curpos-max-count") 5120
        "Maximum curpos allowed in history")
-     (defvar ,(name-glue mode "-curpos-cur-count") 0
+     (defvar ,(dot-emacs--name-glue mode "-curpos-cur-count") 0
        "Current curpos in history")
      
-     (defun ,(name-glue mode "-push-curpos") (&optional dont-update-curpos-cur-p)
+     (defun ,(dot-emacs--name-glue mode "-push-curpos") (&optional dont-update-curpos-cur-p)
        "Push current cursor position in curpose-history"
        (let ((newpos (current-curpos)))
 	 (cond
-	  ((equal newpos ,(name-glue mode "-curpos-top"))
+	  ((equal newpos ,(dot-emacs--name-glue mode "-curpos-top"))
 	   nil)
-	  ((null ,(name-glue mode "-curpos-history"))
-	   (setq ,(name-glue mode "-curpos-top") newpos
-		 ,(name-glue mode "-curpos-bottom") newpos
-		 ,(name-glue mode "-curpos-history") (cons newpos ,(name-glue mode "-curpos-history")))
-	   (incf ,(name-glue mode "-curpos-cur-count"))
+	  ((null ,(dot-emacs--name-glue mode "-curpos-history"))
+	   (setq ,(dot-emacs--name-glue mode "-curpos-top") newpos
+		 ,(dot-emacs--name-glue mode "-curpos-bottom") newpos
+		 ,(dot-emacs--name-glue mode "-curpos-history") (cons newpos ,(dot-emacs--name-glue mode "-curpos-history")))
+	   (incf ,(dot-emacs--name-glue mode "-curpos-cur-count"))
 	   (unless dont-update-curpos-cur-p
-	     (setq ,(name-glue mode "-curpos-cur") ,(name-glue mode "-curpos-history"))))
-	  ((< ,(name-glue mode "-curpos-max-count") ,(name-glue mode "-curpos-cur-count"))
-	   (setq ,(name-glue mode "-curpos-top") newpos
-		 ,(name-glue mode "-curpos-history") (butlast (cons newpos ,(name-glue mode "-curpos-history")))
-		 ,(name-glue mode "-curpos-cur") (butlast ,(name-glue mode "-curpos-cur"))
-		 ,(name-glue mode "-curpos-bottom") (car (last ,(name-glue mode "-curpos-history"))))
+	     (setq ,(dot-emacs--name-glue mode "-curpos-cur") ,(dot-emacs--name-glue mode "-curpos-history"))))
+	  ((< ,(dot-emacs--name-glue mode "-curpos-max-count") ,(dot-emacs--name-glue mode "-curpos-cur-count"))
+	   (setq ,(dot-emacs--name-glue mode "-curpos-top") newpos
+		 ,(dot-emacs--name-glue mode "-curpos-history") (butlast (cons newpos ,(dot-emacs--name-glue mode "-curpos-history")))
+		 ,(dot-emacs--name-glue mode "-curpos-cur") (butlast ,(dot-emacs--name-glue mode "-curpos-cur"))
+		 ,(dot-emacs--name-glue mode "-curpos-bottom") (car (last ,(dot-emacs--name-glue mode "-curpos-history"))))
 	   (unless dont-update-curpos-cur-p
-	     (setq ,(name-glue mode "-curpos-cur") ,(name-glue mode "-curpos-history"))))
+	     (setq ,(dot-emacs--name-glue mode "-curpos-cur") ,(dot-emacs--name-glue mode "-curpos-history"))))
 	  (t
-	   (setq ,(name-glue mode "-curpos-top") newpos
-		 ,(name-glue mode "-curpos-history") (cons newpos ,(name-glue mode "-curpos-history")))
-	   (incf ,(name-glue mode "-curpos-cur-count"))
+	   (setq ,(dot-emacs--name-glue mode "-curpos-top") newpos
+		 ,(dot-emacs--name-glue mode "-curpos-history") (cons newpos ,(dot-emacs--name-glue mode "-curpos-history")))
+	   (incf ,(dot-emacs--name-glue mode "-curpos-cur-count"))
 	   (unless dont-update-curpos-cur-p
-	     (setq ,(name-glue mode "-curpos-cur") ,(name-glue mode "-curpos-history"))))))
-       ,(name-glue mode "-curpos-history"))
+	     (setq ,(dot-emacs--name-glue mode "-curpos-cur") ,(dot-emacs--name-glue mode "-curpos-history"))))))
+       ,(dot-emacs--name-glue mode "-curpos-history"))
      
-     (defun ,(name-glue mode "-clear-curpos") ()
+     (defun ,(dot-emacs--name-glue mode "-clear-curpos") ()
        "Update curpos-history"
-       (setq ,(name-glue mode "-curpos-history") (remove-if-not #'valid-curpos-p ,(name-glue mode "-curpos-history")))
-       (setq ,(name-glue mode "-curpos-cur") (or (remove-if-not #'valid-curpos-p ,(name-glue mode "-curpos-cur"))
-						 ,(name-glue mode "-curpos-history")))
-       (setq ,(name-glue mode "-curpos-top") (car ,(name-glue mode "-curpos-history")))
-       (setq ,(name-glue mode "-curpos-bottom") (car (last ,(name-glue mode "-curpos-history"))))
-       (setq ,(name-glue mode "-curpos-cur") ,(name-glue mode "-curpos-history"))
-       (setq ,(name-glue mode "-curpos-cur-count") (length ,(name-glue mode "-curpos-history"))))
+       (setq ,(dot-emacs--name-glue mode "-curpos-history") (remove-if-not #'valid-curpos-p ,(dot-emacs--name-glue mode "-curpos-history")))
+       (setq ,(dot-emacs--name-glue mode "-curpos-cur") (or (remove-if-not #'valid-curpos-p ,(dot-emacs--name-glue mode "-curpos-cur"))
+                                                            ,(dot-emacs--name-glue mode "-curpos-history")))
+       (setq ,(dot-emacs--name-glue mode "-curpos-top") (car ,(dot-emacs--name-glue mode "-curpos-history")))
+       (setq ,(dot-emacs--name-glue mode "-curpos-bottom") (car (last ,(dot-emacs--name-glue mode "-curpos-history"))))
+       (setq ,(dot-emacs--name-glue mode "-curpos-cur") ,(dot-emacs--name-glue mode "-curpos-history"))
+       (setq ,(dot-emacs--name-glue mode "-curpos-cur-count") (length ,(dot-emacs--name-glue mode "-curpos-history"))))
 
-     (defun ,(name-glue mode "-empty-curpos") ()
+     (defun ,(dot-emacs--name-glue mode "-empty-curpos") ()
        "Empty curpos-history"
        (interactive)
-       (setq ,(name-glue mode "-curpos-history") nil)
-       (setq ,(name-glue mode "-curpos-top") nil)
-       (setq ,(name-glue mode "-curpos-bottom") nil)
-       (setq ,(name-glue mode "-curpos-cur") nil)
-       (setq ,(name-glue mode "-curpos-cur-count") 0))
+       (setq ,(dot-emacs--name-glue mode "-curpos-history") nil)
+       (setq ,(dot-emacs--name-glue mode "-curpos-top") nil)
+       (setq ,(dot-emacs--name-glue mode "-curpos-bottom") nil)
+       (setq ,(dot-emacs--name-glue mode "-curpos-cur") nil)
+       (setq ,(dot-emacs--name-glue mode "-curpos-cur-count") 0))
      
-     (defun ,(name-glue mode "-backtrace-curpos") ()
+     (defun ,(dot-emacs--name-glue mode "-backtrace-curpos") ()
        "Backtrace the curpos-history stack"
        (interactive)
        (let* ((current-curpos (current-curpos))
-	      (target-curpos (car ,(name-glue mode "-curpos-cur"))))
+	      (target-curpos (car ,(dot-emacs--name-glue mode "-curpos-cur"))))
 	 (unless (valid-curpos-p target-curpos)
-	   (,(name-glue mode "-clear-curpos"))
-	   (setq target-curpos (car ,(name-glue mode "-curpos-cur"))))
+	   (,(dot-emacs--name-glue mode "-clear-curpos"))
+	   (setq target-curpos (car ,(dot-emacs--name-glue mode "-curpos-cur"))))
 	 (cond ((not (valid-curpos-p target-curpos))
-		(,(name-glue mode "-push-curpos") t)
+		(,(dot-emacs--name-glue mode "-push-curpos") t)
 		nil)
 	       ((equal current-curpos target-curpos)
-		(setq ,(name-glue mode "-curpos-cur") (cdr ,(name-glue mode "-curpos-cur")))
-		(,(name-glue mode "-backtrace-curpos")))
+		(setq ,(dot-emacs--name-glue mode "-curpos-cur") (cdr ,(dot-emacs--name-glue mode "-curpos-cur")))
+		(,(dot-emacs--name-glue mode "-backtrace-curpos")))
 	       (t
-		(,(name-glue mode "-push-curpos") t)
+		(,(dot-emacs--name-glue mode "-push-curpos") t)
 		(switch-to-buffer (curpos-buffer target-curpos))
 		(goto-char (curpos-point target-curpos))
-		(,(name-glue mode "-push-curpos") t)))))
+		(,(dot-emacs--name-glue mode "-push-curpos") t)))))
      
      (add-curpos-advice ,mode ,@adviced-function) ; Define each advice function for push-curpos
 
      ,@(mapcar (lambda (group)
-		 `(define-key ,(name-glue (mode-map-name group) "-map") (kbd "S-<f12>") ; Define each keymap for curpos-backtrace
-		    ',(name-glue mode "-backtrace-curpos")))
+		 `(define-key ,(dot-emacs--name-glue (mode-map-name group) "-map") (kbd "S-<f12>") ; Define each keymap for curpos-backtrace
+		    ',(dot-emacs--name-glue mode "-backtrace-curpos")))
 	       `(,mode			;All keymaps in group-mode-alist as a group
 		 ,@(or (remove nil (mapcar (lambda (pair)
 					     (if (eq (cdr pair) mode)
@@ -1220,19 +1034,6 @@ The advice call MODE-push-curpos by current major-mode"
 		   scroll-up
 		   scroll-down)
 
-;;;;;;;;;;;;;;;; Org ;;;;;;;;;;;;;;;;
-(defun org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise."
-  (let (org-log-done org-log-states)	; turn off logging
-    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
-
-(setq org-todo-keywords
-      '((sequence "TODO" "FEEDBACK" "VERIFY" "|" "DONE" "DELEGATED")
-	(sequence "|" "|" "CANCELED")
-	(sequence "计划中" "对应中" "对应完成" "检查中" "检查完成" "|" "取消" "完成")))
-
-(add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
-
 ;;;;;;;;;;;;;;;; Dired ;;;;;;;;;;;;;;;;
 (defun file-manager ()
   (interactive)
@@ -1256,247 +1057,6 @@ The advice call MODE-push-curpos by current major-mode"
 				(define-key dired-mode-map (kbd "E") 'etags)))))
       '(dired-mode-hook))
 
-;;;;;;;;;;;;;;;; Linum and Text Rescaling ;;;;;;;;;;;;;;;;
-(defun rescale-window-margin-by-faceremapping (win)
-  (let ((width (car (window-margins)))
-	(scale (cadr (assoc ':height 
-			    (assoc 'default 
-				   face-remapping-alist)))))
-    (if (numberp scale)
-	(progn
-	  (set-window-margins win (ceiling (* width scale)) (cdr (window-margins win)))
-	  (force-window-update))
-      nil)))
-
-(defadvice linum-update-window (after scaling-margin-width last (win) activate)
-  (rescale-window-margin-by-faceremapping win)
-  ad-return-value)
-
-(mapc (lambda (mode-hook)
-	(add-hook mode-hook 'linum-on))
-      '(c-mode-hook c++-mode-hook sh-mode-hook lisp-mode-hook emacs-lisp-mode-hook lisp-interaction-mode-hook asm-mode-hook))
-
-(with-current-buffer "*Messages*"
-  (linum-on))
-
-(global-set-key (kbd "M-<mouse-4>") 'text-scale-increase)
-(global-set-key (kbd "M-<mouse-5>") 'text-scale-decrease)
-
-;;;;;;;;;;;;;;;; Slime ;;;;;;;;;;;;;;;;
-(when (or (load (file-truename "~/quicklisp/slime-helper.el") t)
-	  (require 'slime))
-  
-  (defmacro defrun-lisp-impl (name command &rest key-args)
-    (setq slime-lisp-implementations
-	  (cons `(,name ,(split-string command) ,@key-args) slime-lisp-implementations))
-    `(defun ,(name-glue "run-" name) ()
-       (interactive)
-       (slime ',name)))
-  
-  (defrun-lisp-impl clisp "clisp" :coding-system utf-8-unix)
-  (defrun-lisp-impl ccl "ccl" :coding-system utf-8-unix)
-  (defrun-lisp-impl sbcl "sbcl" :coding-system utf-8-unix)
-  
-  (slime-setup '(slime-fancy ;meta for autodoc, editing-command, fuzzy, scratch, etc.
-		 slime-asdf
-		 slime-sprof
-		 slime-banner))
-
-  (defun slime-repl-insert-prompt ()
-    (goto-char slime-repl-input-start-mark)
-    (unless slime-repl-suppress-prompt
-      (slime-save-marker slime-output-start
-	(slime-save-marker slime-output-end
-	  (unless (bolp) (insert-before-markers "\n"))
-	  (let ((prompt-start (point))
-		(prompt (format "%s@%s> " (upcase (slime-lisp-implementation-name)) (slime-lisp-package-prompt-string))))
-	    (slime-propertize-region
-		'(face slime-repl-prompt-face read-only t intangible t
-		       slime-repl-prompt t
-		       rear-nonsticky (slime-repl-prompt read-only face intangible)
-		       start-open t end-open t)
-	      (insert-before-markers prompt))
-	    (set-marker slime-repl-prompt-start-mark prompt-start)
-	    prompt-start)))))
-  
-  (setq common-lisp-hyperspec-root (format "file://%s" (file-truename "~/.emacs.d/contrib/hyperspec/")))
-  (setq slime-autodoc-use-multiline-p t)
-
-  (add-hook 'slime-mode-hook
-  	    (lambda ()
-  	      (unless (slime-connected-p)
-		(when (eq major-mode 'lisp-mode)
-		  (labels ((src-revisit
-			    ()
-			    (remove-hook 'slime-connected-hook #'src-revisit)
-			    (switch-to-buffer (slime-recently-visited-buffer 'lisp-mode))))
-		    (add-hook 'slime-connected-hook #'src-revisit t)))
-		(slime))))
-  
-  (add-hook 'slime-connected-hook
-	    (lambda ()
-	      (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
-	      (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
-	      (define-key easy-buffer-window-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
-	      (define-key easy-buffer-window-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
-	      (define-key easy-buffer-window-mode-map (kbd "<prior>") (kbd "<kp-prior>"))
-	      (define-key easy-buffer-window-mode-map (kbd "<next>") (kbd "<kp-next>"))))
-
-  (defadvice slime-kill-all-buffers (after restore-key-bindings activate)
-    (define-key easy-buffer-window-mode-map (kbd "C-c s") nil)
-    (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") 'scroll-down) ; Kludge: store then restore must be better than this.
-    (define-key easy-buffer-window-mode-map (kbd "<kp-right>") nil)
-    (define-key easy-buffer-window-mode-map (kbd "<kp-next>") 'scroll-up)
-    (define-key easy-buffer-window-mode-map (kbd "<prior>") 'scroll-down)
-    (define-key easy-buffer-window-mode-map (kbd "<next>") 'scroll-up)
-    ad-return-value)
-  
-  (let ((fasls-dir "/tmp/slime-fasls/"))
-    (setq slime-compile-file-options `(:fasl-directory ,fasls-dir))
-    (make-directory fasls-dir t)))
-
-;;;;;;;;;;;;;;;; Scheme Programming ;;;;;;;;;;;;;;;;
-(defadvice run-geiser (after good-geiser-run last activate)
-  (let ((cur-buf (current-buffer)))
-    (geiser-syntax--font-lock-buffer)
-    (set-process-query-on-exit-flag (get-buffer-process cur-buf) nil)
-    (switch-to-buffer cur-buf))
-  ad-return-value)
-
-(defadvice run-scheme (after good-quack-run last activate)
-  (let ((cur-buf (current-buffer)))
-    (set-process-query-on-exit-flag (get-buffer-process cur-buf) nil))
-  ad-return-value)
-
-(defadvice geiser-repl--save-remote-data (around no-setq-head-line-format (address) activate)
-  (setq geiser-repl--address address)
-  ;; (setq header-line-format (and address
-  ;;                               (format "Host: %s   Port: %s"
-  ;;                                       (geiser-repl--host)
-  ;;                                       (geiser-repl--port))))
-  )
-
-(mapc (lambda (hook)
-	(add-hook hook 
-		  (lambda ()
-		    (switch-to-buffer (prog1
-					  (current-buffer) 
-					(switch-to-racket))))
-		  t))
-      (list 'scheme-mode-hook))
-
-;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
-(defun repl-quit-sentinel (proc change)
-  "Clean up of buffers, when eilm quit."
-  (when (string-match "\\(finished\\|exited\\|killed\\|quit\\)" change)
-    (condition-case nil
-	(kill-buffer (process-buffer proc))
-      (error (print "error")))))
-
-(defun delete-sexp (&optional arg)
-  "Delete the sexp (balanced expression) following point.
-With ARG, delete that many sexps after point.
-Negative arg -N means delete N sexps before point.
-This command assumes point is not in a string or comment."
-  (interactive "p")
-  (let ((opoint (point)))
-    (forward-sexp (or arg 1))
-    (delete-region opoint (point))))
-
-(defun hug-sexp-a-hug ()
-  "Insert a pair of parenthesis around the sexp at point"
-  (interactive)
-  (let ((balance-p (condition-case nil (prog1 t (check-parens))
-		     (error nil))))
-    (if balance-p
-	(progn
-	  (insert ?\()
-	  (forward-sexp)
-	  (insert ?\))
-	  (backward-sexp)
-	  (forward-char)
-	  t)
-      nil)))
-
-(defun rip-sexp-a-hug ()
-  "Delete surrounding parenthesis and the first sexp in it"
-  (interactive)
-  (backward-up-list)
-  (forward-sexp)
-  (backward-delete-char 1)
-  (backward-up-list)
-  (delete-char 1)
-  (kill-sexp))
-
-(defun replace-sexp-at-point ()
-  (interactive)
-  (save-excursion
-    (yank 1)
-    (delete-sexp 1)))
-
-(mapc (lambda (hook)
-	(add-hook hook 
-		  (lambda ()
-		    (paredit-mode 1)
-		    (rainbow-delimiters-mode 1))))
-      (list 'emacs-lisp-mode-hook 
-	    'ielm-mode-hook 
-	    'lisp-interaction-mode-hook 
-	    'lisp-mode-hook 
-	    'slime-repl-mode-hook 
-	    'inferior-lisp-mode-hook 
-	    'scheme-mode-hook 
-	    'geiser-repl-mode-hook 
-	    'inferior-scheme-mode-hook))
-
-;; (mapc (lambda (hook)
-;; 	(add-hook hook 
-;; 		  (lambda ()
-;; 		    (set-face-foreground 'paren-face "gray70"))))
-;;       (list 'emacs-lisp-mode-hook 'ielm-mode-hook 'lisp-interaction-mode-hook 'lisp-mode-hook 'slime-repl-mode-hook 'inferior-lisp-mode-hook))
-
-;; (mapc (lambda (hook)
-;; 	(add-hook hook 
-;; 		  (lambda ()
-;; 		    (rainbow-delimiters-mode 1))))
-;;       (list 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
-
-(add-hook 'ielm-mode-hook 
-	  (lambda ()
-	    (eldoc-mode)
-	    (let ((process (get-buffer-process (current-buffer))))
-	      (when (processp process)
-		(set-process-sentinel process 'repl-quit-sentinel)))))
-(add-hook 'inferior-scheme-mode-hook 
-	  (lambda ()
-	    (let ((process (get-buffer-process (current-buffer))))
-	      (when (processp process)
-		(set-process-sentinel process 'repl-quit-sentinel)))))
-
-(add-hook 'emacs-lisp-mode-hook
-	  (lambda ()
-	    (eldoc-mode)))
-
-(mapc (lambda (map)
-	(define-key map (kbd "C-S-r") 'replace-sexp-at-point)
-	(define-key map (kbd "C-S-i") 'hug-sexp-a-hug)
-	(define-key map (kbd "C-S-o") 'rip-sexp-a-hug))
-      (list lisp-mode-map emacs-lisp-mode-map lisp-interaction-mode-map scheme-mode-map))
-
-(mapc (lambda (map)
-	(define-key map (kbd "TAB") 'slime-indent-and-complete-symbol))
-      (list lisp-mode-map))
-
-(setq magic-mode-alist nil)
-(add-to-list 'magic-mode-alist '("#lang[[:space:]]+racket" . scheme-mode))
-(add-to-list 'magic-mode-alist '("#!\\(.+/\\)*racket[[:space:]]*$" . scheme-mode))
-(add-to-list 'magic-mode-alist '("#lang[[:space:]]+scribble" . scribble-mode))
-(add-to-list 'magic-mode-alist '("#!\\(.+/\\)*sbcl[[:space:]]+--script$" . lisp-mode))
-
-					; Switching () and [] keys, I don't like it. 
-					; But it really relieves my fingers' wrick :P
-;; (swap-key-translation (kbd "(") (kbd "["))
-;; (swap-key-translation (kbd ")") (kbd "]"))
 ;;;;;;;;;;;;;;;; Haskell Programming ;;;;;;;;;;;;;;;;
 (defun inf-haskell-quit-sentinel (proc change)
   "Clean up of buffers, when ghci quit."
@@ -1515,173 +1075,6 @@ This command assumes point is not in a string or comment."
 		(set-process-query-on-exit-flag process nil)
 		(set-process-sentinel process 'inf-haskell-quit-sentinel)))))
 
-;;;;;;;;;;;;;;;; C/C++ Programming ;;;;;;;;;;;;;;;;
-(fset 'kill-c-comment
-      (lambda (&optional arg) 
-	"Kill C/C++ Comment" 
-	(interactive "p") 
-	(kmacro-exec-ring-item 
-	 (quote ("\223//\\|/\\*\273" 0 "%d")) 
-	 arg)))
-
-(fset 'kill-c-blank-line
-      (lambda (&optional arg) 
-	"Kill C/C++ Blank Line" 
-	(interactive "p") 
-	(kmacro-exec-ring-item 
-	 (quote ("\223^[[:space:]]*$" 0 "%d")) 
-	 arg)))
-
-(define-key c-mode-base-map (kbd "C-M-S-c") 'kill-c-comment)
-(define-key c-mode-base-map (kbd "C-M-S-b") 'kill-c-blank-line)
-
-(define-key c-mode-base-map (kbd "<f12>") 'semantic-ia-fast-jump)
-(define-key c-mode-base-map (kbd "M-<f12>") 'eassist-switch-h-cpp)
-(define-key c-mode-base-map (kbd "M-S-<f12>") 'semantic-analyze-proto-impl-toggle)
-
-(define-key c-mode-base-map (kbd "<f8>") 'ecb-minor-mode)
-
-(define-key c-mode-base-map (kbd "<f5>") 'gdb)
-(define-key c-mode-base-map (kbd "<f6>") 'compile)
-(define-key c-mode-base-map (kbd "S-<f5>") (lambda ()
-					     (interactive)				     
-					     (mapc 'call-interactively '(gdb gdb-many-windows))))
-(define-key c-mode-base-map (kbd "M-S-<f5>") (lambda ()
-					       (interactive)
-					       (mapc 'call-interactively '(compile gdb gdb-many-windows))))
-
-(tool-bar-add-item "gud" 'gdb 'gdb :visible '(memq major-mode '(c++-mode c-mode)))
-(tool-bar-add-item "compile" 'compile 'compile :visible '(memq major-mode '(c++-mode c-mode)))
-
-;;;;;;;;;;;;;;;; Compiler ;;;;;;;;;;;;;;;;
-(defvar compile-output-time 3.0)
-
-(add-to-list 'compilation-finish-functions
-	     (lambda (buffer string)
-	       (when (and (string= (buffer-name buffer) "*compilation*")
-			  (not (string-match "exited abnormally" string)))
-		 (run-at-time compile-output-time nil 'delete-windows-on buffer))))
-
-;;;;;;;;;;;;;;;; GDB and GUD ;;;;;;;;;;;;;;;;
-(defvar gdb-fn-mode-map 
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "<f5>") 'gud-go)
-    (define-key map (kbd "<f9>") (lambda () (interactive) (mapc 'call-interactively '(windmove-source-window gud-break))))
-    (define-key map (kbd "S-<f9>") (lambda () (interactive) (mapc 'call-interactively '(windmove-source-window gud-remove))))
-    (define-key map (kbd "<f10>") 'gud-step)
-    (define-key map (kbd "<f11>") 'gud-next)
-    (define-key map (kbd "S-<f10>") 'gud-finish)
-    (define-key map (kbd "ESC") (lambda () (interactive) (mapc 'call-interactively '(windmove-gdb-window comint-send-eof))))
-    map)
-  "Keymap for `gdb-fn-mode'.")
-
-(define-minor-mode gdb-fn-mode
-  "Toggle GDB FN Key Available.
-     With no argument, this command toggles the mode.
-     Non-null prefix argument turns on the mode.
-     Null prefix argument turns off the mode.
-     \{KEYMAP}
-     When gdb-fn-key-mode mode is enabled, the function key
-     [f5], [f9], [f10], [f11] are enabled for debugging commands"
-  ;; The initial value.
-  :init-value nil
-  ;; The indicator for the mode line.
-  :lighter "Gdb-FN"
-  :global t
-  ;; The minor mode bindings.
-  :keymap gdb-fn-mode-map)
-
-(define-globalized-minor-mode global-gdb-fn-mode gdb-fn-mode 
-  (lambda ()
-    (gdb-fn-mode 1))
-  :require 'gud)
-
-(defun gdb-quit-sentinel (proc change)
-  "Clean up of buffers, fn keys, etc. when GDB quit."
-  (when (string-match "\\(finished\\|exited\\|killed\\)" change)
-    (condition-case nil
-	(let ((src-buffer (condition-case nil
-			      (or (and (not (null gdb-many-windows)) 
-				       (not (null gdb-show-main)) 
-				       (window-buffer gdb-source-window))
-				  (gud-find-file gdb-main-file))
-			    (error "*scratch*"))))
-	  (global-gdb-fn-mode -1)	;Disable GDB's Function Key
-	  (delete-other-windows	;Restore Source window
-	   (get-buffer-window (switch-to-buffer src-buffer)))
-	  (mapc (lambda (name-func) ;Kill all dead buffer associate with GDB
-		  (condition-case nil
-		      (let ((buffer (get-buffer (funcall name-func))))
-			(and (buffer-live-p buffer) (kill-buffer buffer)))
-		    (error nil)))
-		`(gdb-assembler-buffer-name
-		  gdb-memory-buffer-name
-		  gdb-stack-buffer-name
-		  gdb-registers-buffer-name
-		  gdb-threads-buffer-name
-		  gdb-locals-buffer-name
-		  gdb-breakpoints-buffer-name
-		  ,(lambda ()	;This is the gud comint buffer
-		     (buffer-name (process-buffer proc)))))
-	  (switch-to-buffer src-buffer)
-	  (gdb-many-windows -1)	;Disable GDB Many windows
-	  (gud-reset)
-	  (gdb-reset))
-      (error nil))))
-
-(defun kill-gdb-process ()
-  "kill gdb process"
-  (interactive)
-  (with-current-buffer gud-comint-buffer 
-    (comint-skip-input))
-  (set-process-query-on-exit-flag (get-buffer-process gud-comint-buffer) nil)
-  (kill-buffer gud-comint-buffer))
-
-(defun easy-gdb ()
-  "Make gdb easy to use"
-  ;; Enable and Clean up FN keys
-  (global-gdb-fn-mode 1)
-  ;; Close gdb buffer when gdb quit, Clean up windows if multiple windows are shown
-  (let ((process (get-buffer-process (current-buffer))))
-    (when (processp process)
-      (set-process-sentinel process 'gdb-quit-sentinel))))
-
-(defun windmove-source-window ()
-  (interactive)
-  (other-window-by-name (buffer-name (window-buffer gdb-source-window))))
-
-(defun windmove-gdb-window ()
-  (interactive)
-  (other-window-by-name (buffer-name gud-comint-buffer)))
-
-(mapc (lambda (mode-hook)
-	(add-hook mode-hook 'easy-gdb))
-      '(gdb-mode-hook gud-mode-hook))
-;;;;;;;;;;;;;;;; ERC ;;;;;;;;;;;;;;;;
-;; Join the #emacs and #erc channels whenever connecting to Freenode.
-(setq erc-autojoin-channels-alist '(("freenode.net" 
-				     "#emacs" 
-				     "#lisp" 
-				     "#sbcl" 
-				     "#opengl3" 
-				     "#blender" 
-				     "#blendercn" 
-				     "#blenderwiki" 
-				     "#blenderpython" 
-				     "#gameblender" 
-				     "#maxima")))
-
-;; Interpret mIRC-style color commands in IRC chats
-(setq erc-interpret-mirc-color t)
-
-;; The following are commented out by default, but users of other
-;; non-Emacs IRC clients might find them useful.
-;; Kill buffers for channels after /part
-(setq erc-kill-buffer-on-part t)
-;; Kill buffers for private queries after quitting the server
-(setq erc-kill-queries-on-quit t)
-;; Kill buffers for server messages after quitting the server
-(setq erc-kill-server-buffer-on-quit t)
 
 ;;;;;;;;;;;;;;;; Misc ;;;;;;;;;;;;;;;;
 ;;(set-process-query-on-exit-flag (get-buffer-process (get-buffer "*shell*")) nil)
@@ -1699,18 +1092,6 @@ This command assumes point is not in a string or comment."
 (global-set-key (kbd "C-<f12>") 'find-file-at-point)
 (global-set-key (kbd "C-S-f") 'find-grep)
 
-;;;;;;;;;;;;;;;; PP ControlL ;;;;;;;;;;;;;;;;
-(pretty-control-l-mode 1)
-
-(defun ^L-line-ocuppy ()
-  (interactive)
-  (beginning-of-line)
-  (open-line 1)
-  (insert ?\xC)
-  (next-line))
-
-(global-set-key (kbd "C-S-l") '^L-line-ocuppy)
-
 ;;;;;;;;;;;;;;;; Emacs Wiki ;;;;;;;;;;;;;;;;
 (defun emacs-wiki-publish-and-preview-this-page ()
   (interactive)
@@ -1726,33 +1107,6 @@ This command assumes point is not in a string or comment."
 
 (define-key emacs-wiki-mode-map (kbd "C-c C-y") #'emacs-wiki-publish-and-preview-this-page)
 
-;;;;;;;;;;;;;;;; Muse ;;;;;;;;;;;;;;;;
-(defun muse-project-publish-and-preview-this-file ()
-  (interactive)
-  (let ((muse-project-published-file nil))
-    (flet ((setq-published-file () (setq muse-project-published-file output-path)))
-      (add-hook 'muse-before-publish-hook #'setq-published-file)
-      (muse-project-publish-this-file t)
-      (remove-hook 'muse-before-publish-hook #'setq-published-file)
-      (browse-url muse-project-published-file))))
-
-(setq muse-project-alist
-      '(("personal" ("~/muse/src" :default "index")
-	 (:base "html" :path "~/muse/publish"))))
-
-(setq muse-colors-autogen-headings 'outline)
-
-(add-hook 'muse-mode-hook
-	  (lambda ()
-	    (setq outline-regexp "\\*+ ")
-	    (outline-minor-mode)
-	    (hide-body)))
-
-(define-key muse-mode-map (kbd "<tab>") #'org-cycle)
-(define-key muse-mode-map (kbd "S-<tab>") #'org-shifttab)
-(define-key muse-mode-map (kbd "C-c C-y") #'muse-project-publish-and-preview-this-file)
-
 ;;;;;;;;;;;;;;;; Startup ;;;;;;;;;;;;;;;;
 (eshell)
 (ielm)
-
