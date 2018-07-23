@@ -5,5 +5,6 @@
                          ("melpa" . "https://melpa.org/packages/")))
 
 (package-initialize)
+(package-refresh-contents)
 
 (provide 'setup/package)

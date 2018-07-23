@@ -1,23 +1,26 @@
 (require 'setup/package)
 
+;;;;;;;;;;;;;;;; Monokai-Theme ;;;;;;;;;;;;;;;;
+(package-install 'monokai-theme)
+(load-theme 'monokai t)
 ;;;;;;;;;;;;;;;; Color-Theme ;;;;;;;;;;;;;;;;
-(package-install 'color-theme)
-(package-install 'color-theme-monokai)
-(require 'color-theme)
+;; (package-install 'color-theme)
+;; (package-install 'color-theme-monokai)
+;; (require 'color-theme)
 
-(defun theme-rule-select ()
-  (cl-case (mod (time-to-day-in-year (current-time)) 3)
-    (0 (color-theme-monokai))
-    (1 (color-theme-matrix))
-    (otherwise (color-theme-calm-forest))))
+;; (defun theme-rule-select ()
+;;   (cl-case (mod (time-to-day-in-year (current-time)) 3)
+;;     (0 (color-theme-monokai))
+;;     (1 (color-theme-matrix))
+;;     (otherwise (color-theme-calm-forest))))
 
-(eval-after-load "color-theme"
-  '(progn (color-theme-initialize)
-	  (theme-rule-select)))
+;; (eval-after-load "color-theme"
+;;   '(progn (color-theme-initialize)
+;; 	  (theme-rule-select)))
 
 ;;;;;;;;;;;;;;;; Parenface ;;;;;;;;;;;;;;;;
-(package-install 'parenface)
-(require 'parenface)
+;; (package-install 'parenface)
+;; (require 'parenface)
 
 ;;;;;;;;;;;;;;;; PP ControlL ;;;;;;;;;;;;;;;;
 (custom-set-variables
