@@ -233,7 +233,7 @@ diary entries.")
 preferred language.")
 
 (setq calendar-holidays
-  (append general-holidays local-holidays other-holidays solar-holidays))
+  (append holiday-general-holidays holiday-local-holidays holiday-other-holidays holiday-solar-holidays))
 
 (defun within-3-month-range (entry)
   "Determine if a date falls within a month either way of the current month."

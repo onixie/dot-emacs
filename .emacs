@@ -12,8 +12,10 @@
 (let ((default-directory "~/.emacs.d/"))
   (normal-top-level-add-subdirs-to-load-path))
 
+(require 'setup/proxy)
 (require 'setup/package)
 (require 'setup/theme)
+(require 'setup/goodies)
 (require 'setup/fwb)
 (require 'setup/linum)
 (require 'setup/search-at-point)
