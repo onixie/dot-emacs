@@ -1,5 +1,5 @@
 (defun setup/proxy--remove-scheme (uri)
-  (replace-regexp-in-string "[^/:]+://" "" uri))
+  (when uri (replace-regexp-in-string "[^/:]+://" "" uri)))
 
 (setq url-proxy-services
       `(("http" . ,(setup/proxy--remove-scheme (getenv "http_proxy")))
