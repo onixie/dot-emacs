@@ -2,6 +2,7 @@
 .emacs.d/.projects.ede
 .emacs.d/auto-save-list
 .emacs.d/elpa
+.emacs.d/session.*
 .emacs.d/.session
 .emacs.d/ede-projects.el
 .emacs.d/ido.last
