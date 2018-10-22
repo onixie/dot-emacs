@@ -33,8 +33,9 @@
 (require 'setup/gnuplot)
 (require 'setup/ess)
 ;(require 'setup/flim)
+(require 'setup/dired)
+(require 'setup/ido)
 
-(require 'ido)
 ;; Haskell-Mode
 (load-file "~/.emacs.d/contrib/haskell-mode/haskell-site-file.el")
 
@@ -164,9 +165,6 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (put 'set-goal-column 'disabled nil)
 (setq ielm-header "")
-
-;;;;;;;;;;;;;;;; IDO ;;;;;;;;;;;;;;;;
-(ido-mode 1)
 
 ;;;;;;;;;;;;;;;;  Buffer and Window Management ;;;;;;;;;;;;;;;;
 (defun kill-other-buffers (&rest buffers-not-to-kill)
@@ -462,19 +460,6 @@ Return the the first group where the current buffer is."
   ;; Return the first group the current buffer belongs to.
   (car (nth 2 (assq (current-buffer) tabbar--buffers))))
 
-;;;;;;;;;;;;;;;; Buffer List ;;;;;;;;;;;;;;;;
-(defun windmove-list-buffer ()
-  (interactive)
-  (call-interactively 'list-buffers)
-  (other-window-by-name "*Buffer List*"))
-
-(define-key Buffer-menu-mode-map (kbd "C-m") 
-  (lambda ()
-    (interactive)
-    (mapc 'call-interactively '(Buffer-menu-this-window delete-other-windows))))
-
-(define-key Buffer-menu-mode-map (kbd "e") (kbd "C-m"))
-
 ;;;;;;;;;;;;;;;; Point History BackTrace ;;;;;;;;;;;;;;;;
 (defvar group-mode-alist nil
   "A replacement for push curpos when mode-across curpos comes into trouble. e.g. c, c++ mode")
@@ -752,29 +737,6 @@ The advice call MODE-push-curpos by current major-mode"
 		   mouse-drag-region
 		   scroll-up
 		   scroll-down)
-
-;;;;;;;;;;;;;;;; Dired ;;;;;;;;;;;;;;;;
-(defun file-manager ()
-  (interactive)
-  (shell-command "nautilus $(pwd) || thunar $(pwd)" "*Messages*" "*Messages*"))
-
-(defun terminal ()
-  (interactive)
-  (shell-command "gnome-terminal --working-directory=$(pwd) || terminal --working-directory=$(pwd)" "*Messages*" "*Messages*"))
-
-(defun etags ()
-  (interactive)
-  (shell-command "find ./ -type f -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
-
-(tool-bar-add-item "file-manager" 'file-manager 'file-manager :visible '(memq major-mode '(dired-mode)))
-(tool-bar-add-item "terminal" 'terminal 'terminal :visible '(memq major-mode '(dired-mode)))
-(mapc (lambda (mode-hook)
-	(add-hook mode-hook (lambda ()
-			      (progn
-				(define-key dired-mode-map (kbd "N") 'file-manager)
-				(define-key dired-mode-map (kbd "b") 'terminal)
-				(define-key dired-mode-map (kbd "E") 'etags)))))
-      '(dired-mode-hook))
 
 ;;;;;;;;;;;;;;;; Haskell Programming ;;;;;;;;;;;;;;;;
 (defun inf-haskell-quit-sentinel (proc change)

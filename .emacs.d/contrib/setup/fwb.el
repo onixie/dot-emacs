@@ -42,5 +42,17 @@
 ;; 	      (frame-fill-workarea *speedbar-main-frame* *speedbar-main-frame-ffw-state*))))
 
 
+;;;;;;;;;;;;;;;; Buffer List ;;;;;;;;;;;;;;;;
+(defun windmove-list-buffer ()
+  (interactive)
+  (call-interactively 'list-buffers)
+  (other-window-by-name "*Buffer List*"))
+
+(define-key Buffer-menu-mode-map (kbd "C-m") 
+  (lambda ()
+    (interactive)
+    (mapc 'call-interactively '(Buffer-menu-this-window delete-other-windows))))
+
+(define-key Buffer-menu-mode-map (kbd "e") (kbd "C-m"))
 
 (provide 'setup/fwb)
