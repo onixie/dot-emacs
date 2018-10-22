@@ -61,20 +61,20 @@
   
   (add-hook 'slime-connected-hook
 	    (lambda ()
-	      (define-key easy-buffer-window-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
-	      (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
-	      (define-key easy-buffer-window-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
-	      (define-key easy-buffer-window-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
-	      (define-key easy-buffer-window-mode-map (kbd "<prior>") (kbd "<kp-prior>"))
-	      (define-key easy-buffer-window-mode-map (kbd "<next>") (kbd "<kp-next>"))))
+	      (define-key easy-buffer-mode-map (kbd "C-c s") 'slime-selector) ; Enable Slime-selector
+	      (define-key easy-buffer-mode-map (kbd "<kp-prior>") (kbd "C-c s r")) ;do not use slime-repl because it changes widnows
+	      (define-key easy-buffer-mode-map (kbd "<kp-right>") (kbd "C-c s i"))
+	      (define-key easy-buffer-mode-map (kbd "<kp-next>") (kbd "C-c s v")) ; do not use slime-events-buffer directly, it might create even slime not start
+	      (define-key easy-buffer-mode-map (kbd "<prior>") (kbd "<kp-prior>"))
+	      (define-key easy-buffer-mode-map (kbd "<next>") (kbd "<kp-next>"))))
 
   (defadvice slime-kill-all-buffers (after restore-key-bindings activate)
-    (define-key easy-buffer-window-mode-map (kbd "C-c s") nil)
-    (define-key easy-buffer-window-mode-map (kbd "<kp-prior>") 'scroll-down) ; Kludge: store then restore must be better than this.
-    (define-key easy-buffer-window-mode-map (kbd "<kp-right>") nil)
-    (define-key easy-buffer-window-mode-map (kbd "<kp-next>") 'scroll-up)
-    (define-key easy-buffer-window-mode-map (kbd "<prior>") 'scroll-down)
-    (define-key easy-buffer-window-mode-map (kbd "<next>") 'scroll-up)
+    (define-key easy-buffer-mode-map (kbd "C-c s") nil)
+    (define-key easy-buffer-mode-map (kbd "<kp-prior>") 'scroll-down) ; Kludge: store then restore must be better than this.
+    (define-key easy-buffer-mode-map (kbd "<kp-right>") nil)
+    (define-key easy-buffer-mode-map (kbd "<kp-next>") 'scroll-up)
+    (define-key easy-buffer-mode-map (kbd "<prior>") 'scroll-down)
+    (define-key easy-buffer-mode-map (kbd "<next>") 'scroll-up)
     ad-return-value)
   
   (let ((fasls-dir "/tmp/slime-fasls/"))
