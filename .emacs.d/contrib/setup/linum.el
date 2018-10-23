@@ -25,4 +25,14 @@
 (global-set-key (kbd "M-<mouse-4>") 'text-scale-increase)
 (global-set-key (kbd "M-<mouse-5>") 'text-scale-decrease)
 
+(global-set-key (kbd "C-x M-v") 
+		(lambda ()
+		  (interactive)
+		  (if visual-line-mode 
+		      (visual-line-mode 0))
+		  (setq word-wrap nil)
+		  (if truncate-lines
+		      (toggle-truncate-lines -1)
+		    (toggle-truncate-lines 1))))
+
 (provide 'setup/linum)
