@@ -101,7 +101,6 @@
  '(ido-enable-last-directory-history nil)
  '(ido-max-work-directory-list 0)
  '(ido-max-work-file-list 0)
- '(ido-mode (quote buffer) nil (ido))
  '(ido-record-commands nil)
  '(ielm-noisy nil)
  '(indent-tabs-mode nil)
