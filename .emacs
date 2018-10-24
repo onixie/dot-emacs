@@ -29,6 +29,7 @@
 (require 'setup/lang/sh)
 
 (require 'setup/org)
+(require 'setup/wiki)
 (require 'setup/muse)
 (require 'setup/erc)
 (require 'setup/gnuplot)
@@ -40,7 +41,7 @@
 
 (require 'tab-display)
 (require 'weekly-view)
-(require 'emacs-wiki)
+
 (require 'cups-dif)
 
 (require 'doxymacs)
@@ -64,12 +65,26 @@
  '(ac-quick-help-width 100)
  '(ac-use-menu-map nil)
  '(auto-image-file-mode t)
- '(before-save-hook (quote (copyright-update time-stamp)))
- '(browse-url-browser-function (quote eww-browse-url))
+ '(before-save-hook '(copyright-update time-stamp))
+ '(browse-url-browser-function 'eww-browse-url)
  '(calendar-after-frame-setup-hook nil)
  '(calendar-mark-diary-entries-flag t)
  '(calendar-mark-holidays-flag t)
- '(calendar-move-hook (quote (calendar-update-mode-line (lambda nil (scroll-down)))) nil nil "Use scroll-down to make it better for auto scrolled when scroll-margin is bigger")
+ '(calendar-mode-hook
+   '((lambda nil
+       (unless
+           (eq org-agenda-diary-file 'diary-file)
+         (define-key calendar-mode-map org-calendar-insert-diary-entry-key 'org-agenda-diary-entry)))
+     (lambda nil
+       (toggle-truncate-lines 1))
+     (lambda nil
+       (load "~/.emacs.d/contrib/more-calendar.el"))
+     (lambda nil
+       (progn
+         (setq scroll-margin 0)
+         (setq scroll-step 0)
+         (setq scroll-conservatively 0)))))
+ '(calendar-move-hook '(calendar-update-mode-line (lambda nil (scroll-down))) nil nil "Use scroll-down to make it better for auto scrolled when scroll-margin is bigger")
  '(calendar-week-start-day 1)
  '(column-number-mode t)
  '(comment-fill-column nil)
@@ -83,21 +98,30 @@
  '(display-time-interval 1)
  '(display-time-mail-function nil)
  '(display-time-mode t)
- '(display-time-world-list (quote (("PST8PDT" "Seattle") ("EST5EDT" "New York") ("GMT0BST" "London") ("CET-1CDT" "Paris") ("IST-5:30" "Bangalore") ("JST-9" "Tokyo") ("CST-8" "BeiJing"))))
+ '(display-time-world-list
+   '(("PST8PDT" "Seattle")
+     ("EST5EDT" "New York")
+     ("GMT0BST" "London")
+     ("CET-1CDT" "Paris")
+     ("IST-5:30" "Bangalore")
+     ("JST-9" "Tokyo")
+     ("CST-8" "BeiJing")))
  '(display-time-world-time-format "%A %B %d %T %Z")
  '(display-time-world-timer-second 1)
  '(doxymacs-doxygen-style "C++")
+ '(ecb-options-version "2.40")
  '(ede-project-placeholder-cache-file "~/.emacs.d/.projects.ede")
  '(eval-expression-print-length nil)
  '(eval-expression-print-level nil)
  '(gdb-many-windows nil)
+ '(geiser-repl-use-other-window nil)
  '(highlight-current-line-globally t nil (highlight-current-line))
  '(highlight-current-line-ignore-regexp "Faces\\|Colors\\| \\*Mini\\|\\*Calendar\\*")
  '(highlight-current-line-whole-line t)
  '(holiday-hebrew-holidays nil)
  '(holiday-islamic-holidays nil)
  '(holiday-solar-holidays nil)
- '(ido-create-new-buffer (quote always))
+ '(ido-create-new-buffer 'always)
  '(ido-enable-last-directory-history nil)
  '(ido-max-work-directory-list 0)
  '(ido-max-work-file-list 0)
@@ -111,33 +135,88 @@
  '(initial-scratch-message nil)
  '(kill-do-not-save-duplicates t)
  '(kill-ring-max 500)
- '(legacy-style-world-list (quote (("PST8PDT" "Seattle") ("EST5EDT" "New York") ("GMT0BST" "London") ("CET-1CDT" "Paris") ("IST-5:30" "Bangalore") ("JST-9" "Tokyo") ("CST-8" "BeiJing"))))
+ '(legacy-style-world-list
+   '(("PST8PDT" "Seattle")
+     ("EST5EDT" "New York")
+     ("GMT0BST" "London")
+     ("CET-1CDT" "Paris")
+     ("IST-5:30" "Bangalore")
+     ("JST-9" "Tokyo")
+     ("CST-8" "BeiJing")))
  '(make-backup-files nil)
  '(max-specpdl-size 1048576)
- '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
+ '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
+ '(org-export-docbook-xsl-fo-proc-command "fop %s %s")
+ '(org-export-docbook-xslt-proc-command
+   "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s")
+ '(org-hide-leading-stars nil nil nil "Clean View is done by org-startup-indented, this variable has little usage in future.")
+ '(org-hierarchical-todo-statistics nil)
+ '(org-startup-indented t)
+ '(package-selected-packages
+   '(yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
+ '(pp^L-^L-string
+   "                              -* Next Page *-                              ")
+ '(pp^L-^L-string-pre "")
+ '(quack-browse-url-browser-function 'quack-w3m-browse-url-other-window)
+ '(quack-default-program "racket")
+ '(quack-fontify-style 'emacs)
+ '(quack-global-menu-p nil)
+ '(quack-pretty-lambda-p t)
+ '(quack-programs
+   '("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi"))
+ '(rainbow-delimiters-generate-rainbow-faces-p 44)
+ '(rainbow-delimiters-stop-cyclic-depth-highlighting-p t)
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)
  '(scroll-preserve-screen-position nil)
  '(scroll-step 1)
+ '(select-enable-clipboard t)
+ '(semantic-idle-scheduler-idle-time 0.5)
+ '(semantic-inhibit-functions
+   '((lambda nil
+       (or
+        (eq major-mode 'lisp-mode)
+        (eq major-mode 'scheme-mode)
+        (eq major-mode 'emacs-lisp-mode)))))
+ '(session-use-package t nil (session))
  '(show-paren-mode t)
- '(speedbar-default-position (quote right))
- '(speedbar-frame-parameters (quote ((minibuffer) (width . 40) (border-width . 0) (menu-bar-lines . 0) (tool-bar-lines . 0) (unsplittable . t) (left-fringe . 0))))
- '(speedbar-frame-plist (quote (minibuffer nil width 40 border-width 0 internal-border-width 0 unsplittable t default-toolbar-visible-p nil has-modeline-p nil menubar-visible-p nil default-gutter-visible-p nil)))
- '(speedbar-query-confirmation-method (quote none-but-delete))
+ '(slime-header-line-p nil)
+ '(slime-kill-without-query-p t)
+ '(slime-repl-history-remove-duplicates t)
+ '(slime-repl-history-trim-whitespaces t)
+ '(speedbar-default-position 'right)
+ '(speedbar-frame-parameters
+   '((minibuffer)
+     (width . 40)
+     (border-width . 0)
+     (menu-bar-lines . 0)
+     (tool-bar-lines . 0)
+     (unsplittable . t)
+     (left-fringe . 0)))
+ '(speedbar-frame-plist
+   '(minibuffer nil width 40 border-width 0 internal-border-width 0 unsplittable t default-toolbar-visible-p nil has-modeline-p nil menubar-visible-p nil default-gutter-visible-p nil))
+ '(speedbar-query-confirmation-method 'none-but-delete)
  '(speedbar-show-unknown-files t)
- '(speedbar-tag-hierarchy-method (quote (speedbar-prefix-group-tag-hierarchy speedbar-trim-words-tag-hierarchy speedbar-sort-tag-hierarchy)))
+ '(speedbar-tag-hierarchy-method
+   '(speedbar-prefix-group-tag-hierarchy speedbar-trim-words-tag-hierarchy speedbar-sort-tag-hierarchy))
  '(speedbar-verbosity-level 2)
  '(tabbar-background-color "yellow")
  '(tabbar-cycle-scope nil)
  '(tabbar-mode t nil (tabbar))
- '(tabbar-separator (quote (0.2)))
+ '(tabbar-separator '(0.2))
  '(time-stamp-format "%:y-%02m-%02d %02H:%02M:%02S %u@%s")
- '(uniquify-buffer-name-style (quote forward) nil (uniquify))
- '(x-select-enable-clipboard t)
+ '(uniquify-buffer-name-style 'forward nil (uniquify))
  '(yank-pop-change-selection t)
  '(yas/trigger-key (kbd "C-x C-y"))
- '(zoneinfo-style-world-list (quote (("America/Los_Angeles" "Seattle") ("America/New_York" "New York") ("Europe/London" "London") ("Europe/Paris" "Paris") ("Asia/Calcutta" "Bangalore") ("Asia/Tokyo" "Tokyo") ("Asia/BeiJing" "BeiJing")))))
+ '(zoneinfo-style-world-list
+   '(("America/Los_Angeles" "Seattle")
+     ("America/New_York" "New York")
+     ("Europe/London" "London")
+     ("Europe/Paris" "Paris")
+     ("Asia/Calcutta" "Bangalore")
+     ("Asia/Tokyo" "Tokyo")
+     ("Asia/BeiJing" "BeiJing"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -151,7 +230,17 @@
  '(ac-yasnippet-candidate-face ((t (:background "sandybrown" :foreground "black" :height 120))))
  '(ac-yasnippet-selection-face ((t (:background "coral3" :foreground "white" :height 120))))
  '(highlight-current-line-face ((t (:background "gray15"))))
+ '(org-hide ((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
  '(pp^L-highlight ((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
+ '(rainbow-delimiters-depth-1-face ((((background light)) (:foreground "#7F1000" :height 1.4886363636363635)) (((background dark)) (:foreground "#FF4E32" :height 1.4886363636363635))) nil :group)
+ '(rainbow-delimiters-depth-2-face ((((background light)) (:foreground "#7F2100" :height 1.4772727272727273)) (((background dark)) (:foreground "#FF6932" :height 1.4772727272727273))) nil :group)
+ '(rainbow-delimiters-depth-3-face ((((background light)) (:foreground "#7F3300" :height 1.4659090909090908)) (((background dark)) (:foreground "#FF8432" :height 1.4659090909090908))) nil :group)
+ '(rainbow-delimiters-depth-4-face ((((background light)) (:foreground "#7F4400" :height 1.4545454545454546)) (((background dark)) (:foreground "#FF9F32" :height 1.4545454545454546))) nil :group)
+ '(rainbow-delimiters-depth-5-face ((((background light)) (:foreground "#7F5500" :height 1.4431818181818181)) (((background dark)) (:foreground "#FFBB32" :height 1.4431818181818181))) nil :group)
+ '(rainbow-delimiters-depth-6-face ((((background light)) (:foreground "#7F6800" :height 1.4318181818181819)) (((background dark)) (:foreground "#FFD932" :height 1.4318181818181819))) nil :group)
+ '(rainbow-delimiters-depth-7-face ((((background light)) (:foreground "#7F7900" :height 1.4204545454545454)) (((background dark)) (:foreground "#FFF432" :height 1.4204545454545454))) nil :group)
+ '(rainbow-delimiters-depth-8-face ((((background light)) (:foreground "#747F00" :height 1.4090909090909092)) (((background dark)) (:foreground "#EEFF32" :height 1.4090909090909092))) nil :group)
+ '(rainbow-delimiters-depth-9-face ((((background light)) (:foreground "#637F00" :height 1.3977272727272727)) (((background dark)) (:foreground "#D2FF32" :height 1.3977272727272727))) nil :group)
  '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
  '(tabbar-separator ((t (:inherit tabbar-default :height 0.1))))
  '(tabbar-unselected ((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button))))))
@@ -165,96 +254,6 @@
 (setq ielm-header "")
 
 ;;;;;;;;;;;;;;;; Tabbar ;;;;;;;;;;;;;;;;
-(defun tabbar-buffer-groups ()
-  "Return the list of group names the current buffer belongs to.
-Return a list of one element based on major mode."
-  (list
-   (cond ((member (buffer-name) '("*scratch*" "*Messages*" "*ielm*" ".emacs"))
-	  "Emacs")
-	 ((eq major-mode 'dired-mode)
-	  "Dired")
-	 ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
-	  "Help")
-	 ((or (memq major-mode '(lisp-mode slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode slime-sprof-browser-mode slime-xref-mode))
-	      (search "*inferior-lisp*" (buffer-name))
-	      (search "*slime-events*" (buffer-name)))
-	  "Common Lisp")
-	 ((or (memq major-mode '(scheme-mode inferior-scheme-mode geiser-doc-mode geiser-debug-mode geiser-repl-mode))
-	      (search "*scheme*" (buffer-name)))
-	  "Scheme")
-	 ((memq major-mode '(c-mode c++-mode objc-mode))
-	  "C/C++")
-	 ((or (search "*haskell*" (buffer-name))
-	      (memq major-mode '(haskell-mode haskell-cabal-mode haskell-c-mode ghc-core-mode)))
-	  "Haskell")
-	 ((memq major-mode '(rmail-mode
-			     rmail-edit-mode vm-summary-mode vm-mode mail-mode
-			     mh-letter-mode mh-show-mode mh-folder-mode
-			     gnus-summary-mode message-mode gnus-group-mode
-			     gnus-article-mode score-mode gnus-browse-killed-mode))
-	  "Mail")
-	 ((or (get-buffer-process (current-buffer))
-	      ;; Check if the major mode derives from `comint-mode' or
-	      ;; `compilation-mode'.
-	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
-	  "Process")
-	 (t
-	  ;; Return `mode-name' if not blank, `major-mode' otherwise.
-	  (if (and (stringp mode-name)
-		   ;; Take care of preserving the match-data because this
-		   ;; function is called when updating the header line.
-		   (save-match-data (string-match "[^ ]" mode-name)))
-	      mode-name
-	    (symbol-name major-mode))))))
-
-(defun tabbar-buffer-update-groups ()
-  "Update tab sets from groups of existing buffers.
-Return the the first group where the current buffer is."
-  (let ((bl (sort
-             (mapcar
-              #'(lambda (b)
-                  (with-current-buffer b
-                    (list (current-buffer)
-                          (buffer-name)
-                          (if tabbar-buffer-groups-function
-                              (funcall tabbar-buffer-groups-function)
-                            '("Emacs")))))
-              (and tabbar-buffer-list-function
-                   (funcall tabbar-buffer-list-function)))
-             #'(lambda (e1 e2)
-                 (string-lessp (nth 1 e1) (nth 1 e2))))))
-    ;; If the cache has changed, update the tab sets.
-    (unless (equal bl tabbar--buffers)
-      ;; Add new buffers, or update changed ones.
-      (dolist (e bl)
-        (dolist (g (nth 2 e))
-          (let ((tabset (tabbar-get-tabset g)))
-            (if tabset
-                (unless (equal e (assq (car e) tabbar--buffers))
-                  ;; This is a new buffer, or a previously existing
-                  ;; buffer that has been renamed, or moved to another
-                  ;; group.  Update the tab set, and the display.
-                  (tabbar-add-tab tabset (car e) t)
-                  (tabbar-set-template tabset nil))
-              (tabbar-make-tabset g (car e))))))
-      ;; Remove tabs for buffers not found in cache or moved to other
-      ;; groups, and remove empty tabsets.
-      (mapc 'tabbar-delete-tabset
-            (tabbar-map-tabsets
-             #'(lambda (tabset)
-                 (dolist (tab (tabbar-tabs tabset))
-                   (let ((e (assq (tabbar-tab-value tab) bl)))
-                     (or (and e (memq tabset
-                                      (mapcar 'tabbar-get-tabset
-                                              (nth 2 e))))
-                         (tabbar-delete-tab tab))))
-                 ;; Return empty tab sets
-                 (unless (tabbar-tabs tabset)
-                   tabset))))
-      ;; The new cache becomes the current one.
-      (setq tabbar--buffers bl)))
-  ;; Return the first group the current buffer belongs to.
-  (car (nth 2 (assq (current-buffer) tabbar--buffers))))
 
 ;;;;;;;;;;;;;;;; Point History BackTrace ;;;;;;;;;;;;;;;;
 (defvar group-mode-alist nil
@@ -536,21 +535,6 @@ The advice call MODE-push-curpos by current major-mode"
 
 ;;;;;;;;;;;;;;;; Misc ;;;;;;;;;;;;;;;;
 ;;(set-process-query-on-exit-flag (get-buffer-process (get-buffer "*shell*")) nil)
-
-;;;;;;;;;;;;;;;; Emacs Wiki ;;;;;;;;;;;;;;;;
-(defun emacs-wiki-publish-and-preview-this-page ()
-  (interactive)
-  (emacs-wiki-publish-this-page)
-  (browse-url (emacs-wiki-published-file)))
-
-(setq emacs-wiki-projects
-      '(("personal" (emacs-wiki-directories "~/emacs-wiki/src")
-	 (emacs-wiki-publishing-directory . "~/emacs-wiki/publish")
-	 (emacs-wiki-default-page . "index"))))
-
-(setq emacs-wiki-maintainer "mailto:onixie@gmail.com")
-
-(define-key emacs-wiki-mode-map (kbd "C-c C-y") #'emacs-wiki-publish-and-preview-this-page)
 
 ;;;;;;;;;;;;;;;; Startup ;;;;;;;;;;;;;;;;
 (eshell)
