@@ -25,6 +25,7 @@
 (require 'setup/lang/asm)
 (require 'setup/lang/c)
 (require 'setup/lang/lisp)
+(require 'setup/lang/haskell)
 (require 'setup/lang/sh)
 
 (require 'setup/org)
@@ -35,9 +36,7 @@
 ;(require 'setup/flim)
 (require 'setup/dired)
 (require 'setup/ido)
-
-;; Haskell-Mode
-(load-file "~/.emacs.d/contrib/haskell-mode/haskell-site-file.el")
+(require 'setup/tramp)
 
 (require 'tab-display)
 (require 'weekly-view)
@@ -536,40 +535,8 @@ The advice call MODE-push-curpos by current major-mode"
 		   scroll-up
 		   scroll-down)
 
-;;;;;;;;;;;;;;;; Haskell Programming ;;;;;;;;;;;;;;;;
-(defun inf-haskell-quit-sentinel (proc change)
-  "Clean up of buffers, when ghci quit."
-  (when (string-match "\\(finished\\|exited\\|killed\\|quit\\)" change)
-    (condition-case nil
-	(let ((b (process-buffer proc)))
-	  (kill-buffer b)
-	  (delete-window (get-buffer-window b)))
-      (error (print "error")))))
-
-(add-hook 'inferior-haskell-mode-hook 
-	  (lambda ()
-	    (eldoc-mode)
-	    (let ((process (get-buffer-process (current-buffer))))
-	      (when (processp process)
-		(set-process-query-on-exit-flag process nil)
-		(set-process-sentinel process 'inf-haskell-quit-sentinel)))))
-
-
 ;;;;;;;;;;;;;;;; Misc ;;;;;;;;;;;;;;;;
 ;;(set-process-query-on-exit-flag (get-buffer-process (get-buffer "*shell*")) nil)
-
-(global-set-key (kbd "C-x M-v") 
-		(lambda ()
-		  (interactive)
-		  (if visual-line-mode 
-		      (visual-line-mode 0))
-		  (setq word-wrap nil)
-		  (if truncate-lines
-		      (toggle-truncate-lines -1)
-		    (toggle-truncate-lines 1))))
-
-(global-set-key (kbd "C-<f12>") 'find-file-at-point)
-(global-set-key (kbd "C-S-f") 'find-grep)
 
 ;;;;;;;;;;;;;;;; Emacs Wiki ;;;;;;;;;;;;;;;;
 (defun emacs-wiki-publish-and-preview-this-page ()
