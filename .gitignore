@@ -10,6 +10,7 @@
 .emacs.d/tramp
 .emacs.d/eshell/*
 .emacs.d/network-security.data
+.emacs.d/url/*
 dot-emacs*.tar.gz
 \#*\#
 *~
