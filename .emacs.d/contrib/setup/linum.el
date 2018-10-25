@@ -23,7 +23,9 @@
   (linum-on))
 
 (global-set-key (kbd "M-<mouse-4>") 'text-scale-increase)
+(global-set-key (kbd "<left-magin> <M-mouse-4>") (kbd "M-<mouse-4>"))
 (global-set-key (kbd "M-<mouse-5>") 'text-scale-decrease)
+(global-set-key (kbd "<left-margin> <M-mouse-5>") (kbd "M-<mouse-5>"))
 
 (global-set-key (kbd "C-x M-v") 
 		(lambda ()
