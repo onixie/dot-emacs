@@ -6,6 +6,8 @@
   (package-install 'highlight-current-line))
 (require 'highlight-current-line)
 
+(face-spec-set 'highlight-current-line-face '((t (:background "gray10"))))
+
 (package-install 'tabbar)
 (require 'tabbar)
 
@@ -99,5 +101,7 @@ Return the the first group where the current buffer is."
       (setq tabbar--buffers bl)))
   ;; Return the first group the current buffer belongs to.
   (car (nth 2 (assq (current-buffer) tabbar--buffers))))
+
+(require 'pack-windows)
 
 (provide 'setup/goodies)

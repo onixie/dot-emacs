@@ -23,12 +23,14 @@
 ;; (require 'parenface)
 
 ;;;;;;;;;;;;;;;; PP ControlL ;;;;;;;;;;;;;;;;
-(custom-set-variables
- '(pp^L-^L-string "                              -* Next Page *-                              ")
- '(pp^L-^L-string-pre ""))
 
 (package-install 'pp-c-l)
 (require 'pp-c-l)
+
+(setq pp^L-^L-string "                              -* Next Page *-                              "
+      pp^L-^L-string-pre "")
+
+(face-spec-set 'pp^L-highlight '((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
 
 (pretty-control-l-mode 1)
 
@@ -42,10 +44,9 @@
 (global-set-key (kbd "C-S-l") 'setup-theme--^L-line-ocuppy)
 
 ;;;;;;;;;;;;;;;; Rainbow-delimiters ;;;;;;;;;;;;;;;;
-(custom-set-variables
- '(rainbow-delimiters-generate-rainbow-faces-p 44)
- '(rainbow-delimiters-stop-cyclic-depth-highlighting-p t))
-
 (require 'rainbow-delimiters)
+
+(setq rainbow-delimiters-generate-rainbow-faces-p 44
+      rainbow-delimiters-stop-cyclic-depth-highlighting-p t)
 
 (provide 'setup/theme)

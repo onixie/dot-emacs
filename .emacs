@@ -19,6 +19,7 @@
 (require 'setup/linum)
 (require 'setup/search-at-point)
 (require 'setup/session)
+(provide 'setup/calendar)
 
 (require 'setup/lang/common)
 (require 'setup/lang/asm)
@@ -46,7 +47,6 @@
 (require 'doxymacs)
 
 ;; Use emacs-goodies-el packages
-(require 'pack-windows)
 
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
 ;;Custom Setting
@@ -64,25 +64,6 @@
  '(auto-image-file-mode t)
  '(before-save-hook '(copyright-update time-stamp))
  '(browse-url-browser-function 'eww-browse-url)
- '(calendar-after-frame-setup-hook nil)
- '(calendar-mark-diary-entries-flag t)
- '(calendar-mark-holidays-flag t)
- '(calendar-mode-hook
-   '((lambda nil
-       (unless
-           (eq org-agenda-diary-file 'diary-file)
-         (define-key calendar-mode-map org-calendar-insert-diary-entry-key 'org-agenda-diary-entry)))
-     (lambda nil
-       (toggle-truncate-lines 1))
-     (lambda nil
-       (load "~/.emacs.d/contrib/more-calendar.el"))
-     (lambda nil
-       (progn
-         (setq scroll-margin 0)
-         (setq scroll-step 0)
-         (setq scroll-conservatively 0)))))
- '(calendar-move-hook '(calendar-update-mode-line (lambda nil (scroll-down))) nil nil "Use scroll-down to make it better for auto scrolled when scroll-margin is bigger")
- '(calendar-week-start-day 1)
  '(column-number-mode t)
  '(comment-fill-column nil)
  '(desktop-base-file-name ".emacs.d/.desktop")
@@ -151,9 +132,6 @@
  '(org-startup-indented t)
  '(package-selected-packages
    '(yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
- '(pp^L-^L-string
-   "                              -* Next Page *-                              ")
- '(pp^L-^L-string-pre "")
  '(quack-browse-url-browser-function 'quack-w3m-browse-url-other-window)
  '(quack-default-program "racket")
  '(quack-fontify-style 'emacs)
@@ -226,9 +204,7 @@
  '(ac-selection-face ((t (:background "steelblue" :foreground "white" :height 120))))
  '(ac-yasnippet-candidate-face ((t (:background "sandybrown" :foreground "black" :height 120))))
  '(ac-yasnippet-selection-face ((t (:background "coral3" :foreground "white" :height 120))))
- '(highlight-current-line-face ((t (:background "gray15"))))
  '(org-hide ((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
- '(pp^L-highlight ((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
  '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
  '(tabbar-separator ((t (:inherit tabbar-default :height 0.1))))
  '(tabbar-unselected ((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button))))))
