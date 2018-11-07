@@ -14,7 +14,8 @@
 
 (setq org-hide-leading-stars nil
       org-hierarchical-todo-statistics nil
-      org-startup-indented t)
+      org-startup-indented t
+      org-confirm-babel-evaluate nil)
 
 (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
 
@@ -30,6 +31,6 @@
 
 (add-hook 'org-after-todo-statistics-hook 'setup-org--org-summary-todo)
 
-(org-babel-do-load-languages 'org-babel-load-languages '((shell . t)))
+(org-babel-do-load-languages 'org-babel-load-languages '((shell . t) (plantuml . t)))
 
 (provide 'setup/org)
