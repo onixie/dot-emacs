@@ -11,8 +11,8 @@
 .emacs.d/eshell/*
 .emacs.d/network-security.data
 .emacs.d/url/*
+.emacs.d/.org-id-locations
 dot-emacs*.tar.gz
 \#*\#
 *~
 *.elc
-
