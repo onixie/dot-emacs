@@ -3,12 +3,14 @@
 
 ;;;;;;;;;;;;;;;; Slime ;;;;;;;;;;;;;;;;
 (package-install 'slime)
+(package-install 'slime-docker)
 
-(custom-set-variables
- '(slime-header-line-p nil)
- '(slime-kill-without-query-p t)
- '(slime-repl-history-remove-duplicates t)
- '(slime-repl-history-trim-whitespaces t))
+(setq slime-header-line-p nil
+      slime-kill-without-query-p t
+      slime-repl-history-remove-duplicates t
+      slime-repl-history-trim-whitespaces t
+      slime-docker-implementations `((sbcl ("sbcl") :coding-system 'utf-8-unix)))
+
 (when (or (load (file-truename "~/quicklisp/slime-helper.el") t)
 	  (require 'slime))
   
@@ -53,9 +55,9 @@
   	      (unless (slime-connected-p)
 		(when (eq major-mode 'lisp-mode)
 		  (cl-labels ((src-revisit
-			    ()
-			    (remove-hook 'slime-connected-hook #'src-revisit)
-			    (switch-to-buffer (slime-recently-visited-buffer 'lisp-mode))))
+			       ()
+			       (remove-hook 'slime-connected-hook #'src-revisit)
+			       (switch-to-buffer (slime-recently-visited-buffer 'lisp-mode))))
 		    (add-hook 'slime-connected-hook #'src-revisit t)))
 		(slime))))
   
@@ -82,14 +84,13 @@
     (make-directory fasls-dir t)))
 
 ;;;;;;;;;;;;;;;; Scheme Programming ;;;;;;;;;;;;;;;;
-(custom-set-variables
- '(geiser-repl-use-other-window nil)
- '(quack-browse-url-browser-function (quote quack-w3m-browse-url-other-window))
- '(quack-default-program "racket")
- '(quack-fontify-style (quote emacs))
- '(quack-global-menu-p nil)
- '(quack-pretty-lambda-p t)
- '(quack-programs (quote ("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi"))))
+(setq geiser-repl-use-other-window nil
+      quack-browse-url-browser-function 'quack-w3m-browse-url-other-window
+      quack-default-program "racket"
+      quack-fontify-style 'emacs
+      quack-global-menu-p nil
+      quack-pretty-lambda-p t
+      quack-programs '("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi"))
 
 (require 'quack)
 
@@ -129,10 +130,8 @@
       (list 'scheme-mode-hook))
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
-(custom-set-variables
- '(semantic-idle-scheduler-idle-time 0.5)
- '(semantic-inhibit-functions (quote ((lambda nil (or (eq major-mode (quote lisp-mode)) (eq major-mode (quote scheme-mode)) (eq major-mode (quote emacs-lisp-mode)))))))
- )
+(setq semantic-idle-scheduler-idle-time 0.5
+      semantic-inhibit-functions (list (lambda nil (or (eq major-mode 'lisp-mode) (eq major-mode 'scheme-mode) (eq major-mode 'emacs-lisp-mode)))))
 
 (defun repl-quit-sentinel (proc change)
   "Clean up of buffers, when eilm quit."
