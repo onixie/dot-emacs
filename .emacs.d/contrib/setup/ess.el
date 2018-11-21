@@ -1,6 +1,7 @@
 (require 'setup/package)
 
-(package-install 'ess)
-(require 'ess)
+(when (member system-type '(gnu gnu/linux gnu/kfreebsd))
+  (package-install 'ess)
+  (require 'ess))
 
 (provide 'setup/ess)

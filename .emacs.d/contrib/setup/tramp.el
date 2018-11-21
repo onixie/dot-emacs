@@ -11,8 +11,9 @@
 (package-install 'lxd-tramp)
 (require 'lxd-tramp)
 
-(package-install 'vagrant-tramp)
-(require 'vagrant-tramp)
+(unless (member system-type '(ms-dos windows-nt))
+  (package-install 'vagrant-tramp)
+  (require 'vagrant-tramp))
 
 (setq tramp-smb-conf nil)
 

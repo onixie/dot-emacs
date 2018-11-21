@@ -1,11 +1,12 @@
 (require 'setup/package)
 
-(package-install 'maxframe)
-(require 'maxframe)
 
 ;;;;;;;;;;;;;;;; Easy-Frame ;;;;;;;;;;;;;;;;
-(require 'easy-frame)
-(add-hook 'window-setup-hook 'easy-frame-mode)
+(when (member system-type '(gnu gnu/linux gnu/kfreebsd))
+  (package-install 'maxframe)
+  (require 'maxframe)
+  (require 'easy-frame)
+  (add-hook 'window-setup-hook 'easy-frame-mode))
 
 ;; (when auto-smart-fill
 
