@@ -8,8 +8,12 @@
 ;;;;;;;;;;;;;;;; Load Packages ;;;;;;;;;;;;;;;;
 
 ;; Scan all directories under .emacs.d
-(let ((default-directory "~/.emacs.d/"))
+(let ((default-directory "~/.emacs.d/elpa/"))
   (normal-top-level-add-subdirs-to-load-path))
+
+(let ((default-directory "~/.emacs.d/contrib/"))
+  (normal-top-level-add-subdirs-to-load-path)
+  (push default-directory load-path))
 
 (require 'setup/proxy)
 (require 'setup/package)
