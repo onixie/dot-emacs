@@ -9,7 +9,7 @@
       slime-kill-without-query-p t
       slime-repl-history-remove-duplicates t
       slime-repl-history-trim-whitespaces t
-      slime-docker-implementations `((sbcl ("sbcl") :coding-system 'utf-8-unix)))
+      slime-docker-implementations `((sbcl ("sbcl") :coding-system 'utf-8-unix :mounts (((,(file-truename "~/workdir/") . "/home/lisp/quicklisp/local-projects/"))))))
 
 (when (or (load (file-truename "~/quicklisp/slime-helper.el") t)
 	  (require 'slime))
