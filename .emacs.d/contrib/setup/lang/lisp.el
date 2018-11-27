@@ -28,7 +28,8 @@
   (slime-setup '(slime-fancy ;meta for autodoc, editing-command, fuzzy, scratch, etc.
 		 slime-asdf
 		 slime-sprof
-		 slime-banner))
+		 slime-banner
+                 slime-tramp))
 
   (defun slime-repl-insert-prompt ()
     (goto-char slime-repl-input-start-mark)
