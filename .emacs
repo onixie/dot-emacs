@@ -8,8 +8,9 @@
 ;;;;;;;;;;;;;;;; Load Packages ;;;;;;;;;;;;;;;;
 
 ;; Scan all directories under .emacs.d
-(let ((default-directory "~/.emacs.d/elpa/"))
-  (normal-top-level-add-subdirs-to-load-path))
+(when (file-directory-p "~/.emacs.d/elpa/")
+  (let ((default-directory "~/.emacs.d/elpa/"))
+    (normal-top-level-add-subdirs-to-load-path)))
 
 (let ((default-directory "~/.emacs.d/contrib/"))
   (normal-top-level-add-subdirs-to-load-path)
