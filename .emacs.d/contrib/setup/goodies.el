@@ -102,6 +102,8 @@ Return the the first group where the current buffer is."
   ;; Return the first group the current buffer belongs to.
   (car (nth 2 (assq (current-buffer) tabbar--buffers))))
 
+(setq tabbar-cycle-scope nil)
+
 (require 'pack-windows)
 
 (provide 'setup/goodies)

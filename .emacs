@@ -181,10 +181,7 @@
  '(speedbar-tag-hierarchy-method
    '(speedbar-prefix-group-tag-hierarchy speedbar-trim-words-tag-hierarchy speedbar-sort-tag-hierarchy))
  '(speedbar-verbosity-level 2)
- '(tabbar-background-color "yellow")
- '(tabbar-cycle-scope nil)
  '(tabbar-mode t nil (tabbar))
- '(tabbar-separator '(0.2))
  '(time-stamp-format "%:y-%02m-%02d %02H:%02M:%02S %u@%s")
  '(uniquify-buffer-name-style 'forward nil (uniquify))
  '(yank-pop-change-selection t)
@@ -197,22 +194,6 @@
      ("Asia/Calcutta" "Bangalore")
      ("Asia/Tokyo" "Tokyo")
      ("Asia/BeiJing" "BeiJing"))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ac-candidate-face ((t (:background "lightgray" :foreground "black" :height 120))))
- '(ac-completion-face ((t (:foreground "darkgray" :underline t :height 120))))
- '(ac-gtags-candidate-face ((t (:background "lightgray" :foreground "navy" :height 120))))
- '(ac-gtags-selection-face ((t (:background "navy" :foreground "white" :height 120))))
- '(ac-selection-face ((t (:background "steelblue" :foreground "white" :height 120))))
- '(ac-yasnippet-candidate-face ((t (:background "sandybrown" :foreground "black" :height 120))))
- '(ac-yasnippet-selection-face ((t (:background "coral3" :foreground "white" :height 120))))
- '(org-hide ((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
- '(tabbar-default ((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
- '(tabbar-separator ((t (:inherit tabbar-default :height 0.1))))
- '(tabbar-unselected ((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button))))))
 
 (pushnew "~/.emacs.d/" image-load-path :test #'string=)
 
