@@ -31,6 +31,10 @@
 
 (add-hook 'org-after-todo-statistics-hook 'setup-org--org-summary-todo)
 
-(org-babel-do-load-languages 'org-babel-load-languages '((shell . t) (plantuml . t)))
+(org-babel-do-load-languages 'org-babel-load-languages
+                             '((shell . t)
+                               (plantuml . t)
+                               (org . t)
+                               (gnuplot . t)))
 
 (provide 'setup/org)
