@@ -38,6 +38,9 @@ Return a list of one element based on major mode."
 			     gnus-summary-mode message-mode gnus-group-mode
 			     gnus-article-mode score-mode gnus-browse-killed-mode))
 	  "Mail")
+         ((or (memq major-mode '(magit-mode magit-process-mode magit-diff-mode))
+              (string-match ".*Magit.*" (buffer-name)))
+          "Magit")
          ((or (get-buffer-process (current-buffer))
 	      ;; Check if the major mode derives from `comint-mode' or
 	      ;; `compilation-mode'.
@@ -115,8 +118,12 @@ Return the the first group where the current buffer is."
 (setq tabbar-buffer-list-function
       (lambda ()
         (remove-if (lambda(buffer)
-                     (memq (buffer-local-value 'major-mode buffer) '(completion-list-mode)))
+                     (memq (buffer-local-value 'major-mode buffer)
+                           '(completion-list-mode Buffer-menu-mode calendar-mode magit-diff-mode)))
                    (tabbar-buffer-list))))
+
+(add-hook 'calendar-mode-hook 'tabbar-local-mode) ;Disable tabbar for calendar mode
+(add-hook 'magit-popup-mode-hook 'tabbar-local-mode) ;Disable tabbar for calendar mode
 
 (setq tabbar-cycle-scope nil)
 
