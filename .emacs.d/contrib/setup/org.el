@@ -2,9 +2,10 @@
 
 (require 'org)
 
-(add-hook 'calendar-mode-hook (lambda nil
-                                (unless (eq org-agenda-diary-file (quote diary-file))
-                                  (define-key calendar-mode-map org-calendar-insert-diary-entry-key (quote org-agenda-diary-entry)))))
+(add-hook 'calendar-mode-hook
+          (lambda nil
+            (unless (eq org-agenda-diary-file 'diary-file)
+              (define-key calendar-mode-map org-calendar-insert-diary-entry-key 'org-agenda-diary-entry))))
 
 ;; After org v8, docbook is not included anymore. Use ox-textinfo instead
 (when (< (string-to-number (first (split-string org-version "\\."))) 8)
@@ -15,7 +16,8 @@
 (setq org-hide-leading-stars nil
       org-hierarchical-todo-statistics nil
       org-startup-indented t
-      org-confirm-babel-evaluate nil)
+      org-confirm-babel-evaluate nil
+      org-src-tab-acts-natively t)
 
 (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
 
@@ -30,6 +32,7 @@
 	(sequence "计划中" "对应中" "对应完成" "检查中" "检查完成" "|" "取消" "完成")))
 
 (add-hook 'org-after-todo-statistics-hook 'setup-org--org-summary-todo)
+(add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
 
 (org-babel-do-load-languages 'org-babel-load-languages
                              '((shell . t)
