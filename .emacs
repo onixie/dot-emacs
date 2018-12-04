@@ -128,12 +128,6 @@
  '(make-backup-files nil)
  '(max-specpdl-size 1048576)
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
- '(org-export-docbook-xsl-fo-proc-command "fop %s %s")
- '(org-export-docbook-xslt-proc-command
-   "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s")
- '(org-hide-leading-stars nil nil nil "Clean View is done by org-startup-indented, this variable has little usage in future.")
- '(org-hierarchical-todo-statistics nil)
- '(org-startup-indented t)
  '(package-selected-packages
    '(yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
  '(save-interprogram-paste-before-kill t)
