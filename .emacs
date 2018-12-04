@@ -97,7 +97,6 @@
  '(eval-expression-print-length nil)
  '(eval-expression-print-level nil)
  '(gdb-many-windows nil)
- '(geiser-repl-use-other-window nil)
  '(highlight-current-line-globally t nil (highlight-current-line))
  '(highlight-current-line-ignore-regexp "Faces\\|Colors\\| \\*Mini\\|\\*Calendar\\*")
  '(highlight-current-line-whole-line t)
@@ -137,34 +136,14 @@
  '(org-startup-indented t)
  '(package-selected-packages
    '(yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
- '(quack-browse-url-browser-function 'quack-w3m-browse-url-other-window)
- '(quack-default-program "racket")
- '(quack-fontify-style 'emacs)
- '(quack-global-menu-p nil)
- '(quack-pretty-lambda-p t)
- '(quack-programs
-   '("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi"))
- '(rainbow-delimiters-generate-rainbow-faces-p 44)
- '(rainbow-delimiters-stop-cyclic-depth-highlighting-p t)
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)
  '(scroll-preserve-screen-position nil)
  '(scroll-step 1)
  '(select-enable-clipboard t)
- '(semantic-idle-scheduler-idle-time 0.5)
- '(semantic-inhibit-functions
-   '((lambda nil
-       (or
-        (eq major-mode 'lisp-mode)
-        (eq major-mode 'scheme-mode)
-        (eq major-mode 'emacs-lisp-mode)))))
  '(session-use-package t nil (session))
  '(show-paren-mode t)
- '(slime-header-line-p nil)
- '(slime-kill-without-query-p t)
- '(slime-repl-history-remove-duplicates t)
- '(slime-repl-history-trim-whitespaces t)
  '(speedbar-default-position 'right)
  '(speedbar-frame-parameters
    '((minibuffer)

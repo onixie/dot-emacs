@@ -11,19 +11,40 @@
 (package-install 'tabbar)
 (require 'tabbar)
 
+(setq tabbar-background-color monokai-background)
+(face-spec-set 'tabbar-default '((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
+(face-spec-set 'tabbar-separator '((t (:inherit tabbar-default :height 0.1))))
+(face-spec-set 'tabbar-unselected '((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button)))))
+(face-spec-set 'tabbar-selected '((t (:inherit tabbar-default :foreground "white" :box (:line-width 1 :color "white" :style pressed-button)))))
+
 (defun tabbar-buffer-groups ()
   "Return the list of group names the current buffer belongs to.
 Return a list of one element based on major mode."
   (list
-   (cond ((member (buffer-name) '("*scratch*" "*Messages*" "*ielm*" ".emacs"))
-	  "Emacs")
-	 ((eq major-mode 'dired-mode)
-	  "Dired")
-	 ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
+   (cond ((memq major-mode '(help-mode apropos-mode Info-mode Man-mode))
 	  "Help")
+         ((or (member (buffer-name) '("*scratch*" "*Messages*" "*ielm*" ".emacs"))
+              (memq major-mode '(emacs-lisp-mode)))
+          "Emacs")
+	 ((member (buffer-name) '("*shell*" "*eshell*" "*Shell Command Output*"))
+          "Term")
+         ((eq major-mode 'dired-mode)
+	  "Dired")
+         ((string-match "[*]tramp/.*[*]" (buffer-name))
+	  "Tramp")
+         ((memq major-mode '(rmail-mode
+			     rmail-edit-mode vm-summary-mode vm-mode mail-mode
+			     mh-letter-mode mh-show-mode mh-folder-mode
+			     gnus-summary-mode message-mode gnus-group-mode
+			     gnus-article-mode score-mode gnus-browse-killed-mode))
+	  "Mail")
+         ((or (get-buffer-process (current-buffer))
+	      ;; Check if the major mode derives from `comint-mode' or
+	      ;; `compilation-mode'.
+	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
+	  "Process")
 	 ((or (memq major-mode '(lisp-mode slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode slime-sprof-browser-mode slime-xref-mode))
-	      (search "*inferior-lisp*" (buffer-name))
-	      (search "*slime-events*" (buffer-name)))
+              (member (buffer-name) '("*inferior-lisp*" "*docker-lisp*" "*slime-events*")))
 	  "Common Lisp")
 	 ((or (memq major-mode '(scheme-mode inferior-scheme-mode geiser-doc-mode geiser-debug-mode geiser-repl-mode))
 	      (search "*scheme*" (buffer-name)))
@@ -33,17 +54,6 @@ Return a list of one element based on major mode."
 	 ((or (search "*haskell*" (buffer-name))
 	      (memq major-mode '(haskell-mode haskell-cabal-mode haskell-c-mode ghc-core-mode)))
 	  "Haskell")
-	 ((memq major-mode '(rmail-mode
-			     rmail-edit-mode vm-summary-mode vm-mode mail-mode
-			     mh-letter-mode mh-show-mode mh-folder-mode
-			     gnus-summary-mode message-mode gnus-group-mode
-			     gnus-article-mode score-mode gnus-browse-killed-mode))
-	  "Mail")
-	 ((or (get-buffer-process (current-buffer))
-	      ;; Check if the major mode derives from `comint-mode' or
-	      ;; `compilation-mode'.
-	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
-	  "Process")
 	 (t
 	  ;; Return `mode-name' if not blank, `major-mode' otherwise.
 	  (if (and (stringp mode-name)
@@ -101,6 +111,12 @@ Return the the first group where the current buffer is."
       (setq tabbar--buffers bl)))
   ;; Return the first group the current buffer belongs to.
   (car (nth 2 (assq (current-buffer) tabbar--buffers))))
+
+(setq tabbar-buffer-list-function
+      (lambda ()
+        (remove-if (lambda(buffer)
+                     (memq (buffer-local-value 'major-mode buffer) '(completion-list-mode)))
+                   (tabbar-buffer-list))))
 
 (setq tabbar-cycle-scope nil)
 

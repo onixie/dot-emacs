@@ -53,12 +53,6 @@
 (setq rainbow-delimiters-generate-rainbow-faces-p 44
       rainbow-delimiters-stop-cyclic-depth-highlighting-p t)
 
-;;;;;;;;;;;;;;;; Tabs ;;;;;;;;;;;;;;;;
-(setq tabbar-background-color "yellow")
-(face-spec-set 'tabbar-default '((((class color grayscale) (background dark)) (:inherit variable-pitch :background "gray50" :foreground "grey75" :weight extra-bold :height 1.1 :width expanded :family "Serif"))))
-(face-spec-set 'tabbar-separator '((t (:inherit tabbar-default :height 0.1))))
-(face-spec-set 'tabbar-unselected '((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button)))))
-
 ;;;;;;;;;;;;;;;; Auto Complete ;;;;;;;;;;;;;;;;
 (face-spec-set 'ac-candidate-face '((t (:background "lightgray" :foreground "black" :height 120))))
 (face-spec-set 'ac-completion-face '((t (:foreground "darkgray" :underline t :height 120))))
