@@ -41,11 +41,6 @@ Return a list of one element based on major mode."
          ((or (memq major-mode '(magit-mode magit-process-mode magit-diff-mode))
               (string-match ".*Magit.*" (buffer-name)))
           "Magit")
-         ((or (get-buffer-process (current-buffer))
-	      ;; Check if the major mode derives from `comint-mode' or
-	      ;; `compilation-mode'.
-	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
-	  "Process")
 	 ((or (memq major-mode '(lisp-mode slime-repl-mode sldb-mode slime-thread-control-mode slime-connection-list-mode slime-sprof-browser-mode slime-xref-mode))
               (member (buffer-name) '("*inferior-lisp*" "*docker-lisp*" "*slime-events*")))
 	  "Common Lisp")
@@ -57,6 +52,11 @@ Return a list of one element based on major mode."
 	 ((or (search "*haskell*" (buffer-name))
 	      (memq major-mode '(haskell-mode haskell-cabal-mode haskell-c-mode ghc-core-mode)))
 	  "Haskell")
+         ((or (get-buffer-process (current-buffer))
+	      ;; Check if the major mode derives from `comint-mode' or
+	      ;; `compilation-mode'.
+	      (tabbar-buffer-mode-derived-p major-mode '(comint-mode compilation-mode)))
+	  "Process")
 	 (t
 	  ;; Return `mode-name' if not blank, `major-mode' otherwise.
 	  (if (and (stringp mode-name)
