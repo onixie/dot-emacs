@@ -18,7 +18,8 @@
       org-startup-indented t
       org-confirm-babel-evaluate nil
       org-src-tab-acts-natively t
-      org-image-actual-width nil)
+      org-image-actual-width nil
+      org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
 
 (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
 
