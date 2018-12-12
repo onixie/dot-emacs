@@ -117,9 +117,11 @@ Return the the first group where the current buffer is."
 
 (setq tabbar-buffer-list-function
       (lambda ()
-        (remove-if (lambda(buffer)
-                     (memq (buffer-local-value 'major-mode buffer)
-                           '(completion-list-mode Buffer-menu-mode calendar-mode magit-diff-mode)))
+        (remove-if (lambda (buffer)
+                     (let ((mode (buffer-local-value 'major-mode buffer)))
+                       (or (memq mode '(completion-list-mode Buffer-menu-mode calendar-mode magit-diff-mode))
+                           (provided-mode-derived-p mode 'tabulated-list-mode)
+                           (provided-mode-derived-p mode 'special-mode))))
                    (tabbar-buffer-list))))
 
 (add-hook 'calendar-mode-hook 'tabbar-local-mode) ;Disable tabbar for calendar mode
