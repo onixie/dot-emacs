@@ -1,6 +1,6 @@
 (require 'setup/package)
 
 (package-install 'magit)
-(require 'margit)
+(require 'magit)
 
 (provide 'setup/git)

@@ -8,4 +8,4 @@
 (package-install 'markdown-mode)
 (package-install 'markdown-mode+)
 
-(provide 'setup/git)
+(provide 'setup/lang/markup)
