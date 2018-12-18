@@ -132,7 +132,7 @@
  '(max-specpdl-size 1048576)
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
  '(package-selected-packages
-   '(markdown-mode+ markdown-mode yaml-mode magit docker yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
+   '(intero markdown-mode+ markdown-mode yaml-mode magit docker yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)

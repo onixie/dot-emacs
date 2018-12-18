@@ -1,5 +1,20 @@
+(require 'setup/package)
 
-(load-file "~/.emacs.d/contrib/haskell-mode/haskell-site-file.el")
+(package-install 'haskell-mode)
+(package-install 'intero)
+
+(require 'haskell-mode)
+(require 'haskell-interactive-mode)
+(require 'haskell-process)
+
+(add-hook 'haskell-mode-hook #'intero-mode)
+(add-hook 'haskell-mode-hook #'interactive-haskell-mode)
+
+(setq haskell-process-type 'stack-ghci
+      haskell-process-suggest-remove-import-lines t
+      haskell-process-auto-import-loaded-modules t
+      haskell-process-log t
+      )
 
 (defun inf-haskell-quit-sentinel (proc change)
   "Clean up of buffers, when ghci quit."
