@@ -27,6 +27,7 @@
 (provide 'setup/calendar)
 
 (require 'setup/lang/common)
+(require 'setup/lang/markup)
 (require 'setup/lang/asm)
 (require 'setup/lang/c)
 (require 'setup/lang/lisp)
@@ -43,6 +44,8 @@
 (require 'setup/dired)
 (require 'setup/ido)
 (require 'setup/tramp)
+(require 'setup/docker)
+(require 'setup/git)
 
 (require 'tab-display)
 (require 'weekly-view)
@@ -129,7 +132,7 @@
  '(max-specpdl-size 1048576)
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
  '(package-selected-packages
-   '(yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
+   '(markdown-mode+ markdown-mode yaml-mode magit docker yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)
