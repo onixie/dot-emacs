@@ -6,6 +6,6 @@
 	("https" . ,(setup/proxy--remove-scheme (getenv "https_proxy")))))
 
 (require 'gnutls)
-(setq gnutls-trustfiles (file-expand-wildcards "/etc/ssl/certs/*" t))
+(setq gnutls-trustfiles (file-expand-wildcards "/etc/ssl/certs/*.pem" t))
 
 (provide 'setup/proxy)
