@@ -50,7 +50,7 @@ Return a list of one element based on major mode."
 	 ((memq major-mode '(c-mode c++-mode objc-mode))
 	  "C/C++")
 	 ((or (search "*haskell*" (buffer-name))
-	      (memq major-mode '(haskell-mode haskell-cabal-mode haskell-c-mode ghc-core-mode)))
+	      (memq major-mode '(haskell-mode haskell-cabal-mode haskell-c-mode ghc-core-mode intero-mode intero-repl-mode)))
 	  "Haskell")
          ((or (get-buffer-process (current-buffer))
 	      ;; Check if the major mode derives from `comint-mode' or

@@ -8,4 +8,6 @@
 (package-install 'markdown-mode)
 (package-install 'markdown-mode+)
 
+(package-install 'systemd)
+
 (provide 'setup/lang/markup)
