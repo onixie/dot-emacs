@@ -12,6 +12,7 @@
 .emacs.d/network-security.data
 .emacs.d/url/*
 .emacs.d/.org-id-locations
+.emacs.d/.python-environments/*
 dot-emacs*.tar.gz
 \#*\#
 *~

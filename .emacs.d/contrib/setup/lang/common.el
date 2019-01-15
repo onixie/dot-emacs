@@ -19,3 +19,7 @@
 (require 'paredit)
 
 (provide 'setup/lang/common)
+
+;;;;;;;;;;;;;;;; Syntax Checker ;;;;;;;;;;;;;;;;
+(package-install 'flycheck)
+(require 'flycheck)
