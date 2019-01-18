@@ -33,33 +33,4 @@
 		(set-process-query-on-exit-flag process nil)
 		(set-process-sentinel process 'inf-haskell-quit-sentinel)))))
 
-;; Brute-force fix: Ensure the setting is injected every time the REPL
-;; is selected.
-;;
-;; Upstream issue: https://github.com/commercialhaskell/intero/issues/569
-
-(defun intero-fix-ghci-panic ()
-  "Disable deferring of out of scope variable errors, which
-  triggers a bug in the interactive Emacs REPL printing a panic
-  under certain conditions."
-
-  (interactive)
-  (let* ((root (intero-project-root))
-         (package-name (intero-package-name))
-         (backend-buffer (intero-buffer 'backend))
-         (name (format "*intero:%s:%s:repl*"
-                       (file-name-nondirectory root)
-                       package-name))
-         (setting ":set -fno-defer-out-of-scope-variables\n"))
-    (when (get-buffer name)
-      (with-current-buffer (get-buffer name)
-        (goto-char (point-max))
-        (let ((process (get-buffer-process (current-buffer))))
-          (when process (process-send-string process setting)))))))
-
-(advice-add 'intero-repl :after (lambda (&rest r) (intero-fix-ghci-panic))
-            '((name . intero-panic-fix)))
-(advice-add 'intero-repl-load :after (lambda (&rest r) (intero-fix-ghci-panic))
-            '((name . intero-panic-fix)))
-
 (provide 'setup/lang/haskell)
