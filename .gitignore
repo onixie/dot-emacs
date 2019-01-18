@@ -13,6 +13,7 @@
 .emacs.d/url/*
 .emacs.d/.org-id-locations
 .emacs.d/.python-environments/*
+.emacs.d/kkcrc
 dot-emacs*.tar.gz
 \#*\#
 *~
