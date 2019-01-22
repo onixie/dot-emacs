@@ -65,4 +65,12 @@
 ;;;;;;;;;;;;;;;; Org ;;;;;;;;;;;;;;;;
 (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
 
+;;;;;;;;;;;;;;;; Smart Mode Line ;;;;;;;;;;;;;;;;
+
+(package-install 'smart-mode-line)
+(package-install 'smart-mode-line-powerline-theme)
+(setq sml/no-confirm-load-theme t)
+(sml/setup)
+(powerline-default-theme)
+
 (provide 'setup/theme)
