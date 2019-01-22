@@ -45,4 +45,18 @@
 (require 'easy-buffer)
 (require 'easy-window)
 
+(setq mark-ring-max 1024)
+(setq global-mark-ring-max 1024)
+
+(defun xah-pop-local-mark-ring ()
+  "Move cursor to last mark position of current buffer.
+Call this repeatedly will cycle all positions in `mark-ring'.
+URL `http://ergoemacs.org/emacs/emacs_jump_to_previous_position.html'
+Version 2016-04-04"
+  (interactive)
+  (set-mark-command t))
+
+(global-set-key (kbd "<f7>") 'pop-global-mark)
+(global-set-key (kbd "<S-f7>") 'xah-pop-local-mark-ring)
+
 (provide 'setup/fwb)
