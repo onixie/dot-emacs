@@ -42,4 +42,7 @@
                                (org . t)
                                (gnuplot . t)))
 
+(mapc (lambda (arg) (setcdr arg (list (downcase (cadr arg)))))
+      org-structure-template-alist)
+
 (provide 'setup/org)
