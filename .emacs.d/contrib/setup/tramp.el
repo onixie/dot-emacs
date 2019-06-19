@@ -18,13 +18,29 @@
 (setq tramp-smb-conf nil)
 
 (add-to-list 'tramp-methods
-  '("sshv"
-    (tramp-login-program        "ssh")
-    (tramp-login-args           (("-l" "%u") ("-p" "%p") ("%c")
-				 ("-e" "none") ("%h") ("-o" "UserKnownHostsFile=/dev/null") ("-o" "StrictHostKeyChecking=no")))
-    (tramp-async-args           (("-q")))
-    (tramp-remote-shell         "/bin/sh")
-    (tramp-remote-shell-login   ("-l"))
-    (tramp-remote-shell-args    ("-c"))))
+             '("sshv"
+               (tramp-login-program        "ssh")
+               (tramp-login-args           (("-l" "%u") ("-p" "%p") ("%c")
+				            ("-e" "none") ("%h") ("-o" "UserKnownHostsFile=/dev/null") ("-o" "StrictHostKeyChecking=no")))
+               (tramp-async-args           (("-q")))
+               (tramp-remote-shell         "/bin/sh")
+               (tramp-remote-shell-login   ("-l"))
+               (tramp-remote-shell-args    ("-c"))))
+
+(add-to-list 'tramp-methods
+             '("netns"
+               (tramp-login-program        "sudo")
+               (tramp-login-args           (("-u" "%u") ("/sbin/ip netns exec") ("%h") ("/bin/sh")))
+               (tramp-remote-shell         "/bin/sh")
+               (tramp-remote-shell-login   ("-l"))
+               (tramp-remote-shell-args    ("-c"))))
+
+(add-to-list 'tramp-methods
+             '("nixsh"
+               (tramp-login-program        "sudo")
+               (tramp-login-args           (("-E") ("~/.nix-profile/bin/nix-shell") ("-p") ("%h") ("--run" "/bin/sh")))
+               (tramp-remote-shell         "/bin/sh")
+               (tramp-remote-shell-login   ("-l"))
+               (tramp-remote-shell-args    ("-c"))))
 
 (provide 'setup/tramp)
