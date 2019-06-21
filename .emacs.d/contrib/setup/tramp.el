@@ -37,9 +37,9 @@
 
 (add-to-list 'tramp-methods
              '("nixsh"
-               (tramp-login-program        "sudo")
-               (tramp-login-args           (("-E") ("~/.nix-profile/bin/nix-shell") ("-p") ("%h") ("--run" "/bin/sh")))
-               (tramp-remote-shell         "/bin/sh")
+               (tramp-login-program        "nix-shell")
+               (tramp-login-args           (("-p") ("%h") ("--run /bin/sh")))
+               (tramp-remote-shell         "env PATH=$_PATH:$PATH /bin/sh")
                (tramp-remote-shell-login   ("-l"))
                (tramp-remote-shell-args    ("-c"))))
 
