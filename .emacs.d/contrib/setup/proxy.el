@@ -9,7 +9,7 @@
   (unless  (string-equal "" https-proxy)
     (push (cons "https" https-proxy) url-proxy-services)))
 
-(unless url-proxy-services
+(when url-proxy-services
   (require 'gnutls)
   (setq gnutls-trustfiles (file-expand-wildcards "/etc/ssl/certs/*.pem" t)))
 
