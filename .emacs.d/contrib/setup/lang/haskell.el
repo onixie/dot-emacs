@@ -1,20 +1,27 @@
 (require 'setup/package)
 
 (package-install 'haskell-mode)
-(package-install 'intero)
+(package-install 'lsp-haskell)
 
 (require 'haskell-mode)
 (require 'haskell-interactive-mode)
 (require 'haskell-process)
+(require 'lsp)
+(require 'lsp-haskell)
 
-(add-hook 'haskell-mode-hook #'intero-mode)
-(add-hook 'haskell-mode-hook #'interactive-haskell-mode)
+(add-hook 'haskell-mode-hook #'lsp)
 
-(setq haskell-process-type 'stack-ghci
+(setq haskell-process-type 'cabal-repl
       haskell-process-suggest-remove-import-lines t
       haskell-process-auto-import-loaded-modules t
       haskell-process-log t
-      )
+      lsp-haskell-process-wrapper-function (lambda (argv)
+                                             (let ((root (lsp-haskell--get-root)))
+                                               (append
+                                               (append (list "nix-shell" "--argstr" "projectRoot" root "-I" "." "--command" )
+                                                       (list (mapconcat #'identity argv " ")))
+                                               (list (concat root "shell.nix"))))))
+
 
 (defun inf-haskell-quit-sentinel (proc change)
   "Clean up of buffers, when ghci quit."
