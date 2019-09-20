@@ -18,9 +18,9 @@
       lsp-haskell-process-wrapper-function (lambda (argv)
                                              (let ((root (lsp-haskell--get-root)))
                                                (append
-                                               (append (list "nix-shell" "--argstr" "projectRoot" root "-I" "." "--command" )
-                                                       (list (mapconcat #'identity argv " ")))
-                                               (list (concat root "shell.nix"))))))
+                                                (append (list "nix-shell" "--argstr" "projectRoot" root "-I" "." "--command" )
+                                                        (list (mapconcat #'identity argv " ")))
+                                                (list root)))))
 
 
 (defun inf-haskell-quit-sentinel (proc change)
