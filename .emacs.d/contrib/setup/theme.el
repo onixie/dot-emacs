@@ -1,8 +1,12 @@
 (require 'setup/package)
 
 ;;;;;;;;;;;;;;;; Monokai-Theme ;;;;;;;;;;;;;;;;
-(package-install 'monokai-theme)
-(load-theme 'monokai t)
+;; (package-install 'monokai-theme)
+;; (load-theme 'monokai t)
+(package-install 'atom-one-dark-theme)
+(load-theme 'atom-one-dark t)
+;;(package-install 'spacemacs-theme)
+;;(load-theme 'spacemacs-dark)
 
 ;;;;;;;;;;;;;;;; Color-Theme ;;;;;;;;;;;;;;;;
 ;; (package-install 'color-theme)
@@ -72,5 +76,47 @@
 (setq sml/no-confirm-load-theme t)
 (sml/setup)
 (powerline-default-theme)
+
+;;;
+(package-install 'centaur-tabs)
+
+(require 'centaur-tabs)
+(setq centaur-tabs-style "wave")
+(setq centaur-tabs-set-modified-marker t)
+(setq centaur-tabs-set-icons t)
+(setq centaur-tabs-cycle-scope 'tabs)
+(centaur-tabs-change-fonts "Ubuntu Mono" 120)
+(centaur-tabs-headline-match)
+(centaur-tabs-mode t)
+
+(defun override-centaur-tabs-project-name (orig-fun &rest args)
+  (let ((res (apply orig-fun args)))
+    (replace-regexp-in-string "Project:.*/\\(.*\\)/" "Project: \\1" res)))
+
+(advice-add 'centaur-tabs-project-name :around #'override-centaur-tabs-project-name)
+
+(defun centaur-tabs-hide-tab (x)
+  (let ((name (format "%s" x)))
+    (or
+     (string-prefix-p "*Completions" name)
+     (string-prefix-p "*Packages" name)
+     (string-prefix-p "*helm" name)
+     (string-prefix-p "*Compile-Log*" name)
+     (string-prefix-p "*lsp" name)
+     (and (string-prefix-p "magit" name)
+          (not (file-name-extension name)))
+     )))
+
+(defun override-centaur-tabs-buffer-groups (orig-fun &rest args)
+  (list
+   (cond
+    ((or (string-suffix-p "shell*" (buffer-name) t)
+         (string-suffix-p "term*"  (buffer-name) t))
+     "Shell")
+    (t
+     (car (apply orig-fun args))))))
+
+(advice-add 'centaur-tabs-buffer-groups :around #'override-centaur-tabs-buffer-groups)
+;;;
 
 (provide 'setup/theme)
