@@ -134,7 +134,7 @@
  '(max-specpdl-size 1048576)
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
  '(package-selected-packages
-   '(nix-mode flycheck-pycheckers flycheck jedi systemd intero markdown-mode+ markdown-mode yaml-mode magit docker yasnippet vagrant-tramp tabbar slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
+   '(nix-mode flycheck-pycheckers flycheck jedi systemd intero markdown-mode+ markdown-mode yaml-mode magit docker yasnippet vagrant-tramp slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)
@@ -159,7 +159,6 @@
  '(speedbar-tag-hierarchy-method
    '(speedbar-prefix-group-tag-hierarchy speedbar-trim-words-tag-hierarchy speedbar-sort-tag-hierarchy))
  '(speedbar-verbosity-level 2)
- '(tabbar-mode t nil (tabbar))
  '(time-stamp-format "%:y-%02m-%02d %02H:%02M:%02S %u@%s")
  '(uniquify-buffer-name-style 'forward nil (uniquify))
  '(yank-pop-change-selection t)
