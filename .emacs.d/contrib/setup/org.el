@@ -73,4 +73,10 @@
 (defun org-/ (ref &rest args)
   (apply #'concatenate 'string (org-babel-ref-resolve ref) args))
 
+
+(require 'setup/shell)
+
+(org-link-set-parameters "shell" :follow #'dotemacs--open-shell)
+(org-link-set-parameters "exec" :follow #'org--open-shell-link)
+
 (provide 'setup/org)

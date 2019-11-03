@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t; -*-
+
 (require 'setup/package)
 
 (defun dot-emacs--name-glue (&rest nameparts)
@@ -20,4 +22,17 @@
   (interactive)
   (insert-string (shell-command-to-string "date")))
 
+(defun dot-emacs--kill-buffer-and-window-when-process (match-regex) 
+  (lambda ()
+    (let ((process (get-buffer-process (current-buffer))))
+      (when (processp process)
+        (set-process-query-on-exit-flag process nil)
+        (set-process-sentinel process 
+                              (lambda (proc change)
+                                (when (string-match match-regex change)
+                                  (condition-case nil
+	                              (let ((b (process-buffer proc)))
+	                                (kill-buffer b)
+	                                (delete-window (get-buffer-window b)))
+                                    (error (print "error"))))))))))
 (provide 'setup/common)

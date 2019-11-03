@@ -134,13 +134,6 @@
 (setq semantic-idle-scheduler-idle-time 0.5
       semantic-inhibit-functions (list (lambda nil (or (eq major-mode 'lisp-mode) (eq major-mode 'scheme-mode) (eq major-mode 'emacs-lisp-mode)))))
 
-(defun repl-quit-sentinel (proc change)
-  "Clean up of buffers, when eilm quit."
-  (when (string-match "\\(finished\\|exited\\|killed\\|quit\\)" change)
-    (condition-case nil
-	(kill-buffer (process-buffer proc))
-      (error (print "error")))))
-
 (defun delete-sexp (&optional arg)
   "Delete the sexp (balanced expression) following point.
 With ARG, delete that many sexps after point.
@@ -209,17 +202,9 @@ This command assumes point is not in a string or comment."
 ;; 		    (rainbow-delimiters-mode 1))))
 ;;       (list 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
 
-(add-hook 'ielm-mode-hook 
-	  (lambda ()
-	    (eldoc-mode)
-	    (let ((process (get-buffer-process (current-buffer))))
-	      (when (processp process)
-		(set-process-sentinel process 'repl-quit-sentinel)))))
-(add-hook 'inferior-scheme-mode-hook 
-	  (lambda ()
-	    (let ((process (get-buffer-process (current-buffer))))
-	      (when (processp process)
-		(set-process-sentinel process 'repl-quit-sentinel)))))
+(add-hook 'ielm-mode-hook (lambda () (eldoc-mode)))
+(add-hook 'ielm-mode-hook (dot-emacs--kill-buffer-and-window-when-process "\\(?:finished\\|exited\\|killed\\|quit\\)"))
+(add-hook 'inferior-scheme-mode-hook (dot-emacs--kill-buffer-and-window-when-process "\\(?:finished\\|exited\\|killed\\|quit\\)"))
 
 (add-hook 'emacs-lisp-mode-hook
 	  (lambda ()

@@ -22,22 +22,7 @@
                                                         (list (mapconcat #'identity argv " ")))
                                                 (list root)))))
 
-
-(defun inf-haskell-quit-sentinel (proc change)
-  "Clean up of buffers, when ghci quit."
-  (when (string-match "\\(finished\\|exited\\|killed\\|quit\\)" change)
-    (condition-case nil
-	(let ((b (process-buffer proc)))
-	  (kill-buffer b)
-	  (delete-window (get-buffer-window b)))
-      (error (print "error")))))
-
-(add-hook 'inferior-haskell-mode-hook 
-	  (lambda ()
-	    (eldoc-mode)
-	    (let ((process (get-buffer-process (current-buffer))))
-	      (when (processp process)
-		(set-process-query-on-exit-flag process nil)
-		(set-process-sentinel process 'inf-haskell-quit-sentinel)))))
+(add-hook 'inferior-haskell-mode-hook (lambda () (eldoc-mode)))
+(add-hook 'inferior-haskell-mode-hook (dot-emacs--kill-buffer-and-window-when-process "\\(?:finished\\|exited\\|killed\\|quit\\)"))
 
 (provide 'setup/lang/haskell)
