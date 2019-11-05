@@ -20,3 +20,4 @@ dot-emacs*.tar.gz
 \#*\#
 *~
 *.elc
+.emacs.d/.cache/treemacs-persist

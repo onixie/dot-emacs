@@ -1,15 +1,20 @@
 (require 'project)
 
-(defvar project-identifiers (list "Chart.yaml" "pom.xml" "package.json"))
+(defcustom dotemacs-project-identifiers (list "Chart.yaml" "pom.xml" "package.json") 
+  "Project file in the root directory of the project."
+  :type '(repeat :tag "Project File" string)
+  :group 'dotemacs)
 
-(defun parent-directory (dir)
-  (unless (equal "/" dir)
-    (file-name-directory (directory-file-name dir))))
+(defun dotemacs--project-try-identifiers (path)
+  (cl-labels ((parent-directory (path)
+                                (let ((parent (file-name-directory (directory-file-name path))))
+                                  (unless (string-equal path parent)
+                                    parent))))
+    (when path
+      (if (cl-intersection (directory-files path) dotemacs-project-identifiers :test #'string-equal)
+          (cons 'transient path)
+        (dotemacs--project-try-identifiers (parent-directory path))))))
 
-(defun project-try-general (dir)
-  (when dir
-    (if (cl-intersection (directory-files dir) project-identifiers :test #'string-equal)
-        (cons 'transient dir)
-      (project-try-general (parent-directory dir)))))
+(add-to-list 'project-find-functions #'dotemacs--project-try-identifiers t)
 
-(setq project-find-functions (list #'project-try-vc #'project-try-general))
+(provide 'setup/project)

@@ -2,10 +2,9 @@
 
 (require 'org)
 
-(add-hook 'calendar-mode-hook
-          (lambda nil
-            (unless (eq org-agenda-diary-file 'diary-file)
-              (define-key calendar-mode-map org-calendar-insert-diary-entry-key 'org-agenda-diary-entry))))
+(require 'setup/shell)
+(org-link-set-parameters "shell" :follow #'dotemacs--open-shell)
+(org-link-set-parameters "exec" :follow #'org--open-shell-link)
 
 ;; After org v8, docbook is not included anymore. Use ox-textinfo instead
 (when (< (string-to-number (first (split-string org-version "\\."))) 8)
@@ -19,22 +18,13 @@
       org-confirm-babel-evaluate nil
       org-src-tab-acts-natively t
       org-image-actual-width nil
-      org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
+      org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar"
+      org-todo-keywords '((sequence "TODO" "FEEDBACK" "VERIFY" "|" "DONE" "DELEGATED")
+                          (sequence "|" "|" "CANCELED")
+                          (sequence "计划中" "对应中" "对应完成" "检查中" "检查完成" "|" "取消" "完成")))
 
-(face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
-
-(defun setup-org--org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise."
-  (let (org-log-done org-log-states)	; turn off logging
-    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
-
-(setq org-todo-keywords
-      '((sequence "TODO" "FEEDBACK" "VERIFY" "|" "DONE" "DELEGATED")
-	(sequence "|" "|" "CANCELED")
-	(sequence "计划中" "对应中" "对应完成" "检查中" "检查完成" "|" "取消" "完成")))
-
-(add-hook 'org-after-todo-statistics-hook 'setup-org--org-summary-todo)
-(add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
+(mapc (lambda (arg) (setcdr arg (list (downcase (cadr arg)))))
+      org-structure-template-alist)
 
 (org-babel-do-load-languages 'org-babel-load-languages
                              '((shell . t)
@@ -42,8 +32,13 @@
                                (org . t)
                                (gnuplot . t)))
 
-(mapc (lambda (arg) (setcdr arg (list (downcase (cadr arg)))))
-      org-structure-template-alist)
+(defun dotemacs--org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done org-log-states)	; turn off logging
+    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+
+(add-hook 'org-after-todo-statistics-hook #'dotemacs--org-summary-todo)
+(add-hook 'org-babel-after-execute-hook #'org-redisplay-inline-images)
 
 (defmacro org-| (&rest args &key path)
   (cl-flet ((tf (form) 
@@ -72,11 +67,5 @@
 
 (defun org-/ (ref &rest args)
   (apply #'concatenate 'string (org-babel-ref-resolve ref) args))
-
-
-(require 'setup/shell)
-
-(org-link-set-parameters "shell" :follow #'dotemacs--open-shell)
-(org-link-set-parameters "exec" :follow #'org--open-shell-link)
 
 (provide 'setup/org)

@@ -8,10 +8,10 @@
   (isearch-mode nil (not (null regexp-p)) nil (not no-recursive-edit))
   (isearch-yank-string (current-word)))
 
-(global-set-key (kbd "C-*") 'isearch-current-word-forward)
-(global-set-key (kbd "C-#") 'isearch-current-word-backward)
+(global-set-key (kbd "C-*") #'isearch-current-word-forward)
+(global-set-key (kbd "C-#") #'isearch-current-word-backward)
 
-(define-key isearch-mode-map (kbd "C-*") 'isearch-repeat-forward)
-(define-key isearch-mode-map (kbd "C-#") 'isearch-repeat-backward)
+(define-key isearch-mode-map (kbd "C-*") #'isearch-repeat-forward)
+(define-key isearch-mode-map (kbd "C-#") #'isearch-repeat-backward)
 
 (provide 'setup/search-at-point)

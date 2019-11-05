@@ -27,29 +27,26 @@
 ;; (package-install 'parenface)
 ;; (require 'parenface)
 
-;;;;;;;;;;;;;;;; Tool Bar ;;;;;;;;;;;;;;;;
-(tool-bar-mode 0)
-
 ;;;;;;;;;;;;;;;; PP ControlL ;;;;;;;;;;;;;;;;
-
 (package-install 'pp-c-l)
 (require 'pp-c-l)
 
 (setq pp^L-^L-string "                              -* Next Page *-                              "
       pp^L-^L-string-pre "")
 
-(face-spec-set 'pp^L-highlight '((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
+(face-spec-set 'pp^L-highlight 
+               '((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
 
 (pretty-control-l-mode 1)
 
-(defun setup-theme--^L-line-ocuppy ()
+(defun dotemacs--^L-line-ocuppy ()
   (interactive)
   (beginning-of-line)
   (open-line 1)
   (insert ?\xC)
   (next-line))
 
-(global-set-key (kbd "C-S-l") 'setup-theme--^L-line-ocuppy)
+(global-set-key (kbd "C-S-l") 'dotemacs--^L-line-ocuppy)
 
 ;;;;;;;;;;;;;;;; Rainbow-delimiters ;;;;;;;;;;;;;;;;
 (require 'rainbow-delimiters)
@@ -66,57 +63,26 @@
 (face-spec-set 'ac-yasnippet-candidate-face '((t (:background "sandybrown" :foreground "black" :height 120))))
 (face-spec-set 'ac-yasnippet-selection-face '((t (:background "coral3" :foreground "white" :height 120))))
 
-;;;;;;;;;;;;;;;; Org ;;;;;;;;;;;;;;;;
-(face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
-
 ;;;;;;;;;;;;;;;; Smart Mode Line ;;;;;;;;;;;;;;;;
-
 (package-install 'smart-mode-line)
 (package-install 'smart-mode-line-powerline-theme)
 (setq sml/no-confirm-load-theme t)
 (sml/setup)
 (powerline-default-theme)
 
-;;;
-(package-install 'centaur-tabs)
+;;;;;;;;;;;;;;;; Highlight Current Lines ;;;;;;;;;;;;;;;;
+;; Workaround: since emacs27, old-style backquote syntax became an error
+;; Find other line highlighter or wait until someone solves the error.
+(when (< emacs-major-version 27)
+  (package-install 'highlight-current-line))
+(require 'highlight-current-line)
 
-(require 'centaur-tabs)
-(setq centaur-tabs-style "wave")
-(setq centaur-tabs-set-modified-marker t)
-(setq centaur-tabs-set-icons t)
-(setq centaur-tabs-cycle-scope 'tabs)
-(centaur-tabs-change-fonts "Ubuntu Mono" 120)
-(centaur-tabs-headline-match)
-(centaur-tabs-mode t)
+(face-spec-set 'highlight-current-line-face '((t (:background "gray10"))))
 
-(defun override-centaur-tabs-project-name (orig-fun &rest args)
-  (let ((res (apply orig-fun args)))
-    (replace-regexp-in-string "Project:.*/\\(.*\\)/" "Project: \\1" res)))
-
-(advice-add 'centaur-tabs-project-name :around #'override-centaur-tabs-project-name)
-
-(defun centaur-tabs-hide-tab (x)
-  (let ((name (format "%s" x)))
-    (or
-     (string-prefix-p "*Completions" name)
-     (string-prefix-p "*Packages" name)
-     (string-prefix-p "*helm" name)
-     (string-prefix-p "*Compile-Log*" name)
-     (string-prefix-p "*lsp" name)
-     (and (string-prefix-p "magit" name)
-          (not (file-name-extension name)))
-     )))
-
-(defun override-centaur-tabs-buffer-groups (orig-fun &rest args)
-  (list
-   (cond
-    ((or (string-suffix-p "shell*" (buffer-name) t)
-         (string-suffix-p "term*"  (buffer-name) t))
-     "Shell")
-    (t
-     (car (apply orig-fun args))))))
-
-(advice-add 'centaur-tabs-buffer-groups :around #'override-centaur-tabs-buffer-groups)
-;;;
+;;;;;;;;;;;;;;;; Org Mode ;;;;;;;;;;;;;;;;
+(require 'setup/org)
+(package-install 'org-beautify-theme)
+(load-theme 'org-beautify t)
+(face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
 
 (provide 'setup/theme)

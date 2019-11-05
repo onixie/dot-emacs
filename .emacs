@@ -18,13 +18,10 @@
 
 (require 'setup/proxy)
 (require 'setup/package)
-(require 'setup/theme)
+(require 'setup/session)
 (require 'setup/goodies)
 (require 'setup/fwb)
-(require 'setup/linum)
-(require 'setup/search-at-point)
-(require 'setup/session)
-(provide 'setup/calendar)
+(require 'setup/tabs)
 
 (require 'setup/lang/common)
 (require 'setup/lang/markup)
@@ -48,12 +45,16 @@
 (require 'setup/tramp)
 (require 'setup/docker)
 (require 'setup/git)
+(require 'setup/project)
+(require 'setup/calendar)
+
+(require 'setup/theme)
+(require 'setup/linum)
+(require 'setup/search-at-point)
 
 (require 'tab-display)
 (require 'weekly-view)
-
 (require 'cups-dif)
-
 (require 'doxymacs)
 
 ;; Use emacs-goodies-el packages
@@ -180,8 +181,9 @@
 (put 'set-goal-column 'disabled nil)
 (setq ielm-header "")
 
-;;;;;;;;;;;;;;;; Misc ;;;;;;;;;;;;;;;;
-;;(set-process-query-on-exit-flag (get-buffer-process (get-buffer "*shell*")) nil)
+;;;;;;;;;;;;;;;; Bars ;;;;;;;;;;;;;;;;
+(tool-bar-mode 0)
+(menu-bar-mode 0)
 
 ;;;;;;;;;;;;;;;; Startup ;;;;;;;;;;;;;;;;
 (eshell)

@@ -1,5 +1,4 @@
 
-;;;;;;;;;;;;;;;; Dired ;;;;;;;;;;;;;;;;
 (defun file-manager ()
   (interactive)
   (shell-command "nautilus $(pwd) || thunar $(pwd)" "*Messages*" "*Messages*"))
@@ -14,12 +13,12 @@
 
 (tool-bar-add-item "file-manager" 'file-manager 'file-manager :visible '(memq major-mode '(dired-mode)))
 (tool-bar-add-item "terminal" 'terminal 'terminal :visible '(memq major-mode '(dired-mode)))
-(mapc (lambda (mode-hook)
-	(add-hook mode-hook (lambda ()
-			      (progn
-				(define-key dired-mode-map (kbd "N") 'file-manager)
-				(define-key dired-mode-map (kbd "b") 'terminal)
-				(define-key dired-mode-map (kbd "E") 'etags)))))
-      '(dired-mode-hook))
+
+(add-hook 'dired-mode-hook 
+          (lambda ()
+            (define-key dired-mode-map (kbd "N") #'file-manager)
+            (define-key dired-mode-map (kbd "b") #'terminal)
+            (define-key dired-mode-map (kbd "E") #'etags)
+            ))
 
 (provide 'setup/dired)
