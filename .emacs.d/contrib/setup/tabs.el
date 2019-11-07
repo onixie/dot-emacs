@@ -21,9 +21,7 @@
 (defun dotemacs--override-centaur-tabs-buffer-groups (orig-fun &rest args)
   (list
    (cond
-    ((or (string-suffix-p "shell*" (buffer-name) t)
-         (string-suffix-p "term*"  (buffer-name) t)
-         )
+    ((or (memq major-mode '(shell-mode term-mode ansi-term-mode eshell-mode)))
      "Shell")
     (t
      (car (apply orig-fun args))))))
@@ -33,12 +31,15 @@
 (defun centaur-tabs-hide-tab (x)
   (let ((name (format "%s" x)))
     (or
-     (string-prefix-p "*Completions" name)
-     (string-prefix-p "*Packages" name)
-     (string-prefix-p "*helm" name)
-     (string-prefix-p "*Compile-Log*" name)
-     (string-prefix-p "*lsp" name)
-     (and (string-prefix-p "magit" name)
+     (string-prefix-p "*Completions" name t)
+     (string-prefix-p "*Packages" name t)
+     (string-prefix-p "*helm" name t)
+     (string-prefix-p "*Compile-Log*" name t)
+     (string-prefix-p "*lsp" name t)
+     (string-prefix-p "*debug" name t)
+     (string-prefix-p "*trace" name t)
+     (string-prefix-p "*tramp" name t)
+     (and (string-prefix-p "magit" name t)
           (not (file-name-extension name)))
      )))
 
