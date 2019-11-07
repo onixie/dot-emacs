@@ -30,9 +30,9 @@
         (set-process-sentinel process 
                               (lambda (proc change)
                                 (when (string-match match-regex change)
-                                  (condition-case nil
-	                              (let ((b (process-buffer proc)))
-	                                (kill-buffer b)
-	                                (delete-window (get-buffer-window b)))
-                                    (error (print "error"))))))))))
+                                  (ignore-errors 
+                                    (let* ((b (process-buffer proc))
+                                           (w (get-buffer-window b)))
+                                      (kill-buffer b)
+                                      (delete-window w))))))))))
 (provide 'setup/common)
