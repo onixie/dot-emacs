@@ -1,6 +1,7 @@
 (require 'setup/package)
 
 (package-install 'omnisharp)
+(require 'omnisharp)
 
 (eval-after-load
     'company
@@ -12,12 +13,12 @@
   (flycheck-mode)
 
   (setq indent-tabs-mode nil
-        c-syntactic-indentation t)
+        c-syntactic-indentation t
+	c-basic-offset 4
+	truncate-lines t
+	tab-width 4)
 
   (c-set-style "ellemtel")
-  (setq c-basic-offset 4)
-  (setq truncate-lines t)
-  (setq tab-width 4)
 
   ;; csharp-mode README.md recommends this too
   (if (>= emacs-major-version 25)

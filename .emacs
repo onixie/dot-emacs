@@ -18,6 +18,7 @@
 
 (require 'setup/proxy)
 (require 'setup/package)
+(require 'setup/common)
 (require 'setup/session)
 (require 'setup/goodies)
 (require 'setup/fwb)
@@ -75,8 +76,8 @@
  '(ac-quick-help-width 100)
  '(ac-use-menu-map nil)
  '(auto-image-file-mode t)
- '(before-save-hook '(copyright-update time-stamp))
- '(browse-url-browser-function 'eww-browse-url)
+ '(before-save-hook (quote (copyright-update time-stamp)))
+ '(browse-url-browser-function (quote eww-browse-url))
  '(column-number-mode t)
  '(comment-fill-column nil)
  '(desktop-base-file-name ".emacs.d/.desktop")
@@ -90,13 +91,14 @@
  '(display-time-mail-function nil)
  '(display-time-mode t)
  '(display-time-world-list
-   '(("PST8PDT" "Seattle")
+   (quote
+    (("PST8PDT" "Seattle")
      ("EST5EDT" "New York")
      ("GMT0BST" "London")
      ("CET-1CDT" "Paris")
      ("IST-5:30" "Bangalore")
      ("JST-9" "Tokyo")
-     ("CST-8" "BeiJing")))
+     ("CST-8" "BeiJing"))))
  '(display-time-world-time-format "%A %B %d %T %Z")
  '(display-time-world-timer-second 1)
  '(doxymacs-doxygen-style "C++")
@@ -111,7 +113,7 @@
  '(holiday-hebrew-holidays nil)
  '(holiday-islamic-holidays nil)
  '(holiday-solar-holidays nil)
- '(ido-create-new-buffer 'always)
+ '(ido-create-new-buffer (quote always))
  '(ido-enable-last-directory-history nil)
  '(ido-max-work-directory-list 0)
  '(ido-max-work-file-list 0)
@@ -126,18 +128,20 @@
  '(kill-do-not-save-duplicates t)
  '(kill-ring-max 500)
  '(legacy-style-world-list
-   '(("PST8PDT" "Seattle")
+   (quote
+    (("PST8PDT" "Seattle")
      ("EST5EDT" "New York")
      ("GMT0BST" "London")
      ("CET-1CDT" "Paris")
      ("IST-5:30" "Bangalore")
      ("JST-9" "Tokyo")
-     ("CST-8" "BeiJing")))
+     ("CST-8" "BeiJing"))))
  '(make-backup-files nil)
  '(max-specpdl-size 1048576)
- '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
+ '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
  '(package-selected-packages
-   '(nix-mode flycheck-pycheckers flycheck jedi systemd intero markdown-mode+ markdown-mode yaml-mode magit docker yasnippet vagrant-tramp slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete))
+   (quote
+    (nix-mode flycheck-pycheckers flycheck jedi systemd intero markdown-mode+ markdown-mode yaml-mode magit docker yasnippet vagrant-tramp slime session scribble-mode pp-c-l paredit muse monokai-theme maxframe lxc-tramp gnuplot geiser ess ecb docker-tramp auto-complete)))
  '(save-interprogram-paste-before-kill t)
  '(scroll-conservatively 100000)
  '(scroll-margin 3)
@@ -146,34 +150,38 @@
  '(select-enable-clipboard t)
  '(session-use-package t nil (session))
  '(show-paren-mode t)
- '(speedbar-default-position 'right)
+ '(speedbar-default-position (quote right))
  '(speedbar-frame-parameters
-   '((minibuffer)
+   (quote
+    ((minibuffer)
      (width . 40)
      (border-width . 0)
      (menu-bar-lines . 0)
      (tool-bar-lines . 0)
      (unsplittable . t)
-     (left-fringe . 0)))
+     (left-fringe . 0))))
  '(speedbar-frame-plist
-   '(minibuffer nil width 40 border-width 0 internal-border-width 0 unsplittable t default-toolbar-visible-p nil has-modeline-p nil menubar-visible-p nil default-gutter-visible-p nil))
- '(speedbar-query-confirmation-method 'none-but-delete)
+   (quote
+    (minibuffer nil width 40 border-width 0 internal-border-width 0 unsplittable t default-toolbar-visible-p nil has-modeline-p nil menubar-visible-p nil default-gutter-visible-p nil)))
+ '(speedbar-query-confirmation-method (quote none-but-delete))
  '(speedbar-show-unknown-files t)
  '(speedbar-tag-hierarchy-method
-   '(speedbar-prefix-group-tag-hierarchy speedbar-trim-words-tag-hierarchy speedbar-sort-tag-hierarchy))
+   (quote
+    (speedbar-prefix-group-tag-hierarchy speedbar-trim-words-tag-hierarchy speedbar-sort-tag-hierarchy)))
  '(speedbar-verbosity-level 2)
  '(time-stamp-format "%:y-%02m-%02d %02H:%02M:%02S %u@%s")
- '(uniquify-buffer-name-style 'forward nil (uniquify))
+ '(uniquify-buffer-name-style (quote forward) nil (uniquify))
  '(yank-pop-change-selection t)
  '(yas/trigger-key (kbd "C-x C-y"))
  '(zoneinfo-style-world-list
-   '(("America/Los_Angeles" "Seattle")
+   (quote
+    (("America/Los_Angeles" "Seattle")
      ("America/New_York" "New York")
      ("Europe/London" "London")
      ("Europe/Paris" "Paris")
      ("Asia/Calcutta" "Bangalore")
      ("Asia/Tokyo" "Tokyo")
-     ("Asia/BeiJing" "BeiJing"))))
+     ("Asia/BeiJing" "BeiJing")))))
 
 (pushnew "~/.emacs.d/" image-load-path :test #'string=)
 

@@ -1,7 +1,7 @@
 (require 'setup/package)
 
 ;;; Javascript
-(pakage-install 'js2-mode)
+(package-install 'js2-mode)
 (require 'js2-mode)
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
@@ -37,6 +37,7 @@
 (add-hook 'compilation-filter-hook #'dotemacs--colorize-compilation-buffer)
 
 (package-install 'tide)
+(require 'tide)
 
 (defun dotemacs--setup-tide-mode ()
   (interactive)
@@ -56,6 +57,6 @@
 
 (add-hook 'js2-mode-hook #'dotemacs--setup-tide-mode)
 ;; configure javascript-tide checker to run after your default javascript checker
-(flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
+(flycheck-add-next-checker 'javascript-eslint #'javascript-tide 'append)
 
 (provide 'setup/lang/typescript)
