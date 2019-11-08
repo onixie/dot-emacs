@@ -26,7 +26,8 @@
     (electric-pair-mode 1))
 
   (local-set-key (kbd "C-c r r") #'omnisharp-run-code-action-refactoring)
-  (local-set-key (kbd "C-c C-c") #'recompile))
+  (local-set-key (kbd "C-c C-c") #'recompile)
+  (local-set-key (kbd "M-.") #'omnisharp-go-to-definition))
 
 (add-hook 'csharp-mode-hook #'dotemacs--setup-csharp-mode t)
 
