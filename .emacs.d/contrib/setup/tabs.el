@@ -28,19 +28,21 @@
 
 (advice-add 'centaur-tabs-buffer-groups :around #'dotemacs--override-centaur-tabs-buffer-groups)
 
-(defun centaur-tabs-hide-tab (x)
-  (let ((name (format "%s" x)))
+(defun dotemacs--override-centaur-tabs-hide-tab (orig-fun &rest args)
+  (let ((name (format "%s" (first args))))
     (or
-     (string-prefix-p "*Completions" name t)
      (string-prefix-p "*Packages" name t)
-     (string-prefix-p "*helm" name t)
-     (string-prefix-p "*Compile-Log*" name t)
-     (string-prefix-p "*lsp" name t)
      (string-prefix-p "*debug" name t)
      (string-prefix-p "*trace" name t)
-     (string-prefix-p "*tramp" name t)
-     (and (string-prefix-p "magit" name t)
-          (not (file-name-extension name)))
+     (string-prefix-p "magit: " name t)
+     ;; (string-prefix-p "*Completions" name t)
+     ;; (string-prefix-p "*helm" name t)
+     ;; (string-prefix-p "*Compile-Log*" name t)
+     ;; (string-prefix-p "*lsp" name t)
+     ;; (string-prefix-p "*tramp" name t)
+     (apply orig-fun args)
      )))
+
+(advice-add 'centaur-tabs-hide-tab :around #'dotemacs--override-centaur-tabs-hide-tab)
 
 (provide 'setup/tabs)
