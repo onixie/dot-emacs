@@ -22,3 +22,5 @@ dot-emacs*.tar.gz
 *.elc
 .emacs.d/.cache/treemacs-persist
 .emacs.d/last-refreshed-time.el
+.emacs.d/.cache/*
+.emacs.d/.mc-lists.el
