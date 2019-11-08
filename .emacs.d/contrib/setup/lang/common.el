@@ -1,5 +1,11 @@
 (require 'setup/package)
 
+;;;;;;;;;;;;;;;; Company mode ;;;;;;;;;;;;;;;;
+(package-install 'company)
+
+;;;;;;;;;;;;;;;; Projectile mode ;;;;;;;;;;;;;;;;
+(package-install 'projectile)
+
 ;;;;;;;;;;;;;;;; Yasnippet ;;;;;;;;;;;;;;;;
 (package-install 'yasnippet)
 (require 'yasnippet)
@@ -18,8 +24,6 @@
 (package-install 'paredit)
 (require 'paredit)
 
-(provide 'setup/lang/common)
-
 ;;;;;;;;;;;;;;;; Syntax Checker ;;;;;;;;;;;;;;;;
 (package-install 'flycheck)
 (require 'flycheck)
@@ -36,3 +40,5 @@
 (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
 (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
 (setq lsp-ui-doc-position 'bottom)
+
+(provide 'setup/lang/common)
