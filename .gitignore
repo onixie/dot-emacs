@@ -24,3 +24,5 @@ dot-emacs*.tar.gz
 .emacs.d/last-refreshed-time.el
 .emacs.d/.cache/*
 .emacs.d/.mc-lists.el
+.emacs.d/eclipse.jdt.ls/
+.emacs.d/workspace/
