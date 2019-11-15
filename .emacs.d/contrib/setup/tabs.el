@@ -35,7 +35,7 @@
      (string-prefix-p "*debug" name t)
      (string-prefix-p "*trace" name t)
      (string-prefix-p "magit: " name t)
-     ;; (string-prefix-p "*Completions" name t)
+     (string-prefix-p "*Completions" name t)
      ;; (string-prefix-p "*helm" name t)
      ;; (string-prefix-p "*Compile-Log*" name t)
      ;; (string-prefix-p "*lsp" name t)
