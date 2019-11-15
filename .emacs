@@ -16,6 +16,8 @@
   (normal-top-level-add-subdirs-to-load-path)
   (push default-directory load-path))
 
+(push "~/.emacs.d/" image-load-path)
+
 (require 'setup/proxy)
 (require 'setup/package)
 (require 'setup/common)
@@ -60,9 +62,19 @@
 (require 'cups-dif)
 (require 'doxymacs)
 
-;; Use emacs-goodies-el packages
+;;;;;;;;;;;;;;;; Bars ;;;;;;;;;;;;;;;;
+(tool-bar-mode 0)
+(menu-bar-mode 0)
+
+;;;;;;;;;;;;;;;; Startup ;;;;;;;;;;;;;;;;
+;(shell)
 
 ;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+(put 'set-goal-column 'disabled nil)
+(fset 'yes-or-no-p 'y-or-n-p)
+
 ;;Custom Setting
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -86,7 +98,8 @@
  '(display-buffer-reuse-frames t)
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
- '(display-time-format "%A %B %d %T %Z")
+ '(display-time-default-load-average nil)
+ '(display-time-format "%a %b %d %T %j")
  '(display-time-interval 1)
  '(display-time-mail-function nil)
  '(display-time-mode t)
@@ -123,7 +136,7 @@
  '(inhibit-startup-buffer-menu t)
  '(inhibit-startup-echo-area-message "")
  '(inhibit-startup-screen t)
- '(initial-buffer-choice nil)
+ '(initial-buffer-choice (lambda nil (shell) (delete-other-windows)))
  '(initial-scratch-message nil)
  '(kill-do-not-save-duplicates t)
  '(kill-ring-max 500)
@@ -183,21 +196,6 @@
      ("Asia/Tokyo" "Tokyo")
      ("Asia/BeiJing" "BeiJing")))))
 
-(pushnew "~/.emacs.d/" image-load-path :test #'string=)
-
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
-(fset 'yes-or-no-p 'y-or-n-p)
-(put 'set-goal-column 'disabled nil)
-(setq ielm-header "")
-
-;;;;;;;;;;;;;;;; Bars ;;;;;;;;;;;;;;;;
-(tool-bar-mode 0)
-(menu-bar-mode 0)
-
-;;;;;;;;;;;;;;;; Startup ;;;;;;;;;;;;;;;;
-(eshell)
-(ielm)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
