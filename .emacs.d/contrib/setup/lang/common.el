@@ -1,5 +1,7 @@
 (require 'setup/package)
 
+(global-prettify-symbols-mode)
+
 ;;;;;;;;;;;;;;;; Company mode ;;;;;;;;;;;;;;;;
 (package-install 'company)
 
