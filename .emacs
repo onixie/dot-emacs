@@ -18,6 +18,7 @@
 
 (push "~/.emacs.d/" image-load-path)
 
+(require 'setup/default)
 (require 'setup/proxy)
 (require 'setup/package)
 (require 'setup/common)
@@ -63,19 +64,6 @@
 (require 'cups-dif)
 (require 'doxymacs)
 
-;;;;;;;;;;;;;;;; Bars ;;;;;;;;;;;;;;;;
-(tool-bar-mode 0)
-(menu-bar-mode 0)
-
-;;;;;;;;;;;;;;;; Startup ;;;;;;;;;;;;;;;;
-;(shell)
-
-;;;;;;;;;;;;;;;; Customization ;;;;;;;;;;;;;;;;
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
-(put 'set-goal-column 'disabled nil)
-(fset 'yes-or-no-p 'y-or-n-p)
-
 ;;Custom Setting
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -88,33 +76,12 @@
  '(ac-quick-help-height 30)
  '(ac-quick-help-width 100)
  '(ac-use-menu-map nil)
- '(auto-image-file-mode t)
- '(before-save-hook (quote (copyright-update time-stamp)))
  '(browse-url-browser-function (quote eww-browse-url))
- '(column-number-mode t)
  '(comment-fill-column nil)
  '(desktop-base-file-name ".emacs.d/.desktop")
  '(desktop-base-lock-name ".emacs.d/.desktop.lock")
  '(diary-file "~/.emacs.d/diary")
  '(display-buffer-reuse-frames t)
- '(display-time-24hr-format t)
- '(display-time-day-and-date t)
- '(display-time-default-load-average nil)
- '(display-time-format "%a %b %d %T %j")
- '(display-time-interval 1)
- '(display-time-mail-function nil)
- '(display-time-mode t)
- '(display-time-world-list
-   (quote
-    (("PST8PDT" "Seattle")
-     ("EST5EDT" "New York")
-     ("GMT0BST" "London")
-     ("CET-1CDT" "Paris")
-     ("IST-5:30" "Bangalore")
-     ("JST-9" "Tokyo")
-     ("CST-8" "BeiJing"))))
- '(display-time-world-time-format "%A %B %d %T %Z")
- '(display-time-world-timer-second 1)
  '(doxymacs-doxygen-style "C++")
  '(ecb-options-version "2.40")
  '(ede-project-placeholder-cache-file "~/.emacs.d/.projects.ede")
@@ -134,11 +101,6 @@
  '(ido-record-commands nil)
  '(ielm-noisy nil)
  '(indent-tabs-mode nil)
- '(inhibit-startup-buffer-menu t)
- '(inhibit-startup-echo-area-message "")
- '(inhibit-startup-screen t)
- '(initial-buffer-choice (lambda nil (shell) (delete-other-windows)))
- '(initial-scratch-message nil)
  '(kill-do-not-save-duplicates t)
  '(kill-ring-max 500)
  '(legacy-style-world-list
@@ -150,7 +112,6 @@
      ("IST-5:30" "Bangalore")
      ("JST-9" "Tokyo")
      ("CST-8" "BeiJing"))))
- '(make-backup-files nil)
  '(max-specpdl-size 1048576)
  '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
  '(package-selected-packages
