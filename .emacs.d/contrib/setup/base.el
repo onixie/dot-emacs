@@ -1,7 +1,5 @@
 ;;; -*- lexical-binding: t; -*-
 
-(require 'setup/package)
-
 (defun dot-emacs--name-glue (&rest nameparts)
   "Make a symbol by concating the strings/symbols as its name"
   (intern (apply #'concat (mapcar #'(lambda (name)
@@ -35,4 +33,4 @@
                                            (w (get-buffer-window b)))
                                       (kill-buffer b)
                                       (delete-window w))))))))))
-(provide 'setup/common)
+(provide 'setup/base)

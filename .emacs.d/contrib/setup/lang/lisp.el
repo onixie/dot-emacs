@@ -1,5 +1,5 @@
+(require 'setup/base)
 (require 'setup/package)
-(require 'setup/common)
 
 ;;;;;;;;;;;;;;;; Slime ;;;;;;;;;;;;;;;;
 (package-install 'slime)

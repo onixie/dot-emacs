@@ -1,5 +1,5 @@
 (require 'setup/package)
-(require 'setup/lang/common)
+(require 'setup/lang/base)
 
 (package-install 'jedi)
 (jedi:install-server)

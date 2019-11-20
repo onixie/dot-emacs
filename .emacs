@@ -18,16 +18,16 @@
 
 (push "~/.emacs.d/" image-load-path)
 
+(require 'setup/base)
 (require 'setup/default)
 (require 'setup/proxy)
 (require 'setup/package)
-(require 'setup/common)
 (require 'setup/session)
 (require 'setup/goodies)
 (require 'setup/fwb)
 (require 'setup/tabs)
 
-(require 'setup/lang/common)
+(require 'setup/lang/base)
 (require 'setup/lang/asm)
 (require 'setup/lang/c)
 (require 'setup/lang/csharp)

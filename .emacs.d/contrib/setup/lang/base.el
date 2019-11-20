@@ -43,4 +43,4 @@
 (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
 (setq lsp-ui-doc-position 'bottom)
 
-(provide 'setup/lang/common)
+(provide 'setup/lang/base)
