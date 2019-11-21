@@ -24,4 +24,6 @@
 
 (dotemacs--call-after dotemacs-package-refresh-interval #'package-refresh-contents)
 
+(package-install 'use-package)
+
 (provide 'setup/package)

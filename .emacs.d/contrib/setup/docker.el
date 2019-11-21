@@ -1,9 +1,14 @@
-(require 'setup/package)
 
-(package-install 'docker)
-(package-install 'docker-compose-mode)
-(package-install 'dockerfile-mode)
+(use-package docker
+  :ensure t
+  :defer  t)
 
-(require 'docker)
+(use-package docker-compose-mode
+  :ensure t
+  :defer  t)
+
+(use-package dockerfile-mode
+  :ensure t
+  :defer  t)
 
 (provide 'setup/docker)

@@ -1,6 +1,4 @@
-(require 'setup/package)
-
-(package-install 'magit)
-(require 'magit)
+(use-package magit
+  :ensure t)
 
 (provide 'setup/git)

@@ -1,13 +1,10 @@
-(defvar calendars-displayed-count
-  (- (* (/ (/ (display-pixel-width)
-	      (* (+ (* 7 calendar-column-width)
-		    calendar-intermonth-spacing
-		    calendar-left-margin
-		    )
-		 (frame-char-width))) 
-	   2) 
-	2) 
-     1))
+(defvar calendar-total-monthes 3)
+
+(defun calendar-recalculate-total-monthes ()
+  (let ((px (default-font-width)))
+    (setq calendar-total-monthes
+          (/ (- (window-pixel-width) (* calendar-left-margin px))
+             (* (+ (* calendar-column-width 7) calendar-intermonth-spacing) px)))))
 
 (defun calendar-generate (month year)
   "Generate a three-month Gregorian calendar centered around MONTH, YEAR."
@@ -20,8 +17,8 @@
   (setq displayed-month month
         displayed-year year)
   (erase-buffer)
-  (calendar-increment-month month year (- (/ (1- calendars-displayed-count) 2)))
-  (dotimes (i calendars-displayed-count)
+  (calendar-increment-month month year (- (/ (1- calendar-total-monthes) 2)))
+  (dotimes (i calendar-total-monthes)
     (calendar-generate-month month year
                              (+ calendar-left-margin
                                 (* calendar-month-width i)))
@@ -34,10 +31,10 @@
         calendar-month-width (+ (* 7 calendar-column-width)
                                 calendar-intermonth-spacing)
         calendar-right-margin (+ calendar-left-margin
-                                   (* calendars-displayed-count (* 7 calendar-column-width))
-                                   (* (1- calendars-displayed-count) calendar-intermonth-spacing))
+                                 (* calendar-total-monthes (* 7 calendar-column-width))
+                                 (* (1- calendar-total-monthes) calendar-intermonth-spacing))
         calendar-month-edges nil)
-  (dotimes (i calendars-displayed-count)
+  (dotimes (i calendar-total-monthes)
     (push (cons i (calendar-month-edges i)) calendar-month-edges))
   (setq calendar-month-edges (reverse calendar-month-edges)))
 
@@ -48,7 +45,7 @@ position of the cursor with respect to the calendar as well as possible.
 EVENT is an event like `last-nonmenu-event'."
   (interactive (list (prefix-numeric-value current-prefix-arg)
                      last-nonmenu-event))
-  (calendar-scroll-left (* calendars-displayed-count arg) event))
+  (calendar-scroll-left (* calendar-total-monthes arg) event))
 
 (defun calendar-scroll-right-three-months (arg &optional event)
   "Scroll the displayed calendar window right by 3*ARG months.
@@ -57,7 +54,7 @@ position of the cursor with respect to the calendar as well as possible.
 EVENT is an event like `last-nonmenu-event'."
   (interactive (list (prefix-numeric-value current-prefix-arg)
                      last-nonmenu-event))
-  (calendar-scroll-left (* (- calendars-displayed-count) arg) event))
+  (calendar-scroll-left (* (- calendar-total-monthes) arg) event))
 
 (defconst cal-menu-scroll-menu
   '("Scroll"
@@ -86,7 +83,7 @@ EVENT is an event like `last-nonmenu-event'."
        (< (abs (calendar-interval
                 displayed-month displayed-year
                 (calendar-extract-month date) (calendar-extract-year date)))
-          (1+ (/ (1- calendars-displayed-count) 2)))))
+          (1+ (/ (1- calendar-total-monthes) 2)))))
 
 (defun calendar-cursor-to-date (&optional error event)
   "Return a list (month day year) of current cursor position.
@@ -101,7 +98,7 @@ use instead of point."
       (and event (setq event (event-start event))
            (goto-char (posn-point event)))
       (let* ((segment (calendar-column-to-segment))
-             (month (% (+ displayed-month (+ 12 (- segment (/ (1- calendars-displayed-count) 2)))) 12)))
+             (month (% (+ displayed-month (+ 12 (- segment (/ (1- calendar-total-monthes) 2)))) 12)))
         ;; Call with point on either of the two digits in a 2-digit date,
         ;; or on or before the digit of a 1-digit date.
         (if (not (and (looking-at "[ 0-9]?[0-9][^0-9]")
@@ -117,8 +114,8 @@ use instead of point."
                  (buffer-substring (1+ (point))
                                    (+ 1 calendar-day-digit-width (point))))
                 (cond
-                 ((> 1 (+ displayed-month (- segment (/ (1- calendars-displayed-count) 2)))) (1- displayed-year))
-                 ((< 12 (+ displayed-month (- segment (/ (1- calendars-displayed-count) 2)))) (1+ displayed-year))
+                 ((> 1 (+ displayed-month (- segment (/ (1- calendar-total-monthes) 2)))) (1- displayed-year))
+                 ((< 12 (+ displayed-month (- segment (/ (1- calendar-total-monthes) 2)))) (1+ displayed-year))
                  (t displayed-year))))))))
 
 (defun calendar-cursor-to-visible-date (date)
@@ -137,11 +134,11 @@ use instead of point."
     (move-to-column (+ calendar-left-margin (1- calendar-day-digit-width)
                        (* calendar-month-width
                           (+ (calendar-interval
-                               displayed-month displayed-year month year) (/ (1- calendars-displayed-count) 2)))
+                              displayed-month displayed-year month year) (/ (1- calendar-total-monthes) 2)))
                        (* calendar-column-width
                           (mod
                            (- (calendar-day-of-week date)
                               calendar-week-start-day)
                            7))))))
 
-
+(provide 'more-calendar)

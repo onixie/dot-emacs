@@ -1,6 +1,4 @@
-(require 'setup/package)
-
-(package-install 'gnuplot)
-(require 'gnuplot)
+(use-package gnuplot 
+  :ensure t)
 
 (provide 'setup/gnuplot)
