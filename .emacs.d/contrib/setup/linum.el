@@ -1,33 +1,26 @@
 (require 'linum)
 
-(when (< emacs-major-version 27)
-  (progn
-    (defun rescale-window-margin-by-faceremapping (win)
-      (let ((width (car (window-margins)))
-	    (scale (cadr (assoc ':height 
-			        (assoc 'default 
-				       face-remapping-alist)))))
-        (if (numberp scale)
-	    (progn
-	      (set-window-margins win (ceiling (* width scale)) (cdr (window-margins win)))
-	      (force-window-update))
-          nil))
-      
-      )
-    (defadvice linum-update-window (after scaling-margin-width last (win) activate)
-      (rescale-window-margin-by-faceremapping win)
-      ad-return-value)))
+(defun dotemacs--linum-adjust-window-margin (win)
+  (when (bound-and-true-p linum-mode)
+    (let* ((overlay (overlay-properties (car linum-overlays)))
+           (num-str (or (plist-get overlay 'linum-str) ""))
+           (pad-str (or (plist-get overlay 'before-string) ""))
+           (width (+ (length num-str) (length pad-str))))
+      (set-window-margins win (ceiling (/ (* width (default-font-width)) (frame-char-width))))
+      (set-window-parameter win 'linum--set-margins (window-margins win)))))
+
+(advice-add 'linum-update-window :after #'dotemacs--linum-adjust-window-margin)
 
 (mapc (lambda (mode-hook)
 	(add-hook mode-hook 'linum-on))
       '(c-mode-hook
-        c++-mode-hook
-        sh-mode-hook
-        lisp-mode-hook
-        emacs-lisp-mode-hook
-        lisp-interaction-mode-hook
-        asm-mode-hook
-        haskell-mode))
+	c++-mode-hook
+	sh-mode-hook
+	lisp-mode-hook
+	emacs-lisp-mode-hook
+	lisp-interaction-mode-hook
+	asm-mode-hook
+	haskell-mode))
 
 (with-current-buffer "*Messages*"
   (linum-on))
