@@ -1,8 +1,6 @@
-(require 'setup/package)
 
-(package-install 'session)
-(require 'session)
-
-(add-hook 'after-init-hook #'session-initialize)
+(use-package session
+  :ensure t
+  :hook (after-init . #'session-initialize))
 
 (provide 'setup/session)
