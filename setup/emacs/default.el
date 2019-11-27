@@ -1,13 +1,12 @@
 
 (use-package startup
   :init (provide 'startup)
-
-  ;; :custom
-  ;; (inhibit-startup-buffer-menu t)
-  ;; (inhibit-startup-echo-area-message "")
-  ;; (inhibit-startup-screen t)
-  ;; (initial-buffer-choice "*Messages*")
-  ;; (initial-scratch-message nil)
+  :custom
+  (inhibit-startup-buffer-menu t)
+  (inhibit-startup-echo-area-message "")
+  (inhibit-startup-screen t)
+  (initial-buffer-choice (lambda () (shell) (delete-other-windows)))
+  (initial-scratch-message nil)
   )
 
 (use-package time
@@ -35,12 +34,25 @@
   (auto-image-file-mode t)
   )
 
-(use-package file
+(use-package files
   :custom
   (backup-directory-alist `(("." . ,(expand-file-name "~/.emacs.d/.backup/"))))
   (auto-save-file-name-transforms '(("." "~/.emacs.d/.auto-save/")))
   :hook ((before-save . #'copyright-update)
 	 (before-save . #'time-stamp)))
+
+(use-package simple
+  :custom 
+  (mark-ring-max 1024)
+  (global-mark-ring-max 1024)
+  )
+
+(use-package session
+  :config 
+  (session-initialize)
+  )
+
+(use-package pack-windows)
 
 (use-package scroll-bar
   :custom
@@ -48,15 +60,11 @@
   )
 
 (tool-bar-mode 0)
-
 (menu-bar-mode 0)
 
-(put 'upcase-region 'disabled nil)
-
+(put 'upcase-region   'disabled nil)
 (put 'downcase-region 'disabled nil)
-
 (put 'set-goal-column 'disabled nil)
-
-(fset 'yes-or-no-p 'y-or-n-p)
+(fset 'yes-or-no-p #'y-or-n-p)
 
 (provide 'setup/emacs/default)

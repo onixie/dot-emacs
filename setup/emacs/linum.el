@@ -14,24 +14,7 @@
 
   (dolist (name (list "*scratch*" "*Messages*"))
     (with-current-buffer name (linum-on)))
-
-  :hook ((prog-mode message-buffer-mode) . linum-mode))
-
-(global-set-key (kbd "M-+") 'text-scale-increase)
-(global-set-key (kbd "M-<mouse-4>") (kbd "M-+"))
-(global-set-key (kbd "<left-magin> <M-mouse-4>") (kbd "M-<mouse-4>"))
-(global-set-key (kbd "M--") 'text-scale-decrease)
-(global-set-key (kbd "M-<mouse-5>") (kbd "M--"))
-(global-set-key (kbd "<left-margin> <M-mouse-5>") (kbd "M-<mouse-5>"))
-
-(global-set-key (kbd "C-x M-v") 
-		(lambda ()
-		  (interactive)
-		  (if visual-line-mode 
-		      (visual-line-mode 0))
-		  (setq word-wrap nil)
-		  (if truncate-lines
-		      (toggle-truncate-lines -1)
-		    (toggle-truncate-lines 1))))
+  
+  :hook ((prog-mode message-buffer-mode) . #'linum-mode))
 
 (provide 'setup/emacs/linum)

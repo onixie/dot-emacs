@@ -53,6 +53,8 @@
   (centaur-tabs-headline-match)
   (centaur-tabs-mode t)
 
+  (dot-emacs::centaur-tabs-show-groups)
+
   :bind (("<S-left>" . #'centaur-tabs-backward)
 	 ("<S-right>". #'centaur-tabs-forward)
 	 ("<S-up>"   . #'dot-emacs::centaur-tabs-show-groups)

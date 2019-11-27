@@ -18,6 +18,13 @@
   (interactive)
   (insert (shell-command-to-string "date")))
 
+(defun dot-emacs:insert-pretty-control-line ()
+  (interactive)
+  (beginning-of-line)
+  (open-line 1)
+  (insert ?\xC)
+  (next-line))
+
 (defun dot-emacs::kill-buffer-and-window-on (match-regex) 
   (lambda ()
     (let ((process (get-buffer-process (current-buffer))))
@@ -98,5 +105,87 @@
 				(find-project (parent-directory path))))
 			    ))
     #'find-project))
+
+(defun dot-emacs::xah-pop-local-mark-ring ()
+  "Move cursor to last mark position of current buffer.
+Call this repeatedly will cycle all positions in `mark-ring'.
+URL `http://ergoemacs.org/emacs/emacs_jump_to_previous_position.html'
+Version 2016-04-04"
+  (interactive)
+  (set-mark-command t))
+
+(defun dot-emacs::powerline-center-minions-theme ()
+  "Setup a mode-line with major and minor modes centered."
+  (interactive)
+  (setq-default mode-line-format
+                '("%e"
+                  (:eval
+                   (let* ((active (powerline-selected-window-active))
+                          (mode-line-buffer-id (if active 'mode-line-buffer-id 'mode-line-buffer-id-inactive))
+                          (mode-line (if active 'mode-line 'mode-line-inactive))
+                          (face0 (if active 'powerline-active0 'powerline-inactive0))
+                          (face1 (if active 'powerline-active1 'powerline-inactive1))
+                          (face2 (if active 'powerline-active2 'powerline-inactive2))
+                          (separator-left (intern (format "powerline-%s-%s"
+                                                          (powerline-current-separator)
+                                                          (car powerline-default-separator-dir))))
+                          (separator-right (intern (format "powerline-%s-%s"
+                                                           (powerline-current-separator)
+                                                           (cdr powerline-default-separator-dir))))
+                          (lhs (list (powerline-raw "%*" face0 'l)
+                                     (when powerline-display-buffer-size
+                                       (powerline-buffer-size face0 'l))
+                                     (powerline-buffer-id `(mode-line-buffer-id ,face0) 'l)
+                                     (powerline-raw " " face0)
+                                     (funcall separator-left face0 face1)
+                                     (powerline-narrow face1 'l)
+                                     (powerline-vc face1)))
+                          (rhs (list (when (window-full-width-p)
+                                       (powerline-raw global-mode-string face1 'r))
+                                     (powerline-raw "%4l" face1 'r)
+                                     (powerline-raw ":" face1)
+                                     (powerline-raw "%3c" face1 'r)
+                                     (funcall separator-right face1 face0)
+                                     (powerline-raw " " face0)
+                                     (powerline-raw "%6p" face0 'r)
+                                     (when powerline-display-hud
+                                       (powerline-hud face2 face1))
+                                     (powerline-fill face0 0)))
+                          (center (list (powerline-raw " " face1)
+                                        (funcall separator-left face1 face2)
+                                        (when (and (boundp 'erc-track-minor-mode) erc-track-minor-mode)
+                                          (powerline-raw erc-modified-channels-object face2 'l))
+                                        (if (bound-and-true-p minions-mode)
+                                            (powerline-raw minions-mode-line-modes face2)
+                                          (powerline-major-mode face2 'l)
+                                          (powerline-process face2)
+                                          (powerline-raw " :" face2)
+                                          (powerline-minor-modes face2 'l)
+                                          (powerline-raw " " face2))
+                                        (funcall separator-right face2 face1))))
+                     (concat (powerline-render lhs)
+                             (powerline-fill-center face1 (/ (powerline-width center) 2.0))
+                             (powerline-render center)
+                             (powerline-fill face1 (powerline-width rhs))
+                             (powerline-render rhs)))))))
+
+(defun dot-emacs:toggle-wrap-line ()
+  (interactive)
+  (when visual-line-mode 
+    (visual-line-mode 0))
+  (setq word-wrap nil)
+  (if truncate-lines
+      (toggle-truncate-lines -1)
+    (toggle-truncate-lines 1)))
+
+(defun dot-emacs:isearch-current-word-forward (&optional regexp-p no-recursive-edit)
+  (interactive "P\np")
+  (isearch-mode t (not (null regexp-p)) nil (not no-recursive-edit))
+  (isearch-yank-string (current-word)))
+
+(defun dot-emacs:isearch-current-word-backward (&optional regexp-p no-recursive-edit)
+  (interactive "P\np")
+  (isearch-mode nil (not (null regexp-p)) nil (not no-recursive-edit))
+  (isearch-yank-string (current-word)))
 
 (provide 'setup/base/defs)
