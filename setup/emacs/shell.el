@@ -1,5 +1,5 @@
 
-(use-package setup/base
-  :hook ((shell-mode term-mode) . (dot-emacs::kill-buffer-and-window-on "\\(?:finished\\|exited\\|killed\\|quit\\)")))
+(use-package setup/base/defs
+  :hook ((shell-mode term-mode) . dot-emacs::kill-buffer-and-window-on-process-finished))
 
 (provide 'setup/emacs/shell)

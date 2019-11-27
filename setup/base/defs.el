@@ -32,6 +32,9 @@
                                       (kill-buffer b)
                                       (delete-window w))))))))))
 
+(defun dot-emacs::kill-buffer-and-window-on-process-finished ()
+  (dot-emacs::kill-buffer-and-window-on "\\(?:finished\\|exited\\|killed\\|quit\\)"))
+
 (defun dot-emacs::open-shell (path)
   (cl-labels ((calc-buffer-name (path)
 				(let ((name system-name)

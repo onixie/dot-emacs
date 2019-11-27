@@ -32,6 +32,7 @@
 (require 'setup/emacs/ido)
 (require 'setup/emacs/project)
 (require 'setup/emacs/calendar)
+(require 'setup/emacs/shell)
 
 (require 'setup/lang/base)
 (require 'setup/lang/asm)
