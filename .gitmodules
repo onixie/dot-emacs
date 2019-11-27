@@ -1,17 +1,4 @@
 
-[submodule ".emacs.d/contrib/ibus"]
-	path = .emacs.d/contrib/ibus
-	url = https://github.com/onixie/ibus.git
-	ignore = dirty
-
-[submodule ".emacs.d/contrib/rainbow-delimiters"]
-	path = .emacs.d/contrib/rainbow-delimiters
-	url = https://github.com/onixie/rainbow-delimiters.git
-	ignore = dirty
-[submodule ".emacs.d/contrib/haskell-mode"]
-	path = .emacs.d/contrib/haskell-mode
-	url = https://github.com/onixie/haskell-mode.git
-	ignore = dirty
-[submodule ".emacs.d/contrib/easy-fwb"]
-	path = .emacs.d/contrib/easy-fwb
+[submodule "easy-fwb"]
+	path = contrib/easy-fwb
 	url = https://github.com/onixie/easy-fwb.git
