@@ -188,4 +188,16 @@ Version 2016-04-04"
   (isearch-mode nil (not (null regexp-p)) nil (not no-recursive-edit))
   (isearch-yank-string (current-word)))
 
+(defun dot-emacs:file-manager ()
+  (interactive)
+  (shell-command "nautilus $(pwd) || thunar $(pwd)" "*Messages*" "*Messages*"))
+
+(defun dot-emacs:terminal ()
+  (interactive)
+  (shell-command "gnome-terminal --working-directory=$(pwd) || terminal --working-directory=$(pwd)" "*Messages*" "*Messages*"))
+
+(defun dot-emacs:etags ()
+  (interactive)
+  (shell-command "find ./ -type f -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
+
 (provide 'setup/base/defs)

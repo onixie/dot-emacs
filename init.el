@@ -18,7 +18,6 @@
 (require 'setup/emacs/theme)
 (require 'setup/emacs/tabs)
 (require 'setup/emacs/linum)
-;; (require 'setup/emacs/dired)
 ;; (require 'setup/emacs/ido)
 ;; (require 'setup/emacs/project)
 ;; (require 'setup/emacs/calendar)

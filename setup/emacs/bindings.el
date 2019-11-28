@@ -26,4 +26,11 @@
    ("C-#" . #'isearch-repeat-backward)
    ))
 
+(use-package dired
+  :bind
+  (:map dired-mode-map
+	("N" . #'dot-emacs:file-manager)
+	("b" . #'dot-emacs:terminal)
+	("E" . #'dot-emacs:etags)))
+
 (provide 'setup/emacs/bindings)
