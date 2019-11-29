@@ -1,4 +1,3 @@
-(use-package magit
-  :ensure t)
+(use-package magit :ensure t)
 
 (provide 'setup/app/git)

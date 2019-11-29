@@ -1,5 +1,3 @@
-
-(use-package flim
-	     :ensure t)
+(use-package flim :ensure t)
 
 (provide 'setup/app/flim)
