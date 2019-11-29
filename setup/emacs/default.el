@@ -5,6 +5,7 @@
   (inhibit-startup-screen t)
   (initial-buffer-choice (lambda () (prog1 (shell) (delete-other-windows))))
   (initial-scratch-message nil)
+  (auto-save-list-file-prefix nil)
   )
 
 (use-package time
@@ -32,6 +33,7 @@
 
 (use-package files
   :custom
+  (backup-inhibited t)
   (make-backup-files nil)
   (auto-save-default nil)
   :hook 
@@ -72,5 +74,9 @@
 (put 'downcase-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
 (fset 'yes-or-no-p #'y-or-n-p)
+
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
 
 (provide 'setup/emacs/default)
