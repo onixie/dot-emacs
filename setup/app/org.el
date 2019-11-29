@@ -1,11 +1,8 @@
 
-(use-package org
-  :ensure t
-  :after session
+(use-package org :ensure t :after session
   :config
 
-  (use-package org-beautify-theme
-    :ensure t
+  (use-package org-beautify-theme :ensure t
     :config 
     (load-theme 'org-beautify t)
     (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
@@ -19,36 +16,13 @@
   ;; After org v8, docbook is not included anymore. Use ox-textinfo instead
   (use-package org-docbook
     :if (< (string-to-number (first (split-string org-version "\\."))) 8)
-    :config (setq org-export-docbook-xsl-fo-proc-command "fop %s %s"
-                  org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s"))
+    :custom 
+    (org-export-docbook-xsl-fo-proc-command "fop %s %s")
+    (org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s"))
 
-  (setq org-hide-leading-stars nil
-	org-hierarchical-todo-statistics nil
-	org-startup-indented t
-	org-confirm-babel-evaluate nil
-	org-src-tab-acts-natively t
-	org-image-actual-width nil
-	org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar"
-	org-todo-keywords '((sequence "TODO" "FEEDBACK" "VERIFY" "|" "DONE" "DELEGATED")
-			    (sequence "|" "|" "CANCELED")
-			    (sequence "计划中" "对应中" "对应完成" "检查中" "检查完成" "|" "取消" "完成")))
-
+  ;; Downcase all templates
   (mapc (lambda (arg) (setcdr arg (list (downcase (cadr arg)))))
 	org-structure-template-alist)
-
-  (org-babel-do-load-languages 'org-babel-load-languages
-			       '((shell . t)
-				 (plantuml . t)
-				 (org . t)
-				 (gnuplot . t)))
-
-  
-
-  ;; Switch entry to DONE when all subentries are done, to TODO otherwise.
-  (add-hook 'org-after-todo-statistics-hook (lambda (n-done n-not-done)
-                                              (let (org-log-done org-log-states)	; turn off logging
-                                                (org-todo (if (= n-not-done 0) "DONE" "TODO")))))
-  (add-hook 'org-babel-after-execute-hook #'org-redisplay-inline-images)
 
   (defmacro org-| (&rest args &key path)
     (cl-flet ((tf (form) 
@@ -76,6 +50,30 @@
 		 ":" ,karg))))
 
   (defun org-/ (ref &rest args)
-    (apply #'concatenate 'string (org-babel-ref-resolve ref) args)))
+    (apply #'concatenate 'string (org-babel-ref-resolve ref) args))
+
+  :hook
+  ((org-babel-after-execute-hook   . #'org-redisplay-inline-images)
+   (org-after-todo-statistics-hook . (lambda (n-done n-not-done) ;; Switch entry to DONE when all subentries are done, to TODO otherwise.
+				       (let (org-log-done org-log-states) ;; turn off logging
+					 (org-todo (if (= n-not-done 0) "DONE" "TODO")))))
+   )
+  :custom
+  (org-hide-leading-stars nil)
+  (org-hierarchical-todo-statistics nil)
+  (org-startup-indented t)
+  (org-confirm-babel-evaluate nil)
+  (org-src-tab-acts-natively t)
+  (org-image-actual-width nil)
+  (org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
+  (org-babel-load-languages '((emacs-lisp . t)
+			      (shell      . t)
+			      (plantuml   . t)
+			      (gnuplot    . t)
+			      (org        . t)
+			      ))
+  (org-todo-keywords '((sequence "TODO" "FEEDBACK" "VERIFY" "|" "DONE" "DELEGATED")
+		       (sequence "|" "|" "CANCELED")
+		       (sequence "计划中" "对应中" "对应完成" "检查中" "检查完成" "|" "取消" "完成"))))
 
 (provide 'setup/app/org)

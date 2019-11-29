@@ -33,14 +33,14 @@
         (set-process-sentinel process 
                               (lambda (proc change)
                                 (when (string-match match-regex change)
-                                  (ignore-errors 
+                                  (ignore-errors
                                     (let* ((b (process-buffer proc))
                                            (w (get-buffer-window b)))
                                       (kill-buffer b)
                                       (delete-window w))))))))))
 
-(defun dot-emacs::kill-buffer-and-window-on-process-finished ()
-  (dot-emacs::kill-buffer-and-window-on "\\(?:finished\\|exited\\|killed\\|quit\\)"))
+(defun dot-emacs::kill-buffer-and-window-on-process-die ()
+  (funcall (dot-emacs::kill-buffer-and-window-on "\\(?:finished\\|exited\\|killed\\|quit\\)")))
 
 (defun dot-emacs::open-shell (path)
   (cl-labels ((calc-buffer-name (path)
@@ -199,5 +199,57 @@ Version 2016-04-04"
 (defun dot-emacs:etags ()
   (interactive)
   (shell-command "find ./ -type f -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
+
+(defun dot-emacs::linum-update-window+ (win) 
+  ;; Adjust window margin with regards to scaled text
+  (when (and (bound-and-true-p linum-mode) linum-overlays)
+    (let* ((overlay (overlay-properties (car linum-overlays)))
+	   (num-str (or (plist-get overlay 'linum-str) ""))
+	   (pad-str (or (plist-get overlay 'before-string) ""))
+	   (width (+ (length num-str) (length pad-str))))
+      (set-window-margins win (ceiling (/ (* width (default-font-width)) (frame-char-width))))
+      (set-window-parameter win 'linum--set-margins (window-margins win)))))
+
+(defun dot-emacs::centaur-tabs-show-groups ()
+  (interactive)
+  (centaur-tabs-buffer-show-groups t)
+  (centaur-tabs-display-update))
+
+(defun dot-emacs::centaur-tabs-hide-groups ()
+  (interactive)
+  (centaur-tabs-buffer-show-groups nil)
+  (centaur-tabs-display-update))
+
+(defun dot-emacs::centaur-tabs-project-name (orig-fun &rest args)
+  (let ((res (apply orig-fun args)))
+    (replace-regexp-in-string "Project:.*/\\(.*\\)/" "Project: \\1" res)))
+
+(defun dot-emacs::centaur-tabs-buffer-groups (orig-fun &rest args)
+  (list
+   (cond
+    ((or (memq major-mode '(shell-mode term-mode ansi-term-mode eshell-mode)))
+     "Shell")
+    (t
+     (car (apply orig-fun args))))))
+
+(defun dot-emacs::centaur-tabs-hide-tab (orig-fun &rest args)
+  (let ((name (format "%s" (first args))))
+    (or
+     (string-prefix-p "*Packages" name t)
+     (string-prefix-p "*debug" name t)
+     (string-prefix-p "*trace" name t)
+     (string-prefix-p "magit: " name t)
+     (string-prefix-p "*Completions" name t)
+     (string-prefix-p "*Calendar" name t)
+     ;; (string-prefix-p "*helm" name t)
+     ;; (string-prefix-p "*Compile-Log*" name t)
+     ;; (string-prefix-p "*lsp" name t)
+     ;; (string-prefix-p "*tramp" name t)
+     (apply orig-fun args)
+     )))
+
+(defun dot-emacs::calendar-exit-with-kill ()
+  (interactive)
+  (calendar-exit t))
 
 (provide 'setup/base/defs)

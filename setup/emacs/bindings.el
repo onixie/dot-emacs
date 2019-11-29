@@ -1,6 +1,5 @@
 (use-package rect
-  :bind
-  (("S-<down-mouse-1>" . #'dot-emacs::mouse-start-rectangle-mark)))
+  :bind (("S-<down-mouse-1>" . #'dot-emacs::mouse-start-rectangle-mark)))
 
 (use-package simple
   :bind
@@ -32,5 +31,21 @@
 	("N" . #'dot-emacs:file-manager)
 	("b" . #'dot-emacs:terminal)
 	("E" . #'dot-emacs:etags)))
+
+(use-package setup/emacs/tabs
+  :bind 
+  (:map centaur-tabs-mode-map
+	("<S-left>" . #'centaur-tabs-backward)
+	("<S-right>". #'centaur-tabs-forward)
+	("<S-up>"   . #'dot-emacs::centaur-tabs-show-groups)
+	("<S-down>" . #'dot-emacs::centaur-tabs-hide-groups)))
+
+(use-package ffap
+  :bind
+  (("C-<f12>" . #'find-file-at-point)))
+
+(use-package grep
+  :bind
+  (("C-S-<f12>" . #'find-grep)))
 
 (provide 'setup/emacs/bindings)

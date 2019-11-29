@@ -1,11 +1,9 @@
-
-(use-package startup
-  :init (provide 'startup)
+(use-package startup :init (provide 'startup)
   :custom
   (inhibit-startup-buffer-menu t)
   (inhibit-startup-echo-area-message "")
   (inhibit-startup-screen t)
-  (initial-buffer-choice (lambda () (shell) (delete-other-windows)))
+  (initial-buffer-choice (lambda () (prog1 (shell) (delete-other-windows))))
   (initial-scratch-message nil)
   )
 
@@ -26,38 +24,46 @@
 			     ("JST-9" "Tokyo")
 			     ("CST-8" "BeiJing")))
   (display-time-world-time-format "%A %B %d %T %Z")
-  (display-time-world-timer-second 1)
-  )
+  (display-time-world-timer-second 1))
 
 (use-package image-file
   :custom
-  (auto-image-file-mode t)
-  )
+  (auto-image-file-mode t))
 
 (use-package files
   :custom
-  (backup-directory-alist `(("." . ,(expand-file-name "~/.emacs.d/.backup/"))))
-  (auto-save-file-name-transforms '(("." "~/.emacs.d/.auto-save/")))
-  :hook ((before-save . #'copyright-update)
-	 (before-save . #'time-stamp)))
+  (make-backup-files nil)
+  (auto-save-default nil)
+  :hook 
+  ((before-save . #'copyright-update)
+   (before-save . #'time-stamp)))
+
+(use-package ido
+  :config 
+  (ido-mode 1))
 
 (use-package simple
   :custom 
   (mark-ring-max 1024)
-  (global-mark-ring-max 1024)
-  )
+  (global-mark-ring-max 1024))
+
+(use-package window :init (provide 'window)
+  :config
+  (advice-add 'quit-window :around
+	      (lambda (orig-func &rest args)
+		"Forcibly kill the buffer and window."
+		(interactive "P")
+		(apply orig-func t (rest args)))))
 
 (use-package session
   :config 
-  (session-initialize)
-  )
+  (session-initialize))
 
 (use-package pack-windows)
 
 (use-package scroll-bar
   :custom
-  (scroll-bar-mode nil)
-  )
+  (scroll-bar-mode nil))
 
 (tool-bar-mode 0)
 (menu-bar-mode 0)
