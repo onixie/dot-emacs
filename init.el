@@ -36,6 +36,7 @@
 ;; (require 'setup/lang/sh)
 ;; (require 'setup/lang/typescript)
 ;; (require 'setup/lang/python)
+(require 'setup/lang/r)
 
 (require 'setup/app/org)
 (require 'setup/app/git)
@@ -43,7 +44,7 @@
 (require 'setup/app/docker)
 (require 'setup/app/gnuplot)
 (require 'setup/app/irc)
-;; (require 'setup/app/ess)
+
 ;; ;(require 'setup/flim)
 
 ;; (require 'tab-display)
