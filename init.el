@@ -24,8 +24,8 @@
 (require 'setup/emacs/calendar)
 (require 'setup/emacs/bindings)
 
-;; (require 'setup/lang/base)
-;; (require 'setup/lang/asm)
+(require 'setup/lang/common)
+(require 'setup/lang/asm)
 ;; (require 'setup/lang/c)
 ;; (require 'setup/lang/csharp)
 ;; (require 'setup/lang/haskell)
@@ -45,7 +45,7 @@
 (require 'setup/app/gnuplot)
 (require 'setup/app/irc)
 
-;; ;(require 'setup/flim)
+;; (require 'setup/flim)
 
 ;; (require 'tab-display)
 ;; (require 'weekly-view)
