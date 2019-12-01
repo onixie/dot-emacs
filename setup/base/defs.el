@@ -252,4 +252,9 @@ Version 2016-04-04"
   (interactive)
   (calendar-exit t))
 
+(defun dot-emacs::org-summary-todo (n-done n-not-done)
+   "Switch entry to DONE when all subentries are done, to TODO otherwise."
+   (let (org-log-done org-log-states)   ; turn off logging
+     (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+
 (provide 'setup/base/defs)
