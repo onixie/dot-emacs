@@ -25,7 +25,6 @@
 (require 'setup/emacs/bindings)
 
 (require 'setup/lang/common)
-(require 'setup/lang/asm)
 ;; (require 'setup/lang/c)
 ;; (require 'setup/lang/csharp)
 ;; (require 'setup/lang/haskell)
@@ -33,7 +32,6 @@
 ;; (require 'setup/lang/lisp)
 ;; (require 'setup/lang/markup)
 ;; (require 'setup/lang/nix)
-;; (require 'setup/lang/sh)
 ;; (require 'setup/lang/typescript)
 ;; (require 'setup/lang/python)
 (require 'setup/lang/r)
