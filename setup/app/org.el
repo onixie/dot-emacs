@@ -1,4 +1,3 @@
-
 (use-package org :ensure t :after session
   :config
 
@@ -25,8 +24,8 @@
 	org-structure-template-alist)
 
   :hook
-  ((org-babel-after-execute   . #'org-redisplay-inline-images)
-   (org-after-todo-statistics . #'dot-emacs::org-summary-todo))
+  ((org-babel-after-execute   . org-redisplay-inline-images)
+   (org-after-todo-statistics . dot-emacs::org-summary-todo))
   :custom
   (org-confirm-babel-evaluate nil)
   (org-hide-leading-stars nil)

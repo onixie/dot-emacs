@@ -37,8 +37,8 @@
   (make-backup-files nil)
   (auto-save-default nil)
   :hook 
-  ((before-save . #'copyright-update)
-   (before-save . #'time-stamp)))
+  ((before-save . copyright-update)
+   (before-save . time-stamp)))
 
 (use-package ido
   :config 

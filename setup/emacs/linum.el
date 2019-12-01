@@ -6,7 +6,7 @@
   (dolist (name (list "*scratch*" "*Messages*"))
     (with-current-buffer name (linum-on)))
 
-  :hook ((prog-mode message-buffer-mode) . #'linum-mode))
+  :hook ((prog-mode message-buffer-mode) . linum-mode))
 
 (provide 'setup/emacs/linum)
 
