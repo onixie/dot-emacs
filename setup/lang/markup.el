@@ -1,11 +1,10 @@
-(package-install 'yaml-mode)
-(require 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
-(add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
+(use-package yaml-mode :ensure t
+  :mode ("\\.yml\\'" "\\.yaml\\'"))
 
-(package-install 'markdown-mode)
-(package-install 'markdown-mode+)
+(use-package markdown-mode :ensure t
+  :init (use-package markdown-mode+ :ensure t)
+  :mode ("\\.markdown\\'" "\\.mdown\\'" "\\.mkdn\\'" "\\.mkd\\'" "\\.md\\'"))
 
-(package-install 'systemd)
+(use-package systemd :ensure t)
 
 (provide 'setup/lang/markup)

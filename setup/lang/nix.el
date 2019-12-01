@@ -1,3 +1,4 @@
-(package-install 'nix-mode)
+(use-package nix-mode :ensure t
+  :mode "\\.nix\\'")
 
 (provide 'setup/lang/nix)
