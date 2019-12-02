@@ -15,6 +15,7 @@
 (use-package company :ensure t
   :custom
   (global-company-mode t)
+  (company-idle-delay 0)
   :bind 
   (:map company-active-map
 	("C-n" . #'company-select-next)
