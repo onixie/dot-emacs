@@ -1,34 +1,29 @@
-(package-install 'omnisharp)
-(require 'omnisharp)
+(use-package omnisharp :ensure t
+  :config
+  (omnisharp--install-server nil t)
+  :hook
+  ((csharp-mode . omnisharp-mode)
+   (csharp-mode . flycheck-mode)
+   (csharp-mode
+    . (lambda ()
+	(setq indent-tabs-mode nil
+	      c-syntactic-indentation t
+	      c-basic-offset 4
+	      truncate-lines t
+	      tab-width 4)
 
-(eval-after-load
-    'company
-  '(add-to-list 'company-backends #'company-omnisharp))
+	(c-set-style "ellemtel")
 
-(defun dot-emacs::setup-csharp-mode ()
-  (omnisharp-mode)
-  (company-mode)
-  (flycheck-mode)
-
-  (setq indent-tabs-mode nil
-        c-syntactic-indentation t
-	c-basic-offset 4
-	truncate-lines t
-	tab-width 4)
-
-  (c-set-style "ellemtel")
-
-  ;; csharp-mode README.md recommends this too
-  (if (>= emacs-major-version 25)
-      (electric-pair-local-mode 1)
-    (electric-pair-mode 1))
-
-  (local-set-key (kbd "C-c r r") #'omnisharp-run-code-action-refactoring)
-  (local-set-key (kbd "C-c C-c") #'recompile)
-  (local-set-key (kbd "M-.") #'omnisharp-go-to-definition))
-
-(add-hook 'csharp-mode-hook #'dot-emacs::setup-csharp-mode t)
-
-(omnisharp--install-server nil t)
+	;; csharp-mode README.md recommends this too
+	(if (>= emacs-major-version 25)
+	    (electric-pair-local-mode 1)
+	  (electric-pair-mode 1))
+	
+	(add-to-list 'company-backends #'company-omnisharp))))
+  :bind
+  (:map csharp-mode-map
+	("C-c r r" . omnisharp-run-code-action-refactoring)
+	("C-c C-c" . recompile)
+	("M-." . omnisharp-go-to-definition)))
 
 (provide 'setup/lang/csharp)

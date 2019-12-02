@@ -26,7 +26,7 @@
 
 (require 'setup/lang/common)
 ;; (require 'setup/lang/c)
-;; (require 'setup/lang/csharp)
+(require 'setup/lang/csharp)
 (require 'setup/lang/haskell)
 ;; (require 'setup/lang/java)
 ;; (require 'setup/lang/lisp)
