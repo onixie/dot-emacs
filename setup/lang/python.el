@@ -1,15 +1,15 @@
-(use-package jedi :ensure t
+(use-package jedi-core :ensure t
   :config 
   (jedi:install-server)
   :custom
-  (jedi:complete-on-dot t) ;; optional  
+  (jedi:complete-on-dot t)
+  (jedi:use-shortcuts t)
   :hook
-  ((python-mode . jedi:setup)))
+  (python-mode . jedi:setup))
 
 (use-package company-jedi :ensure t
-  :requires (company jedi)
   :hook
-  ((python-mode . (lambda () (add-to-list 'company-backends #'company-jedi)))))
+  (python-mode . (lambda () (add-to-list 'company-backends #'company-jedi))))
 
 (use-package flycheck-pycheckers :ensure t
   :requires flycheck
