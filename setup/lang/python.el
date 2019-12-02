@@ -1,3 +1,7 @@
+(use-package python
+  :hook
+  (inferior-python-mode . dot-emacs::kill-buffer-and-window-on-process-die))
+
 (use-package jedi-core :ensure t
   :config 
   (jedi:install-server)
