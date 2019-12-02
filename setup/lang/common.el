@@ -42,7 +42,9 @@
 (use-package company-lsp :ensure t
   :commands company-lsp)
 
-(use-package dap-mode
-  :ensure t)
+(use-package dap-mode :ensure t
+  :config
+  (dap-mode t)
+  (dap-ui-mode t))
 
 (provide 'setup/lang/common)

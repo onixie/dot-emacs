@@ -1,16 +1,10 @@
+(use-package lsp-java :ensure t
+  :config
+  (add-hook 'lsp-mode-hook #'lsp-lens-mode)
+  :hook
+  ((java-mode . lsp)
+   (java-mode . lsp-java-boot-lens-mode)))
 
-(package-install 'lsp-java)
-(require 'lsp)
-(require 'lsp-java)
-(require 'lsp-java-boot)
-
-(add-hook 'java-mode-hook #'lsp)
-;(add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
-;(add-hook 'lsp-mode-hook #'lsp-lens-mode)
-
-(package-install 'dap-mode)
-(require 'dap-mode)
-(require 'dap-java)
-(dap-ui-mode 1)
+(use-package dap-java)
 
 (provide 'setup/lang/java)
