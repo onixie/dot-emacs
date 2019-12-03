@@ -1,4 +1,4 @@
-(use-package centaur-tabs
+(use-package centaur-tabs :ensure t
   :requires setup/base/defs
   :config
   (setq centaur-tabs-style "wave"
