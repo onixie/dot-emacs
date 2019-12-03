@@ -20,6 +20,7 @@
   (:map csharp-mode-map
         ("C-c r r" . omnisharp-run-code-action-refactoring)
         ("C-c C-c" . recompile)
+        ("C-." . omnisharp-find-implementations)
         ("M-." . omnisharp-go-to-definition)))
 
 (provide 'setup/lang/csharp)

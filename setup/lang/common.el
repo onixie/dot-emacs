@@ -32,7 +32,9 @@
 
 (use-package lsp-mode :ensure t :commands lsp
   :custom
-  (lsp-prefer-flymake nil))
+  (lsp-prefer-flymake nil)
+  :hook
+  ((lsp-mode . lsp-lens-mode)))
 
 (use-package lsp-ui :ensure t :commands lsp-ui-mode
   :config

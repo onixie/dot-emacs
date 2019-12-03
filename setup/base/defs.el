@@ -248,6 +248,8 @@ Version 2016-04-04"
      (string-prefix-p "*omnisharp" name t)
      (string-prefix-p "*lsp" name t)
      (string-prefix-p "*hie" name t)
+     (string-prefix-p "*jdtls" name t)
+     (string-prefix-p "*tcp-server-boot-ls" name t)
      (string-prefix-p "OmniServer" name t)
      (string-prefix-p "magit: " name t)
      (string-suffix-p "log*" name t)
