@@ -10,6 +10,8 @@
 
 (use-package projectile :ensure t)
 
+(use-package treemacs :ensure t :commands treemacs)
+
 (use-package paredit :ensure t)
 
 (use-package yasnippet :ensure t
