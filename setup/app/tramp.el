@@ -1,6 +1,6 @@
 
 (use-package tramp
-	     :config 
+	     :config
 	     (setq tramp-smb-conf nil)
 
 	     (add-to-list 'tramp-methods

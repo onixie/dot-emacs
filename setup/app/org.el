@@ -2,20 +2,20 @@
   :config
 
   (use-package org-beautify-theme :ensure t
-    :config 
+    :config
     (load-theme 'org-beautify t)
     (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
     )
 
   (use-package setup/base/defs
-    :config 
+    :config
     (org-link-set-parameters "shell" :follow #'dot-emacs::open-shell)
     (org-link-set-parameters "exec" :follow #'org--open-shell-link))
 
   ;; After org v8, docbook is not included anymore. Use ox-textinfo instead
   (use-package org-docbook
     :if (< (string-to-number (first (split-string org-version "\\."))) 8)
-    :custom 
+    :custom
     (org-export-docbook-xsl-fo-proc-command "fop %s %s")
     (org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s"))
 
@@ -46,10 +46,10 @@
 
 
 (defmacro org-| (&rest args &key path)
-  (cl-flet ((tf (form) 
-		(list* (first form) 
-		       (loop for k in (cdr form) by #'cddr 
-			     for v in (cddr form) by #'cddr 
+  (cl-flet ((tf (form)
+		(list* (first form)
+		       (loop for k in (cdr form) by #'cddr
+			     for v in (cddr form) by #'cddr
 			     collect (list (intern (substring (prin1-to-string k) 1))
 					   (if (stringp v) (prin1-to-string v) v))))))
     (let ((karg (if (keywordp (car (last args 2)))
@@ -61,7 +61,7 @@
       `(concat "/"
 	       (format ,(substring (loop repeat (length args) concat "%s|") 0 -1)
 		       ,@(mapcar (lambda (arg)
-				   `(let ((ref (string-trim 
+				   `(let ((ref (string-trim
 						,(cond ((symbolp arg) `(org-babel-ref-resolve ,(prin1-to-string arg)))
 						       ((stringp arg) arg)
 						       ((consp arg) `(org-sbe ,@(tf arg)))

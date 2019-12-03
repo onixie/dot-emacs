@@ -8,9 +8,23 @@
                             truncate-lines t
                             show-trailing-whitespace t)))))
 
-(use-package projectile :ensure t)
+(use-package projectile :ensure t
+  :bind
+  (:map projectile-mode-map
+        ("s-p"   . projectile-command-map)
+        ("C-c p" . projectile-command-map)))
 
-(use-package treemacs :ensure t :commands treemacs)
+(use-package treemacs :ensure t :commands treemacs
+  :bind
+  (:map treemacs-mode-map
+        ([mouse-1] . treemacs-single-click-expand-action)))
+
+(use-package treemacs-projectile :ensure t :after treemacs projectile)
+
+(use-package treemacs-icons-dired :ensure t :after treemacs dired
+  :config (treemacs-icons-dired-mode))
+
+(use-package treemacs-magit :ensure t :after treemacs magit)
 
 (use-package paredit :ensure t)
 
