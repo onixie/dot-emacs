@@ -7,6 +7,10 @@
     (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
     )
 
+  (use-package org-bullets :ensure t
+    :hook
+    ((org-mode . (lambda () (org-bullets-mode 1)))))
+
   (use-package setup/base/defs
     :config
     (org-link-set-parameters "shell" :follow #'dot-emacs::open-shell)
