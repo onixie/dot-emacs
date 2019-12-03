@@ -1,5 +1,13 @@
+(defun dot-emacs::haskell-process-nix-wrapper (argv)
+  (let ((root (lsp-haskell--get-root)))
+    (list "nix-shell" "-I" "."
+          "--argstr" "projectRoot" root
+          "--command" (mapconcat #'identity argv " ")
+          root)))
+
 (use-package haskell-mode :ensure t
   :custom
+  (haskell-process-wrapper-function #'dot-emacs::haskell-process-nix-wrapper)
   (haskell-process-type 'cabal-new-repl)
   (haskell-process-suggest-remove-import-lines t)
   (haskell-process-auto-import-loaded-modules t)
@@ -12,13 +20,7 @@
 
 (use-package lsp-haskell :ensure t
   :custom
-  (lsp-haskell-process-wrapper-function
-   (lambda (argv)
-     (let ((root (lsp-haskell--get-root)))
-       (list "nix-shell" "-I" "."
-             "--argstr" "projectRoot" root
-             "--command" (mapconcat #'identity argv " ")
-             root))))
+  (lsp-haskell-process-wrapper-function #'dot-emacs::haskell-process-nix-wrapper)
   :bind
   (:map interactive-haskell-mode-map
         ("M-." . lsp-find-definition))
