@@ -1,9 +1,11 @@
 (use-package python
+  :custom
+  (python-indent-offset 4)
   :hook
   (inferior-python-mode . dot-emacs::kill-buffer-and-window-on-process-die))
 
 (use-package jedi-core :ensure t
-  :config 
+  :config
   (jedi:install-server)
   :custom
   (jedi:complete-on-dot t)
@@ -11,12 +13,11 @@
   :hook
   (python-mode . jedi:setup))
 
-(use-package company-jedi :ensure t
+(use-package company-jedi :ensure t :after company
   :hook
   (python-mode . (lambda () (add-to-list 'company-backends #'company-jedi))))
 
-(use-package flycheck-pycheckers :ensure t
-  :requires flycheck
+(use-package flycheck-pycheckers :ensure t :after flycheck
   :hook
   ((python-mode . flycheck-mode)))
 

@@ -11,8 +11,8 @@
 (use-package time
   :custom
   (display-time-mode t)
-  (display-time-default-load-average nil) 
-  (display-time-mail-function nil) 
+  (display-time-default-load-average nil)
+  (display-time-mail-function nil)
   (display-time-24hr-format t)
   (display-time-day-and-date t)
   (display-time-format "%a %b %d %T %j")
@@ -36,16 +36,16 @@
   (backup-inhibited t)
   (make-backup-files nil)
   (auto-save-default nil)
-  :hook 
+  :hook
   ((before-save . copyright-update)
    (before-save . time-stamp)))
 
 (use-package ido
-  :config 
+  :config
   (ido-mode 1))
 
 (use-package simple
-  :custom 
+  :custom
   (mark-ring-max 1024)
   (global-mark-ring-max 1024))
 
@@ -58,7 +58,7 @@
 		(apply orig-func t (rest args)))))
 
 (use-package session
-  :config 
+  :config
   (session-initialize))
 
 (use-package pack-windows)

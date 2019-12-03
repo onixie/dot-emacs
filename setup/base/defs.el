@@ -25,12 +25,12 @@
   (insert ?\xC)
   (next-line))
 
-(defun dot-emacs::kill-buffer-and-window-on (match-regex) 
+(defun dot-emacs::kill-buffer-and-window-on (match-regex)
   (lambda ()
     (let ((process (get-buffer-process (current-buffer))))
       (when (processp process)
         (set-process-query-on-exit-flag process nil)
-        (set-process-sentinel process 
+        (set-process-sentinel process
                               (lambda (proc change)
                                 (when (string-match match-regex change)
                                   (ignore-errors
@@ -44,18 +44,18 @@
 
 (defun dot-emacs::open-shell (path)
   (cl-labels ((calc-buffer-name (path)
-				(let ((name system-name)
-				      (pos 0))
-				  (block nil
-				    (while (or (string-match ":\\([^:|/]+\\)\\(?:[:]\\)" path pos)
-					       (return name))
-				      (setq name (match-string 1 path)
-					    pos (match-end 0)))))))
+                                (let ((name system-name)
+                                      (pos 0))
+                                  (block nil
+                                    (while (or (string-match ":\\([^:|/]+\\)\\(?:[:]\\)" path pos)
+                                               (return name))
+                                      (setq name (match-string 1 path)
+                                            pos (match-end 0)))))))
     (let ((buffer (generate-new-buffer (calc-buffer-name path))))
-      (setf (buffer-local-value 'default-directory buffer) 
-	    (if (string-suffix-p ":" path) 
-		(concat path "/") ;Workaround for tramp hang issue
-	      path))
+      (setf (buffer-local-value 'default-directory buffer)
+            (if (string-suffix-p ":" path)
+                (concat path "/") ;Workaround for tramp hang issue
+              path))
       (shell buffer))))
 
 (defun dot-emacs::remove-scheme (uri)
@@ -66,9 +66,9 @@
   (load "~/.emacs.d/last-refreshed-time.el" t)
   (print dot-emacs::last-refreshed-time)
   (unless (and dot-emacs::last-refreshed-time
-	       interval
-	       (time-less-p (time-subtract (current-time) dot-emacs::last-refreshed-time)
-			    (seconds-to-time interval)))
+               interval
+               (time-less-p (time-subtract (current-time) dot-emacs::last-refreshed-time)
+                            (seconds-to-time interval)))
     (apply func args)
     (write-region (format "(setq dot-emacs::last-refreshed-time '%s)" (current-time)) nil "~/.emacs.d/last-refreshed-time.el") t))
 
@@ -95,15 +95,15 @@
 
 (defun dot-emacs::project-try-find (identifiers)
   (cl-labels ((parent-directory (path)
-				(let ((parent (file-name-directory (directory-file-name path))))
-				  (unless (string-equal path parent)
-				    parent)))
-	      (find-project (path)
-			    (when path
-			      (if (cl-intersection (directory-files path) identifiers :test #'string-equal)
-				  (cons 'transient path)
-				(find-project (parent-directory path))))
-			    ))
+                                (let ((parent (file-name-directory (directory-file-name path))))
+                                  (unless (string-equal path parent)
+                                    parent)))
+              (find-project (path)
+                            (when path
+                              (if (cl-intersection (directory-files path) identifiers :test #'string-equal)
+                                  (cons 'transient path)
+                                (find-project (parent-directory path))))
+                            ))
     #'find-project))
 
 (defun dot-emacs::xah-pop-local-mark-ring ()
@@ -171,7 +171,7 @@ Version 2016-04-04"
 
 (defun dot-emacs:toggle-wrap-line ()
   (interactive)
-  (when visual-line-mode 
+  (when visual-line-mode
     (visual-line-mode 0))
   (setq word-wrap nil)
   (if truncate-lines
@@ -200,13 +200,13 @@ Version 2016-04-04"
   (interactive)
   (shell-command "find ./ -type f -name '*' -print0 | xargs --null etags -R" "*Messages*" "*Messages*"))
 
-(defun dot-emacs::linum-update-window+ (win) 
+(defun dot-emacs::linum-update-window+ (win)
   ;; Adjust window margin with regards to scaled text
   (when (and (bound-and-true-p linum-mode) linum-overlays)
     (let* ((overlay (overlay-properties (car linum-overlays)))
-	   (num-str (or (plist-get overlay 'linum-str) ""))
-	   (pad-str (or (plist-get overlay 'before-string) ""))
-	   (width (+ (length num-str) (length pad-str))))
+           (num-str (or (plist-get overlay 'linum-str) ""))
+           (pad-str (or (plist-get overlay 'before-string) ""))
+           (width (+ (length num-str) (length pad-str))))
       (set-window-margins win (ceiling (/ (* width (default-font-width)) (frame-char-width))))
       (set-window-parameter win 'linum--set-margins (window-margins win)))))
 
@@ -238,16 +238,21 @@ Version 2016-04-04"
      (string-prefix-p "*Packages" name t)
      (string-prefix-p "*debug" name t)
      (string-prefix-p "*trace" name t)
-     (string-prefix-p "magit: " name t)
+     (string-prefix-p "*tramp" name t)
+     (string-prefix-p "*xref" name t)
      (string-prefix-p "*Completions" name t)
      (string-prefix-p "*Calendar" name t)
+     (string-prefix-p "*Compile-Log*" name t)
      (string-prefix-p "*Buffer List*" name t)
-     (string-prefix-p "OmniServer" name t)
+     (string-prefix-p "*Backtrace*" name t)
      (string-prefix-p "*omnisharp" name t)
+     (string-prefix-p "*lsp" name t)
+     (string-prefix-p "*hie" name t)
+     (string-prefix-p "OmniServer" name t)
+     (string-prefix-p "magit: " name t)
+     (string-suffix-p "log*" name t)
+     (string-suffix-p "Output*" name t)
      ;; (string-prefix-p "*helm" name t)
-     ;; (string-prefix-p "*Compile-Log*" name t)
-     ;; (string-prefix-p "*lsp" name t)
-     ;; (string-prefix-p "*tramp" name t)
      (apply orig-fun args)
      )))
 
@@ -256,8 +261,8 @@ Version 2016-04-04"
   (calendar-exit t))
 
 (defun dot-emacs::org-summary-todo (n-done n-not-done)
-   "Switch entry to DONE when all subentries are done, to TODO otherwise."
-   (let (org-log-done org-log-states)   ; turn off logging
-     (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done org-log-states)   ; turn off logging
+    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
 (provide 'setup/base/defs)
