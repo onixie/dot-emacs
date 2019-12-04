@@ -8,7 +8,7 @@
                          ("marmalade" . "http://marmalade-repo.org/packages/")
                          ("melpa" . "http://melpa.org/packages/")))
 
-(when (< emacs-major-version 27) 
+(when (< emacs-major-version 27)
   (package-initialize))
 
 (dot-emacs::funcall-after dot-emacs:package-refresh-interval #'package-refresh-contents)

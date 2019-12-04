@@ -114,64 +114,34 @@ Version 2016-04-04"
   (interactive)
   (set-mark-command t))
 
-(defun dot-emacs::powerline-center-minions-layout ()
+(defun dot-emacs::sml/center-minions-mode-line ()
   "Setup a mode-line with major and minor modes centered."
   (interactive)
   (setq-default mode-line-format
                 '("%e"
                   (:eval
-                   (let* ((active (powerline-selected-window-active))
-                          (mode-line-buffer-id (if active 'mode-line-buffer-id 'mode-line-buffer-id-inactive))
-                          (mode-line (if active 'mode-line 'mode-line-inactive))
-                          (face0 (if active 'powerline-active0 'powerline-inactive0))
-                          (face1 (if active 'powerline-active1 'powerline-inactive1))
-                          (face2 (if active 'powerline-active2 'powerline-inactive2))
-                          (separator-left (intern (format "powerline-%s-%s"
-                                                          (powerline-current-separator)
-                                                          (car powerline-default-separator-dir))))
-                          (separator-right (intern (format "powerline-%s-%s"
-                                                           (powerline-current-separator)
-                                                           (cdr powerline-default-separator-dir))))
-                          (lhs (list
-                                (if (buffer-modified-p)
-                                    (powerline-raw "%*" 'sml/modified 'l)
-                                  (powerline-raw "%*" 'sml/not-modified 'l))
-                                sml/buffer-identification
-                                vc-mode
-                                (when (window-full-width-p)
-                                  (powerline-narrow face2 'l))))
-                          (rhs (list
-                                (funcall separator-right face2 face1)
-                                (powerline-raw " " face1)
-                                (powerline-raw "%l" face1 'r)
-                                (powerline-raw ":" face1 'r)
-                                (powerline-raw "%c" face1 'r)
-                                (funcall separator-right face1 face0)
-                                (powerline-raw " " face0)
-                                (powerline-raw "%p" face0 'r)
-                                (when powerline-display-buffer-size
-                                  (powerline-buffer-size face0 'r))
-                                (when (window-full-width-p)
-                                  (powerline-raw global-mode-string face2 'r))
-                                (when (bound-and-true-p scroll-bar-mode)
-                                  (powerline-fill face0 0))))
-                          (center (list (powerline-raw " " face1)
-                                        (funcall separator-left face1 face2)
-                                        (when (and (boundp 'erc-track-minor-mode) erc-track-minor-mode)
-                                          (powerline-raw erc-modified-channels-object face2 'l))
-                                        (if (bound-and-true-p minions-mode)
-                                            (powerline-raw minions-mode-line-modes face2)
-                                          (powerline-major-mode face2 'l)
-                                          (powerline-process face2)
-                                          (powerline-raw " :" face2)
-                                          (powerline-minor-modes face2 'l)
-                                          (powerline-raw " " face2))
-                                        (funcall separator-right face2 face1))))
+                   (let* ((lhs (list (format-mode-line (list
+                                "%I " "%p" "%% "
+                                mode-line-front-space
+                                ;; (when powerline-display-buffer-size
+                                ;;    (powerline-buffer-size 'powerline-active1))
+                                mode-line-mule-info
+                                mode-line-client
+                                mode-line-modified
+                                mode-line-remote
+                                mode-line-frame-identification
+                                mode-line-buffer-identification
+                                vc-mode))))
+                          (rhs (list (format-mode-line (list
+                                mode-line-misc-info
+                                mode-line-end-spaces))))
+                          (center (list (format-mode-line minions-mode-line-modes))))
                      (concat (powerline-render lhs)
-                             (powerline-fill-center face1 (/ (powerline-width center) 2.0))
+                             (powerline-fill-center 'powerline-active1 (/ (powerline-width center) 2.0))
                              (powerline-render center)
-                             (powerline-fill face1 (powerline-width rhs))
-                             (powerline-render rhs)))))))
+                             (powerline-fill 'powerline-active1 (powerline-width rhs))
+                             (powerline-render rhs)
+                             ))))))
 
 (defun dot-emacs:toggle-wrap-line ()
   (interactive)

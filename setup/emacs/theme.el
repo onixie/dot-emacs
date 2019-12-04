@@ -9,7 +9,7 @@
 (use-package smart-mode-line :ensure t :after powerline minions
   :config
   (sml/setup)
-  (dot-emacs::powerline-center-minions-layout)
+  (dot-emacs::sml/center-minions-mode-line)
   :custom
   (sml/no-confirm-load-theme t)
   (sml/vc-mode-show-backend t))
