@@ -114,7 +114,7 @@ Version 2016-04-04"
   (interactive)
   (set-mark-command t))
 
-(defun dot-emacs::powerline-center-minions-theme ()
+(defun dot-emacs::powerline-center-minions-layout ()
   "Setup a mode-line with major and minor modes centered."
   (interactive)
   (setq-default mode-line-format
@@ -132,25 +132,29 @@ Version 2016-04-04"
                           (separator-right (intern (format "powerline-%s-%s"
                                                            (powerline-current-separator)
                                                            (cdr powerline-default-separator-dir))))
-                          (lhs (list (powerline-raw "%*" face0 'l)
-                                     (when powerline-display-buffer-size
-                                       (powerline-buffer-size face0 'l))
-                                     (powerline-buffer-id `(mode-line-buffer-id ,face0) 'l)
-                                     (powerline-raw " " face0)
-                                     (funcall separator-left face0 face1)
-                                     (powerline-narrow face1 'l)
-                                     (powerline-vc face1)))
-                          (rhs (list (when (window-full-width-p)
-                                       (powerline-raw global-mode-string face1 'r))
-                                     (powerline-raw "%4l" face1 'r)
-                                     (powerline-raw ":" face1)
-                                     (powerline-raw "%3c" face1 'r)
-                                     (funcall separator-right face1 face0)
-                                     (powerline-raw " " face0)
-                                     (powerline-raw "%6p" face0 'r)
-                                     (when powerline-display-hud
-                                       (powerline-hud face2 face1))
-                                     (powerline-fill face0 0)))
+                          (lhs (list
+                                (if (buffer-modified-p)
+                                    (powerline-raw "%*" 'sml/modified 'l)
+                                  (powerline-raw "%*" 'sml/not-modified 'l))
+                                (powerline-buffer-id face0)
+                                (powerline-vc face1)
+                                (when (window-full-width-p)
+                                  (powerline-narrow face2 'l))))
+                          (rhs (list
+                                (funcall separator-right face2 face1)
+                                (powerline-raw " " face1)
+                                (powerline-raw "%l" face1 'r)
+                                (powerline-raw ":" face1 'r)
+                                (powerline-raw "%c" face1 'r)
+                                (funcall separator-right face1 face0)
+                                (powerline-raw " " face0)
+                                (powerline-raw "%p" face0 'r)
+                                (when powerline-display-buffer-size
+                                  (powerline-buffer-size face0 'r))
+                                (when (window-full-width-p)
+                                  (powerline-raw global-mode-string face2 'r))
+                                (when (bound-and-true-p scroll-bar-mode)
+                                  (powerline-fill face0 0))))
                           (center (list (powerline-raw " " face1)
                                         (funcall separator-left face1 face2)
                                         (when (and (boundp 'erc-track-minor-mode) erc-track-minor-mode)

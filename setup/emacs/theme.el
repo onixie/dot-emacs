@@ -1,21 +1,22 @@
-
 (use-package atom-one-dark-theme :ensure t
   :config (load-theme 'atom-one-dark t))
 
 (use-package minions :ensure t
   :config (minions-mode))
 
-(use-package smart-mode-line :ensure t
+(use-package powerline :ensure t)
+
+(use-package smart-mode-line :ensure t :after powerline minions
   :config
   (sml/setup)
+  (dot-emacs::powerline-center-minions-layout)
   :custom
-  (sml/no-confirm-load-theme t))
+  (sml/no-confirm-load-theme t)
+  (sml/vc-mode-show-backend t))
 
-(use-package smart-mode-line-powerline-theme :ensure t
-  :requires (smart-mode-line minions)
-  :config
-  (dot-emacs::powerline-center-minions-theme)
-  )
+(use-package smart-mode-line-atom-one-dark-theme :ensure t :after smart-mode-line
+  :custom
+  (sml/theme 'atom-one-dark))
 
 (use-package rainbow-delimiters :ensure t
   :config
@@ -123,7 +124,7 @@
 (when (< emacs-major-version 27)
   (use-package highlight-current-line :ensure t
     :config
-    (face-spec-set 'highlight-current-line-face '((t (:background "gray10"))))
+    (face-spec-set 'highlight-current-line-face '((t (:background "gray25"))))
     :custom
     (highlight-current-line-globally t)))
 
