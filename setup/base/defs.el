@@ -136,7 +136,7 @@ Version 2016-04-04"
                                 (if (buffer-modified-p)
                                     (powerline-raw "%*" 'sml/modified 'l)
                                   (powerline-raw "%*" 'sml/not-modified 'l))
-                                (powerline-buffer-id face0)
+                                sml/buffer-identification
                                 vc-mode
                                 (when (window-full-width-p)
                                   (powerline-narrow face2 'l))))
