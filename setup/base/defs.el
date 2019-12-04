@@ -137,7 +137,7 @@ Version 2016-04-04"
                                     (powerline-raw "%*" 'sml/modified 'l)
                                   (powerline-raw "%*" 'sml/not-modified 'l))
                                 (powerline-buffer-id face0)
-                                (powerline-vc face1)
+                                vc-mode
                                 (when (window-full-width-p)
                                   (powerline-narrow face2 'l))))
                           (rhs (list
