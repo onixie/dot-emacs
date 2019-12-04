@@ -9,6 +9,8 @@
                             show-trailing-whitespace t)))))
 
 (use-package projectile :ensure t
+  :config
+  (projectile-mode t)
   :bind
   (:map projectile-mode-map
         ("s-p"   . projectile-command-map)
@@ -17,7 +19,9 @@
 (use-package treemacs :ensure t :commands treemacs
   :bind
   (:map treemacs-mode-map
-        ([mouse-1] . treemacs-single-click-expand-action)))
+        ([mouse-1] . treemacs-single-click-expand-action)
+   :map easy-window-mode-map
+        ("M-0" . treemacs-select-window)))
 
 (use-package treemacs-projectile :ensure t :after treemacs projectile)
 
