@@ -6,7 +6,7 @@
 
 (use-package jedi-core :ensure t
   :config
-  (jedi:install-server)
+  (unless (jedi:-env-server-command) (jedi:install-server))
   :custom
   (jedi:complete-on-dot t)
   (jedi:use-shortcuts t)
