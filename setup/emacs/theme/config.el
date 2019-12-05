@@ -1,3 +1,4 @@
+
 (use-package atom-one-dark-theme :ensure t
   :config (load-theme 'atom-one-dark t))
 
@@ -140,4 +141,4 @@
   (("C-S-l" . #'dot-emacs:insert-pretty-control-line))
   )
 
-(provide 'setup/emacs/theme)
+(provide 'setup/emacs/theme/config)

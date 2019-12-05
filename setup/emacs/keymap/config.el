@@ -48,4 +48,4 @@
   :bind
   (("C-S-<f12>" . #'find-grep)))
 
-(provide 'setup/emacs/bindings)
+(provide 'setup/emacs/keymap/config)

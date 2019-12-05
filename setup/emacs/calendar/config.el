@@ -10,11 +10,7 @@
 			    (calendar-update-mode-line)
 			    (scroll-down))))
   :config
-  (advice-add 'calendar-exit :around 
-	      (lambda (orig-func &rest args) 
-		"Forcibly kill the buffer and window."
-		(interactive "P")
-		(funcall orig-func t)))
+  (advice-add 'calendar-exit :around #'dot-emacs::calendar-exit+)
 
   (setq calendar-week-start-day 1
 	calendar-mark-diary-entries-flag t
@@ -24,4 +20,4 @@
   :after calendar
   :commands calendar-recalculate-total-monthes)
 
-(provide 'setup/emacs/calendar)
+(provide 'setup/emacs/calendar/config)

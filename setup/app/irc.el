@@ -1,5 +1,4 @@
-
-(use-package erc :ensure t
+(use-package erc :ensure t :commands erc
   :custom
   (erc-autojoin-channels-alist '(("freenode.net" 
 				  "#lisp" 

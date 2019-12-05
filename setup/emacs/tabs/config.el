@@ -16,4 +16,4 @@
 
   (dot-emacs::centaur-tabs-show-groups))
 
-(provide 'setup/emacs/tabs)
+(provide 'setup/emacs/tabs/config)

@@ -8,5 +8,4 @@
 
   :hook ((prog-mode message-buffer-mode) . linum-mode))
 
-(provide 'setup/emacs/linum)
-
+(provide 'setup/emacs/linum/config)

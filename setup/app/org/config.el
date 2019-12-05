@@ -25,7 +25,7 @@
 
   ;; Downcase all templates
   (mapc (lambda (arg) (setcdr arg (list (downcase (cadr arg)))))
-	org-structure-template-alist)
+        org-structure-template-alist)
 
   :hook
   ((org-babel-after-execute   . org-redisplay-inline-images)
@@ -39,42 +39,13 @@
   (org-image-actual-width nil)
   (org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
   (org-babel-load-languages '((emacs-lisp . t)
-			      (shell      . t)
-			      (plantuml   . t)
-			      (gnuplot    . t)
-			      (org        . t)
-			      ))
+                              (shell      . t)
+                              (plantuml   . t)
+                              (gnuplot    . t)
+                              (org        . t)
+                              ))
   (org-todo-keywords '((sequence "TODO" "FEEDBACK" "VERIFY" "|" "DONE" "DELEGATED")
-		       (sequence "|" "|" "CANCELED")
-		       (sequence "计划中" "对应中" "对应完成" "检查中" "检查完成" "|" "取消" "完成"))))
+                       (sequence "|" "|" "CANCELED")
+                       (sequence "计划中" "对应中" "对应完成" "检查中" "检查完成" "|" "取消" "完成"))))
 
-
-(defmacro org-| (&rest args &key path)
-  (cl-flet ((tf (form)
-		(list* (first form)
-		       (loop for k in (cdr form) by #'cddr
-			     for v in (cddr form) by #'cddr
-			     collect (list (intern (substring (prin1-to-string k) 1))
-					   (if (stringp v) (prin1-to-string v) v))))))
-    (let ((karg (if (keywordp (car (last args 2)))
-		    (car (last args 1))
-		  ""))
-	  (args (if (keywordp (car (last args 2)))
-		    (nbutlast args 2)
-		  args)))
-      `(concat "/"
-	       (format ,(substring (loop repeat (length args) concat "%s|") 0 -1)
-		       ,@(mapcar (lambda (arg)
-				   `(let ((ref (string-trim
-						,(cond ((symbolp arg) `(org-babel-ref-resolve ,(prin1-to-string arg)))
-						       ((stringp arg) arg)
-						       ((consp arg) `(org-sbe ,@(tf arg)))
-						       (t (error "argument error"))))))
-				      (string-trim ref "[/]+" "[|:]?")))
-				 args))
-	       ":" ,karg))))
-
-(defun org-/ (ref &rest args)
-  (apply #'concatenate 'string (org-babel-ref-resolve ref) args))
-
-(provide 'setup/app/org)
+(provide 'setup/app/org/config)
