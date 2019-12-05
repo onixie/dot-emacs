@@ -27,7 +27,7 @@
 
 (defmacro org-| (&rest args &key path)
   (cl-flet ((tf (form)
-                (list* (first form)
+                (list* (car form)
                        (loop for k in (cdr form) by #'cddr
                              for v in (cddr form) by #'cddr
                              collect (list (intern (substring (prin1-to-string k) 1))

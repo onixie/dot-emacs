@@ -1,4 +1,4 @@
-(require 'setup/lang/asm)
+;;(require 'setup/lang/asm)
 
 ;;;;;;;;;;;;;;;; CEDET ;;;;;;;;;;;;;;;;
 
@@ -91,13 +91,13 @@
 
 
 (defun kill-c-comment (&optional arg)
-  "Kill C/C++ Comment" 
-  (interactive "p") 
+  "Kill C/C++ Comment"
+  (interactive "p")
   (kmacro-exec-ring-item (quote ("\223//\\|/\\*\273" 0 "%d")) arg))
 
 (defun kill-c-blank-line (&optional arg)
-  "Kill C/C++ Blank Line" 
-  (interactive "p") 
+  "Kill C/C++ Blank Line"
+  (interactive "p")
   (kmacro-exec-ring-item (quote ("\223^[[:space:]]*$" 0 "%d")) arg))
 
 (define-key c-mode-base-map (kbd "C-M-S-c") 'kill-c-comment)
@@ -112,7 +112,7 @@
 (define-key c-mode-base-map (kbd "<f5>") 'gdb)
 (define-key c-mode-base-map (kbd "<f6>") 'compile)
 (define-key c-mode-base-map (kbd "S-<f5>") (lambda ()
-					     (interactive)				     
+					     (interactive)
 					     (mapc 'call-interactively '(gdb gdb-many-windows))))
 (define-key c-mode-base-map (kbd "M-S-<f5>") (lambda ()
 					       (interactive)
@@ -133,7 +133,7 @@
 ;;;;;;;;;;;;;;;; GDB and GUD ;;;;;;;;;;;;;;;;
 (require 'gud)
 
-(defvar gdb-fn-mode-map 
+(defvar gdb-fn-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "<f5>") 'gud-go)
     (define-key map (kbd "<f9>") (lambda () (interactive) (mapc 'call-interactively '(windmove-source-window gud-break))))
@@ -161,7 +161,7 @@
   ;; The minor mode bindings.
   :keymap gdb-fn-mode-map)
 
-(define-globalized-minor-mode global-gdb-fn-mode gdb-fn-mode 
+(define-globalized-minor-mode global-gdb-fn-mode gdb-fn-mode
   (lambda ()
     (gdb-fn-mode 1))
   :require 'gud)
@@ -171,8 +171,8 @@
   (when (string-match "\\(finished\\|exited\\|killed\\)" change)
     (condition-case nil
 	(let ((src-buffer (condition-case nil
-			      (or (and (not (null gdb-many-windows)) 
-				       (not (null gdb-show-main)) 
+			      (or (and (not (null gdb-many-windows))
+				       (not (null gdb-show-main))
 				       (window-buffer gdb-source-window))
 				  (gud-find-file gdb-main-file))
 			    (error "*scratch*"))))
@@ -202,7 +202,7 @@
 (defun kill-gdb-process ()
   "kill gdb process"
   (interactive)
-  (with-current-buffer gud-comint-buffer 
+  (with-current-buffer gud-comint-buffer
     (comint-skip-input))
   (set-process-query-on-exit-flag (get-buffer-process gud-comint-buffer) nil)
   (kill-buffer gud-comint-buffer))
@@ -236,4 +236,3 @@
 (require 'ecb)
 
 (provide 'setup/lang/c)
-

@@ -58,7 +58,7 @@
 		(interactive "P")
 		(apply orig-func t (rest args)))))
 
-(use-package session
+(use-package session :ensure t
   :config
   (session-initialize))
 

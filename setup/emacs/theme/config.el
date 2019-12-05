@@ -91,7 +91,7 @@
                                                                                                       (and (floatp foreground-brightness) foreground-brightness)))
                                                (when height
                                                  (setf (getf face-attr :height) height))
-                                               (list (first spec) face-attr))))
+                                               (list (car spec) face-attr))))
                               (defbody `(,face
                                          ',newspec
                                          ,@restbody))

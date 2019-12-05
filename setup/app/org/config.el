@@ -11,14 +11,13 @@
     :hook
     ((org-mode . (lambda () (org-bullets-mode 1)))))
 
-  (use-package setup/base/defs
-    :config
-    (org-link-set-parameters "shell" :follow #'dot-emacs::open-shell)
-    (org-link-set-parameters "exec" :follow #'org--open-shell-link))
+  ;; Redefine shell link type
+  (org-link-set-parameters "shell" :follow #'dot-emacs::open-shell)
+  (org-link-set-parameters "exec" :follow #'org--open-shell-link)
 
   ;; After org v8, docbook is not included anymore. Use ox-textinfo instead
   (use-package org-docbook
-    :if (< (string-to-number (first (split-string org-version "\\."))) 8)
+    :if (< (string-to-number (car (split-string org-version "\\."))) 8)
     :custom
     (org-export-docbook-xsl-fo-proc-command "fop %s %s")
     (org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s"))

@@ -32,7 +32,7 @@
 	("b" . #'dot-emacs:terminal)
 	("E" . #'dot-emacs:etags)))
 
-(use-package setup/emacs/tabs
+(use-package setup/emacs/tabs/config
   :bind 
   (:map centaur-tabs-mode-map
 	("<S-left>" . #'centaur-tabs-backward)

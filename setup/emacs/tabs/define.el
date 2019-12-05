@@ -23,7 +23,7 @@
      (car (apply orig-fun args))))))
 
 (defun dot-emacs::centaur-tabs-hide-tab (orig-fun &rest args)
-  (let ((name (format "%s" (first args))))
+  (let ((name (format "%s" (car args))))
     (or
      (string-prefix-p "*Packages" name t)
      (string-prefix-p "*debug" name t)

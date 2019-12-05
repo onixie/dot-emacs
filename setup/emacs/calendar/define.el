@@ -4,3 +4,5 @@
   "Forcibly kill the buffer and window."
   (interactive "P")
   (funcall orig-func t))
+
+(provide 'setup/emacs/calendar/define)

@@ -26,7 +26,8 @@
 (use-package treemacs-projectile :ensure t :after treemacs projectile)
 
 (use-package treemacs-icons-dired :ensure t :after treemacs dired
-  :config (treemacs-icons-dired-mode))
+  :config
+  (treemacs-icons-dired-mode))
 
 (use-package treemacs-magit :ensure t :after treemacs magit)
 

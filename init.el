@@ -4,45 +4,43 @@
 ;; Author: Yc.S <onixie@gmail.com>
 ;; Keywords: emacs configuration
 
-(add-to-list 'load-path (file-name-directory (or load-file-name (buffer-file-name))))
-(require 'setup/boot)
+(load-file "setup/boot.el")
 
-(dot-emacs:boot :emacs/proxy
-		:emacs/package
-		:emacs/default
-		:emacs/theme)
-
-;; (require 'setup/emacs/default)
-;; (require 'setup/emacs/theme)
-;; (require 'setup/emacs/tabs)
-;; (require 'setup/emacs/fwb)
-;; (require 'setup/emacs/linum)
-;; (require 'setup/emacs/project)
-;; (require 'setup/emacs/shell)
-;; (require 'setup/emacs/calendar)
-;; (require 'setup/emacs/bindings)
-
-;; (require 'setup/lang/common)
-;; ;; (require 'setup/lang/c)
-;; (require 'setup/lang/csharp)
-;; (require 'setup/lang/haskell)
-;; (require 'setup/lang/java)
-;; ;; (require 'setup/lang/lisp)
-;; (require 'setup/lang/markup)
-;; (require 'setup/lang/nix)
-;; ;; (require 'setup/lang/typescript)
-;; (require 'setup/lang/python)
-;; (require 'setup/lang/r)
-
-;; (require 'setup/app/org)
-;; (require 'setup/app/git)
-;; (require 'setup/app/tramp)
-;; (require 'setup/app/docker)
-;; (require 'setup/app/gnuplot)
-;; (require 'setup/app/irc)
+(dot-emacs:boot
+ ;; Emacs setups
+ :emacs/proxy
+ :emacs/package
+ :emacs/default
+ :emacs/theme
+ :emacs/tabs
+ :emacs/fwb
+ :emacs/linum
+ :emacs/project
+ :emacs/shell
+ :emacs/calendar
+ :emacs/keymap
+ ;; Application setups
+ :app/gnuplot
+ :app/git
+ :app/org
+ :app/irc
+ :app/tramp
+ :app/docker
+ ;; Language setups
+ :lang/common
+ :lang/csharp
+ :lang/java
+ :lang/haskell
+ :lang/python
+ :lang/markup
+ :lang/nix
+ ;;:lang/c
+ :lang/r
+ :lang/typescript
+ :lang/lisp
+ )
 
 ;; (require 'setup/flim)
-
 ;; (require 'tab-display)
 ;; (require 'weekly-view)
 ;; (require 'cups-dif)
