@@ -8,7 +8,7 @@
 
 (defun dot-emacs::funcall-after (func interval &rest args)
   (let ((default-directory user-emacs-directory))
-    (load-file "last-refreshed-time.el")
+    (ignore-errors (load-file "last-refreshed-time.el"))
     (unless (and dot-emacs::last-refreshed-time
                  interval
                  (time-less-p (time-subtract (current-time) dot-emacs::last-refreshed-time)

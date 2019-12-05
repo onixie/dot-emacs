@@ -8,18 +8,18 @@
   "Make an interned symbol by concatenating the strings/numbers/symbols"
   (intern (mapconcat (lambda (name)
                        (cond
-			((stringp  name) name)
-			((keywordp name) (substring (symbol-name name) 1))
-			((symbolp  name) (symbol-name name))
-			((numberp  name) (number-to-string name))
-			(t (error "unknown type"))))
+                        ((stringp  name) name)
+                        ((keywordp name) (substring (symbol-name name) 1))
+                        ((symbolp  name) (symbol-name name))
+                        ((numberp  name) (number-to-string name))
+                        (t (error "unknown type"))))
                      args "")))
 
 (defun dot-emacs::require+ (file)
-  (or (require (print (dot-emacs::intern* "setup/" file)) nil t)
+  (or (require (dot-emacs::intern* "setup/" file) nil t)
       (progn
-	(require (print (dot-emacs::intern* "setup/" file "/define")) nil t)
-	(require (dot-emacs::intern* "setup/" file "/config") nil t))))
+        (require (dot-emacs::intern* "setup/" file "/define") nil t)
+        (require (dot-emacs::intern* "setup/" file "/config") nil t))))
 
 (defun dot-emacs:boot (&rest setups)
   ;; Improve initialization time (idea borrowed from doom-emacs)
@@ -39,9 +39,9 @@
   (let ((default-directory (file-name-directory (or load-file-name (buffer-file-name)))))
     (normal-top-level-add-to-load-path '("."))
     (normal-top-level-add-subdirs-to-load-path)
-    (push default-directory image-load-path))
+    (push default-directory image-load-path)
 
-  (mapc #'dot-emacs::require+ setups))
+    (mapc #'dot-emacs::require+ setups)))
 
 (defun dot-emacs::kill-buffer-and-window-on (match-regex)
   (lambda ()

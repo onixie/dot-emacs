@@ -4,7 +4,8 @@
 ;; Author: Yc.S <onixie@gmail.com>
 ;; Keywords: emacs configuration
 
-(load-file "setup/boot.el")
+(let ((default-directory (file-name-directory (or load-file-name (buffer-file-name)))))
+  (load-file "setup/boot.el"))
 
 (dot-emacs:boot
  ;; Emacs setups
