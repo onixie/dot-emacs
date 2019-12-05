@@ -4,12 +4,10 @@
 ;; Author: Yc.S <onixie@gmail.com>
 ;; Keywords: emacs configuration
 
-;; Scan all directories under dot-emacs
-(let ((default-directory (file-name-directory (or load-file-name (buffer-file-name)))))
-  (normal-top-level-add-to-load-path '("."))
-  (normal-top-level-add-subdirs-to-load-path)
-  (push default-directory image-load-path))
+(add-to-list 'load-path (file-name-directory (or load-file-name (buffer-file-name))))
 
+(require 'setup/base/init)
+(dot-emacs:bootstrap)
 (require 'setup/base/defs)
 (require 'setup/base/proxy)
 (require 'setup/base/package)
