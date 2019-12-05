@@ -121,20 +121,20 @@ Version 2016-04-04"
                 '("%e"
                   (:eval
                    (let* ((lhs (list (format-mode-line (list
-                                "%I " "%p" "%% "
-                                mode-line-front-space
-                                ;; (when powerline-display-buffer-size
-                                ;;    (powerline-buffer-size 'powerline-active1))
-                                mode-line-mule-info
-                                mode-line-client
-                                mode-line-modified
-                                mode-line-remote
-                                mode-line-frame-identification
-                                mode-line-buffer-identification
-                                vc-mode))))
+                                                        "%I " "%p" "%% "
+                                                        mode-line-front-space
+                                                        ;; (when powerline-display-buffer-size
+                                                        ;;    (powerline-buffer-size 'powerline-active1))
+                                                        mode-line-mule-info
+                                                        mode-line-client
+                                                        mode-line-modified
+                                                        mode-line-remote
+                                                        mode-line-frame-identification
+                                                        mode-line-buffer-identification
+                                                        vc-mode))))
                           (rhs (list (format-mode-line (list
-                                mode-line-misc-info
-                                mode-line-end-spaces))))
+                                                        mode-line-misc-info
+                                                        mode-line-end-spaces))))
                           (center (list (format-mode-line minions-mode-line-modes))))
                      (concat (powerline-render lhs)
                              (powerline-fill-center 'powerline-active1 (/ (powerline-width center) 2.0))
