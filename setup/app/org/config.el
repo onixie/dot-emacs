@@ -5,7 +5,7 @@
     :config
     (load-theme 'org-beautify t)
     (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
-    )
+    (face-spec-set 'org-block '((t (:background "gray10")))))
 
   (use-package org-bullets :ensure t
     :hook
@@ -13,7 +13,7 @@
 
   ;; Redefine shell link type
   (org-link-set-parameters "shell" :follow #'dot-emacs::open-shell)
-  (org-link-set-parameters "exec" :follow #'org--open-shell-link)
+  (org-link-set-parameters "exec"  :follow #'org--open-shell-link)
 
   ;; After org v8, docbook is not included anymore. Use ox-textinfo instead
   (use-package org-docbook
