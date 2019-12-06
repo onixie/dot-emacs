@@ -18,12 +18,12 @@
   (display-time-format "%a %b %d %T %j")
   (display-time-interval 1)
   (display-time-world-list '(("PST8PDT" "Seattle")
-			     ("EST5EDT" "New York")
-			     ("GMT0BST" "London")
-			     ("CET-1CDT" "Paris")
-			     ("IST-5:30" "Bangalore")
-			     ("JST-9" "Tokyo")
-			     ("CST-8" "BeiJing")))
+                             ("EST5EDT" "New York")
+                             ("GMT0BST" "London")
+                             ("CET-1CDT" "Paris")
+                             ("IST-5:30" "Bangalore")
+                             ("JST-9" "Tokyo")
+                             ("CST-8" "BeiJing")))
   (display-time-world-time-format "%A %B %d %T %Z")
   (display-time-world-timer-second 1))
 
@@ -53,10 +53,10 @@
 (use-package window :init (provide 'window)
   :config
   (advice-add 'quit-window :around
-	      (lambda (orig-func &rest args)
-		"Forcibly kill the buffer and window."
-		(interactive "P")
-		(apply orig-func t (rest args)))))
+              (lambda (orig-func &rest args)
+                "Forcibly kill the buffer and window."
+                (interactive "P")
+                (apply orig-func t (rest args)))))
 
 (use-package session :ensure t
   :config
@@ -69,12 +69,17 @@
   (scroll-bar-mode nil))
 
 (tool-bar-mode 0)
-(menu-bar-mode 0)
+(unless (memq window-system '(mac ns))
+  (menu-bar-mode 0))
+(unless (memq window-system '(x))
+  (toggle-frame-fullscreen))
 
 (put 'upcase-region   'disabled nil)
 (put 'downcase-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
 (fset 'yes-or-no-p #'y-or-n-p)
+
+
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
