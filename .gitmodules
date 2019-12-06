@@ -1,9 +1,4 @@
 
-[submodule ".emacs.d/contrib/cedet"]
-	path = .emacs.d/contrib/cedet
-	url = https://github.com/onixie/cedet.git
-	ignore = dirty
-
 [submodule ".emacs.d/contrib/ibus"]
 	path = .emacs.d/contrib/ibus
 	url = https://github.com/onixie/ibus.git
@@ -17,3 +12,6 @@
 	path = .emacs.d/contrib/haskell-mode
 	url = https://github.com/onixie/haskell-mode.git
 	ignore = dirty
+[submodule ".emacs.d/contrib/easy-fwb"]
+	path = .emacs.d/contrib/easy-fwb
+	url = https://github.com/onixie/easy-fwb.git
