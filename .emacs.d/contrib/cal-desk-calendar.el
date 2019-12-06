@@ -233,7 +233,7 @@ diary entries.")
 preferred language.")
 
 (setq calendar-holidays
-  (append general-holidays local-holidays other-holidays solar-holidays))
+  (append holiday-general-holidays holiday-local-holidays holiday-other-holidays holiday-solar-holidays))
 
 (defun within-3-month-range (entry)
   "Determine if a date falls within a month either way of the current month."
@@ -803,13 +803,13 @@ This function is provided for optional use as the `diary-display-hook'."
                            (extract-calendar-month date))
                      (setq holiday-list-last-year
                            (extract-calendar-year date))
-                     (increment-calendar-month
+                     (calendar-increment-month
                       holiday-list-last-month holiday-list-last-year 1)
                      (setq holiday-list
                            (let ((displayed-month holiday-list-last-month)
                                  (displayed-year holiday-list-last-year))
                              (calendar-holiday-list)))
-                     (increment-calendar-month
+                     (calendar-increment-month
                       holiday-list-last-month holiday-list-last-year 1))
                 (let* ((date-string (calendar-date-string date))
                        (date-holiday-list
