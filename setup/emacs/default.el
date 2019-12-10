@@ -62,8 +62,6 @@
   :config
   (session-initialize))
 
-(use-package pack-windows)
-
 (use-package scroll-bar
   :custom
   (scroll-bar-mode nil))
