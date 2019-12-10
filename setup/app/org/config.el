@@ -11,6 +11,8 @@
     :hook
     ((org-mode . (lambda () (org-bullets-mode 1)))))
 
+  (use-package htmlize :ensure t)
+
   ;; Redefine shell link type
   (org-link-set-parameters "shell" :follow #'dot-emacs::open-shell)
   (org-link-set-parameters "exec"  :follow #'org--open-shell-link)
@@ -36,6 +38,7 @@
   (org-startup-indented t)
   (org-src-tab-acts-natively t)
   (org-image-actual-width nil)
+  (org-export-headline-levels 5)
   (org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
   (org-babel-load-languages '((emacs-lisp . t)
                               (shell      . t)
