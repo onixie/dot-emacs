@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 (use-package slime :ensure t
   :config
@@ -124,9 +125,6 @@
       (list 'scheme-mode-hook))
 
 ;;;;;;;;;;;;;;;; Lisp/Elisp Programming ;;;;;;;;;;;;;;;;
-(setq semantic-idle-scheduler-idle-time 0.5
-      semantic-inhibit-functions (list (lambda nil (or (eq major-mode 'lisp-mode) (eq major-mode 'scheme-mode) (eq major-mode 'emacs-lisp-mode)))))
-
 (defun delete-sexp (&optional arg)
   "Delete the sexp (balanced expression) following point.
 With ARG, delete that many sexps after point.
@@ -168,50 +166,39 @@ This command assumes point is not in a string or comment."
     (yank 1)
     (delete-sexp 1)))
 
-(mapc (lambda (hook)
-        (add-hook hook
+(setq semantic-idle-scheduler-idle-time 0.5
+      semantic-inhibit-functions (list (lambda () (memq major-mode '(lisp-mode scheme-mode emacs-lisp-mode)))))
+
+(defvar dot-emacs::*all-lisp-modes*
+  '(emacs-lisp-mode
+    ielm-mode
+    lisp-interaction-mode
+    lisp-mode
+    slime-repl-mode
+    inferior-lisp-mode
+    scheme-mode
+    geiser-repl-mode
+    inferior-scheme-mode))
+
+(mapc (lambda (mode)
+        (add-hook (dot-emacs::intern* mode "-hook")
                   (lambda ()
+                    (eldoc-mode 1)
                     (paredit-mode 1)
-                    (rainbow-delimiters-mode 1))))
-      (list 'emacs-lisp-mode-hook
-            'ielm-mode-hook
-            'lisp-interaction-mode-hook
-            'lisp-mode-hook
-            'slime-repl-mode-hook
-            'inferior-lisp-mode-hook
-            'scheme-mode-hook
-            'geiser-repl-mode-hook
-            'inferior-scheme-mode-hook))
+                    (rainbow-delimiters-mode 1)
 
-;; (mapc (lambda (hook)
-;; 	(add-hook hook
-;; 		  (lambda ()
-;; 		    (set-face-foreground 'paren-face "gray70"))))
-;;       (list 'emacs-lisp-mode-hook 'ielm-mode-hook 'lisp-interaction-mode-hook 'lisp-mode-hook 'slime-repl-mode-hook 'inferior-lisp-mode-hook))
+                    (let ((map (symbol-value (dot-emacs::intern* mode "-map"))))
+                      (define-key map (kbd "C-S-r") #'replace-sexp-at-point)
+                      (define-key map (kbd "C-S-i") #'hug-sexp-a-hug)
+                      (define-key map (kbd "C-S-o") #'rip-sexp-a-hug)))))
+      dot-emacs::*all-lisp-modes*)
 
-;; (mapc (lambda (hook)
-;; 	(add-hook hook
-;; 		  (lambda ()
-;; 		    (rainbow-delimiters-mode 1))))
-;;       (list 'scheme-mode-hook 'geiser-repl-mode-hook 'inferior-scheme-mode-hook))
+(mapc (lambda (hook)
+        (dot-emacs::kill-buffer-and-window-on "\\(?:finished\\|exited\\|killed\\|quit\\)"))
+      '(ielm-mode-hook
+        inferior-scheme-mode-hook))
 
-(add-hook 'ielm-mode-hook (lambda () (eldoc-mode)))
-(add-hook 'ielm-mode-hook (dot-emacs::kill-buffer-and-window-on "\\(?:finished\\|exited\\|killed\\|quit\\)"))
-(add-hook 'inferior-scheme-mode-hook (dot-emacs::kill-buffer-and-window-on "\\(?:finished\\|exited\\|killed\\|quit\\)"))
-
-(add-hook 'emacs-lisp-mode-hook
-          (lambda ()
-            (eldoc-mode)))
-
-(mapc (lambda (map)
-        (define-key map (kbd "C-S-r") 'replace-sexp-at-point)
-        (define-key map (kbd "C-S-i") 'hug-sexp-a-hug)
-        (define-key map (kbd "C-S-o") 'rip-sexp-a-hug))
-      (list lisp-mode-map emacs-lisp-mode-map lisp-interaction-mode-map scheme-mode-map))
-
-(mapc (lambda (map)
-        (define-key map (kbd "TAB") 'slime-indent-and-complete-symbol))
-      (list lisp-mode-map))
+(define-key lisp-mode-map (kbd "TAB") 'slime-indent-and-complete-symbol)
 
 (setq magic-mode-alist nil)
 (add-to-list 'magic-mode-alist '("#lang[[:space:]]+racket" . scheme-mode))
@@ -219,8 +206,8 @@ This command assumes point is not in a string or comment."
 (add-to-list 'magic-mode-alist '("#lang[[:space:]]+scribble" . scribble-mode))
 (add-to-list 'magic-mode-alist '("#!\\(.+/\\)*sbcl[[:space:]]+--script$" . lisp-mode))
 
-                                        ; Switching () and [] keys, I don't like it.
-                                        ; But it really relieves my fingers' wrick :P
+;; ;; Switching () and [] keys, I don't like it.
+;; ;; But it really relieves my fingers' wrick :P
 ;; (swap-key-translation (kbd "(") (kbd "["))
 ;; (swap-key-translation (kbd ")") (kbd "]"))
 
