@@ -25,8 +25,10 @@
     (org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s"))
 
   ;; Downcase all templates
-  (mapc (lambda (arg) (setcdr arg (list (downcase (cadr arg)))))
+  (mapc (lambda (arg) (setcdr arg (downcase (cdr arg))))
         org-structure-template-alist)
+
+  (org-babel-lob-ingest "library.org")
 
   :hook
   ((org-babel-after-execute   . org-redisplay-inline-images)

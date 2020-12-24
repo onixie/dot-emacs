@@ -1,0 +1,6 @@
+#+name: copy-to-clipboard
+#+begin_src emacs-lisp :var content="" :results value silent
+  (progn
+    (kill-new content)
+    content)
+#+end_src
