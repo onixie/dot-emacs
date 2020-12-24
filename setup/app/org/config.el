@@ -19,7 +19,7 @@
 
   ;; After org v8, docbook is not included anymore. Use ox-textinfo instead
   (use-package org-docbook
-    :if (< (string-to-number (car (split-string org-version "\\."))) 8)
+    :if  (< 0 (string-to-number (car (split-string org-version "\\."))) 8)
     :custom
     (org-export-docbook-xsl-fo-proc-command "fop %s %s")
     (org-export-docbook-xslt-proc-command "xsltproc --output %s /usr/share/docbook2odf/xsl/docbook.xsl %s"))
