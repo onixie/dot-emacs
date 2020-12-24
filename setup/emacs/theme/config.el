@@ -129,16 +129,16 @@
     :custom
     (highlight-current-line-globally t)))
 
-(use-package pp-c-l :ensure t
-  :config
-  (face-spec-set 'pp^L-highlight
-                 '((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
-  (pretty-control-l-mode 1)
-  :custom
-  (pp^L-^L-string "                              -* Next Page *-                              ")
-  (pp^L-^L-string-pre "")
-  :bind
-  (("C-S-l" . #'dot-emacs:insert-pretty-control-line))
-  )
+;; (use-package pp-c-l :ensure t
+;;   :config
+;;   (face-spec-set 'pp^L-highlight
+;;                  '((((type x w32 mac graphic) (class color)) (:inverse-video t :box (:line-width 1 :style pressed-button)))))
+;;   (pretty-control-l-mode 1)
+;;   :custom
+;;   (pp^L-^L-string "                              -* Next Page *-                              ")
+;;   (pp^L-^L-string-pre "")
+;;   :bind
+;;   (("C-S-l" . #'dot-emacs:insert-pretty-control-line))
+;;   )
 
 (provide 'setup/emacs/theme/config)

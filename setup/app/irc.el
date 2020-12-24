@@ -1,9 +1,9 @@
-(use-package erc :ensure t :commands erc
+(use-package erc :ensure nil :commands erc
   :custom
-  (erc-autojoin-channels-alist '(("freenode.net" 
-				  "#lisp" 
-				  "#emacs" 
-				  "#sbcl" 
+  (erc-autojoin-channels-alist '(("freenode.net"
+				  "#lisp"
+				  "#emacs"
+				  "#sbcl"
 				  "#maxima"
 				  "#haskell"
 				  "#xmonad"
