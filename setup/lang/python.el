@@ -1,3 +1,6 @@
+;(system-packages-ensure "python2.7-virtualenv")
+;(system-packages-ensure "python3.8-virtualenv")
+
 (use-package python
   :custom
   (python-indent-offset 4)
