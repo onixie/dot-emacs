@@ -1,5 +1,7 @@
 
 (use-package shell
+  :custom
+  (shell-prompt-pattern "^[^#$%>\n]*#?[#$%>] *")
   :hook
   ((shell-mode . dot-emacs::kill-buffer-and-window-on-process-die)
    (shell-mode . ansi-color-for-comint-mode-on)))
