@@ -1,6 +1,6 @@
 ;;; dot-emacs configuration
 
-;; Copyright (C) 2019 Yc.S
+;; Copyright (C) 2019, 2020 Yc.S
 ;; Author: Yc.S <onixie@gmail.com>
 ;; Keywords: emacs configuration
 
@@ -39,6 +39,8 @@
  :lang/r
  :lang/typescript
  :lang/lisp
+ :lang/kotlin
+ :lang/sql
  )
 
 ;; (require 'setup/flim)
