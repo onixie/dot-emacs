@@ -4,3 +4,12 @@
     (kill-new content)
     content)
 #+end_src
+
+#+name: tangle
+#+begin_src elisp :var targets="" :results silent
+  (dolist (target (split-string targets))
+    (unless (equal target "")
+      (save-excursion
+        (org-babel-goto-named-src-block target)
+        (org-babel-tangle '(4)))))
+#+end_src
