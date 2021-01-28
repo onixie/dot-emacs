@@ -41,6 +41,7 @@
                  (tramp-remote-shell-args    ("-c"))))
   )
 
+(use-package kubernetes-tramp :ensure t)
 (use-package lxc-tramp     :ensure t)
 (use-package lxd-tramp     :ensure t)
 (use-package docker-tramp  :ensure t)
