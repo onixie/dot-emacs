@@ -122,12 +122,13 @@
 
 ;; Workaround: since emacs27, old-style backquote syntax became an error
 ;; Find other line highlighter or wait until someone solves the error.
-(when (< emacs-major-version 27)
+(if (< emacs-major-version 27)
   (use-package highlight-current-line :ensure t
     :config
     (face-spec-set 'highlight-current-line-face '((t (:background "gray25"))))
     :custom
-    (highlight-current-line-globally t)))
+    (highlight-current-line-globally t))
+  (global-hl-line-mode 1))
 
 ;; (use-package pp-c-l :ensure t
 ;;   :config
