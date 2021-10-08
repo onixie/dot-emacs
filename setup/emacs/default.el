@@ -46,6 +46,7 @@
 
 (use-package simple
   :custom
+  (async-shell-command-buffer 'new-buffer)
   (column-number-mode t)
   (mark-ring-max 1024)
   (global-mark-ring-max 1024))
