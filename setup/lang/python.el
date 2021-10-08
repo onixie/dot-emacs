@@ -24,4 +24,7 @@
   :hook
   ((python-mode . flycheck-mode)))
 
+(use-package jinja2-mode :ensure t
+  :mode ("\\.jinja\\'" "\\.jinja2\\'"))
+
 (provide 'setup/lang/python)
