@@ -49,7 +49,9 @@
         ("C-p" . #'company-select-previous)
         ([tab]    . #'company-select-next)
         ([S-tab]  . #'company-select-previous)
-        ([return] . #'company-complete-selection)))
+        ([return] . #'company-complete-selection))
+  :config
+  (setq lsp-completion-provider :capf))
 
 (use-package lsp-mode :ensure t :commands lsp
   :custom
@@ -67,7 +69,7 @@
         ([remap xref-find-definitions] . #'lsp-ui-peek-find-definitions)
         ([remap xref-find-references]  . #'lsp-ui-peek-find-references)))
 
-(use-package company-lsp :ensure t :commands company-lsp)
+
 
 (use-package dap-mode :ensure t
   :config
