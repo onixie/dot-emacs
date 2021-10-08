@@ -56,7 +56,7 @@
               (lambda (orig-func &rest args)
                 "Forcibly kill the buffer and window."
                 (interactive "P")
-                (apply orig-func t (rest args)))))
+                (apply orig-func t (cl-rest args)))))
 
 (use-package session :ensure t
   :config
