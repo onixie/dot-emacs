@@ -41,6 +41,7 @@
  :lang/lisp
  :lang/kotlin
  :lang/sql
+ :lang/bazel ; for starlark
  )
 
 ;; (require 'setup/flim)
