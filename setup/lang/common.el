@@ -53,11 +53,14 @@
   :config
   (setq lsp-completion-provider :capf))
 
+(use-package which-key :ensure t)
+
 (use-package lsp-mode :ensure t :commands lsp
   :custom
   (lsp-prefer-flymake nil)
   :hook
-  ((lsp-mode . lsp-lens-mode)))
+  ((lsp-mode . lsp-lens-mode)
+   (lsp-mode . lsp-enable-which-key-integration)))
 
 (use-package lsp-ui :ensure t :commands lsp-ui-mode
   :config
@@ -69,11 +72,17 @@
         ([remap xref-find-definitions] . #'lsp-ui-peek-find-definitions)
         ([remap xref-find-references]  . #'lsp-ui-peek-find-references)))
 
-
-
 (use-package dap-mode :ensure t
   :config
   (dap-mode t)
   (dap-ui-mode t))
+
+(use-package lsp-treemacs :ensure t :after lsp treemacs)
+(use-package helm-xref :ensure t
+  :bind
+  (:map global-map
+        ([remap switch-to-buffer] . #'helm-mini)
+        ([remap execute-extended-command] . #'helm-M-x)))
+(use-package helm-lsp :ensure t :after lsp-mode lsp-treemacs helm-xref projectile)
 
 (provide 'setup/lang/common)
