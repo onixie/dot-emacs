@@ -1,3 +1,4 @@
+(system-packages-ensure "fish")
 
 (use-package shell
   :custom
