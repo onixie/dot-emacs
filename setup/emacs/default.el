@@ -3,7 +3,7 @@
   (inhibit-startup-buffer-menu t)
   (inhibit-startup-echo-area-message "")
   (inhibit-startup-screen t)
-  (initial-buffer-choice (lambda () (prog1 (ansi-term "fish") (delete-other-windows))))
+  (initial-buffer-choice (lambda () (prog1 (get-buffer "*scratch*") (delete-other-windows))))
   (initial-scratch-message nil)
   (auto-save-list-file-prefix nil)
   )

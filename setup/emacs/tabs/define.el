@@ -43,6 +43,7 @@
      (string-prefix-p "*system-packages*" name t)
      (string-prefix-p "OmniServer" name t)
      (string-prefix-p "magit: " name t)
+     (string-prefix-p "*ansi-term" name t)
      (string-suffix-p "log*" name t)
      (string-suffix-p "Output*" name t)
      (string-suffix-p "*kotlin-ls" name t)
