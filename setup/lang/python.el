@@ -1,5 +1,5 @@
 ;(system-packages-ensure "python2.7-virtualenv")
-(system-packages-ensure "python3.8-virtualenv")
+(system-packages-ensure "python3.10-virtualenv-20.14.0")
 
 (use-package python
   :custom

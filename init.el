@@ -1,6 +1,6 @@
 ;;; dot-emacs configuration
 
-;; Copyright (C) 2019, 2020, 2021 Yc.S
+;; Copyright (C) 2019, 2020, 2021, 2022 Yc.S
 ;; Author: Yc.S <onixie@gmail.com>
 ;; Keywords: emacs configuration
 
@@ -21,6 +21,7 @@
  :emacs/calendar
  :emacs/keymap
  ;; Application setups
+ :app/helm
  :app/gnuplot
  :app/git
  :app/org

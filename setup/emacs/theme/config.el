@@ -1,6 +1,7 @@
 
-(use-package atom-one-dark-theme :ensure t
-  :config (load-theme 'atom-one-dark t))
+(if (display-graphic-p)
+    (use-package atom-one-dark-theme :ensure t
+      :config (load-theme 'atom-one-dark t)))
 
 (use-package minions :ensure t
   :config (minions-mode))
@@ -15,9 +16,10 @@
   (sml/no-confirm-load-theme t)
   (sml/vc-mode-show-backend t))
 
-(use-package smart-mode-line-atom-one-dark-theme :ensure t :after smart-mode-line
-  :custom
-  (sml/theme 'atom-one-dark))
+(if (display-graphic-p)
+    (use-package smart-mode-line-atom-one-dark-theme :ensure t :after smart-mode-line
+      :custom
+      (sml/theme 'atom-one-dark)))
 
 (use-package rainbow-delimiters :ensure t
   :config
