@@ -58,6 +58,9 @@
 (use-package lsp-mode :ensure t :commands lsp
   :custom
   (lsp-prefer-flymake nil)
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.6)
+  (lsp-inlay-hint-enable t)
   :hook
   ((lsp-mode . lsp-lens-mode)
    (lsp-mode . lsp-enable-which-key-integration)))
@@ -70,7 +73,10 @@
   :bind
   (:map lsp-ui-mode-map
         ([remap xref-find-definitions] . #'lsp-ui-peek-find-definitions)
-        ([remap xref-find-references]  . #'lsp-ui-peek-find-references)))
+        ([remap xref-find-references]  . #'lsp-ui-peek-find-references))
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t))
 
 (use-package dap-mode :ensure t
   :config

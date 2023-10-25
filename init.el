@@ -1,6 +1,6 @@
 ;;; dot-emacs configuration
 
-;; Copyright (C) 2019, 2020, 2021, 2022 Yc.S
+;; Copyright (C) 2023 Yc.S
 ;; Author: Yc.S <onixie@gmail.com>
 ;; Keywords: emacs configuration
 
@@ -38,6 +38,7 @@
  :lang/nix
  :lang/c
  :lang/r
+ :lang/rust
  :lang/typescript
  :lang/lisp
  :lang/kotlin

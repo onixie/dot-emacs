@@ -18,14 +18,13 @@
    (interactive-haskell-mode . eldoc-mode)
    (interactive-haskell-mode . dot-emacs::kill-buffer-and-window-on-process-die)))
 
-(use-package lsp-haskell :ensure t
+(use-package lsp-haskell :ensure t :after haskell-mode
   :custom
   (lsp-haskell-process-wrapper-function #'dot-emacs::haskell-process-nix-wrapper)
   :bind
-  (:map interactive-haskell-mode-map
-        ("M-." . lsp-find-definition))
+  (:map haskell-mode-map
+        ("<f12>" . lsp-find-definition))
   :hook
-  ((haskell-mode . lsp)
-   (haskell-mode . (lambda () (add-to-list 'company-backends #'company-lsp)))))
+  ((haskell-mode . lsp)))
 
 (provide 'setup/lang/haskell)
