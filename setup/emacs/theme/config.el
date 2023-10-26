@@ -20,7 +20,8 @@
 (if (display-graphic-p)
     (use-package smart-mode-line-atom-one-dark-theme :ensure t :after smart-mode-line
       :custom
-      (sml/theme 'atom-one-dark)))
+      (sml/theme 'atom-one-dark))
+  (sml/theme 'dark))
 
 (use-package rainbow-delimiters :ensure t
   :config
