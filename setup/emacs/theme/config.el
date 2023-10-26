@@ -1,7 +1,8 @@
 
 (if (display-graphic-p)
     (use-package atom-one-dark-theme :ensure t
-      :config (load-theme 'atom-one-dark t)))
+      :config (load-theme 'atom-one-dark t))
+  (load-theme 'manoj-dark t))
 
 (use-package minions :ensure t
   :config (minions-mode))
