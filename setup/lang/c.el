@@ -240,11 +240,12 @@
 
 (use-package clang-format :ensure t :after (company flycheck)
   :hook
-  ((c++-mode . company-mode)
-   (c-mode   . company-mode)
-   (c++-mode . flycheck-mode)
-   (c-mode   . flycheck-mode)
-   (c++-mode . lsp)
-   (c-mode   . lsp)))
+  ((c-mode-common . company-mode)
+   (c-mode-common . flycheck-mode)
+   (c-mode-common . lsp)))
+
+(use-package google-c-style :ensure t
+  :hook
+  ((c-mode-common . google-set-c-style)))
 
 (provide 'setup/lang/c)
