@@ -248,4 +248,4 @@
   :hook
   ((c-mode-common . google-set-c-style)))
 
-(provide 'setup/lang/c)
+(provide 'setup/lang/c++)

@@ -35,8 +35,9 @@
  :lang/haskell
  :lang/python
  :lang/markup
+ :lang/markdown
  :lang/nix
- :lang/c
+ :lang/c++
  :lang/r
  :lang/rust
  :lang/typescript
