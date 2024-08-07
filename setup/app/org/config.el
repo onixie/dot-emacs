@@ -8,6 +8,8 @@
         (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
         (face-spec-set 'org-block '((t (:background "gray10"))))))
 
+  (use-package ob-rust :ensure t)
+
   (use-package org-bullets :ensure t
     :hook
     ((org-mode . (lambda () (org-bullets-mode 1)))))
@@ -49,6 +51,8 @@
                               (plantuml   . t)
                               (gnuplot    . t)
                               (org        . t)
+                              (rust       . t)
+                              (C          . t)
                               ))
   (org-todo-keywords '((sequence "TODO" "FEEDBACK" "VERIFY" "|" "DONE" "DELEGATED")
                        (sequence "|" "|" "CANCELED")

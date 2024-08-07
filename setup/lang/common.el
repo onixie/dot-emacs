@@ -51,7 +51,8 @@
         ([S-tab]  . #'company-select-previous)
         ([return] . #'company-complete-selection))
   :config
-  (setq lsp-completion-provider :capf))
+  (setq lsp-completion-provider :none)
+  (setq company-backends '((company-capf :with company-yasnippet))))
 
 (use-package which-key :ensure t)
 
