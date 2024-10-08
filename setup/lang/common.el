@@ -65,12 +65,12 @@
   :bind
   (:map lsp-mode-map
         ("M-j" . lsp-ui-imenu)
-        ("M-?" . lsp-find-references)
-        ("<f12>" . lsp-find-definition)
-        ("<f9>" . lsp-find-implementation)
+        ("M-?" . lsp-find-definition)
+        ("C-M-?" . lsp-find-implementation)
+        ("M-\"" . lsp-find-references)
+        ("<f2>" . lsp-rename)
         ("C-c C-c l" . flycheck-list-errors)
         ("C-c C-c a" . lsp-execute-code-action)
-        ("C-c C-c r" . lsp-rename)
         ("C-c C-c q" . lsp-workspace-restart)
         ("C-c C-c Q" . lsp-workspace-shutdown))
   :hook

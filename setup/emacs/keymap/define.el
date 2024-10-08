@@ -69,4 +69,29 @@ Version 2016-04-04"
   (interactive)
   (set-mark-command t))
 
+(defun dot-emacs::gdb-mouse-set-clear-breakpoint (event)
+  "Set/clear breakpoint in left fringe/margin at mouse click.
+If not in a source or disassembly buffer just set point."
+  (interactive "e")
+  (mouse-minibuffer-check event)
+  (let ((posn (event-end event)))
+    (with-selected-window (posn-window posn)
+      (if (or (buffer-file-name) (derived-mode-p 'gdb-disassembly-mode))
+	  (if (numberp (posn-point posn))
+	      (save-excursion
+		(goto-char (posn-point posn))
+		(if (or (posn-object posn)
+			(eq (car (fringe-bitmaps-at-pos (posn-point posn)))
+			    'breakpoint))
+            (progn
+              (remove-overlays (point) (point))
+		      (gud-remove nil))
+          (overlay-put
+           (make-overlay (point) (point))
+           'before-string (propertize
+                           "x" 'display
+                           `(left-fringe breakpoint warning)))
+		  (gud-break nil)))))
+      (posn-set-point posn))))
+
 (provide 'setup/emacs/keymap/define)

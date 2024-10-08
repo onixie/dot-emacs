@@ -248,4 +248,32 @@
   :hook
   ((c-mode-common . google-set-c-style)))
 
+(use-package gud :ensure t
+  :config
+  (setq gdb-many-windows t
+        gdb-use-separate-io-buffer t)
+  (advice-add 'gdb-setup-windows :after
+              (lambda () (set-window-dedicated-p (selected-window) t)))
+  :bind
+  (:map gud-mode-map
+        ("<f5>" . gud-cont)
+        ("<f6>" . gud-next)
+        ("<f7>" . gud-step)
+        ("S-<f7>" . gud-finish))
+  (:map c-mode-map
+        ("<f5>" . gud-cont)
+        ("<f6>" . gud-next)
+        ("<f7>" . gud-step)
+        ("S-<f7>" . gud-finish)
+        ("<left-fringe> S-<mouse-1>" . dot-emacs::gdb-mouse-set-clear-breakpoint)
+        ("<left-margin> S-<mouse-1>" . dot-emacs::gdb-mouse-set-clear-breakpoint))
+  (:map c++-mode-map
+        ("<f5>" . gud-cont)
+        ("<f6>" . gud-next)
+        ("<f7>" . gud-step)
+        ("S-<f7>" . gud-finish)
+        ("<left-fringe> S-<mouse-1>" . dot-emacs::gdb-mouse-set-clear-breakpoint)
+        ("<left-margin> S-<mouse-1>" . dot-emacs::gdb-mouse-set-clear-breakpoint))
+  )
+
 (provide 'setup/lang/c++)
