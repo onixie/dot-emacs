@@ -3,8 +3,8 @@
 
 (use-package simple
   :bind
-  (("<f7>"   . #'pop-global-mark)
-   ("<S-f7>" . #'dot-emacs::xah-pop-local-mark-ring)
+  (("<f9>"   . #'pop-global-mark)
+   ("<S-f9>" . #'dot-emacs::xah-pop-local-mark-ring)
    ("C-x M-w". #'dot-emacs:toggle-wrap-line)))
 
 (use-package face-remap
@@ -33,7 +33,7 @@
 	("E" . #'dot-emacs:etags)))
 
 (use-package setup/emacs/tabs/config
-  :bind 
+  :bind
   (:map centaur-tabs-mode-map
 	("<S-left>" . #'centaur-tabs-backward)
 	("<S-right>". #'centaur-tabs-forward)
