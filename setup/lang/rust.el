@@ -11,7 +11,20 @@
         ("C-c C-c s" . lsp-rust-analyzer-status))
   :config
   (setq rustic-format-on-save t)
-  (add-hook 'rustic-mode-hook 'dot-emacs::rustic-mode-hook))
+  (add-hook 'rustic-mode-hook 'dot-emacs::rustic-mode-hook)
+  (add-to-list 'display-buffer-alist
+	           '("\\*\\(rustfmt\\|cargo-.*\\)\\*"
+	             (display-buffer-reuse-window display-buffer-pop-up-window)
+	             (window-width . 120)
+                 (window-parameters . (
+                                       ;(no-other-window . t)
+                                       ;(no-delete-other-windows . t)
+                                       ))
+                 (dedicated . t)
+	             (side . right)
+                 (slot . 3)))
+
+  )
 
 (defun dot-emacs::rustic-mode-hook ()
   ;; so that run C-c C-c C-r works without having to confirm, but don't try to

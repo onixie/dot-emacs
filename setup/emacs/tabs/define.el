@@ -47,6 +47,8 @@
      (string-suffix-p "log*" name t)
      (string-suffix-p "Output*" name t)
      (string-suffix-p "*kotlin-ls" name t)
+     (string-suffix-p "*rust" name t)
+     (string-suffix-p "*cargo" name t)
      ;; (string-prefix-p "*helm" name t)
      (apply orig-fun args)
      )))
