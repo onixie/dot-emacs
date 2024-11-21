@@ -53,4 +53,13 @@
 (defun org-/ (ref &rest args)
   (apply #'concatenate 'string (org-babel-ref-resolve ref) args))
 
+(defun dot-emacs::babel-color-result ()
+  (when-let ((beg (org-babel-where-is-src-block-result nil nil)))
+    (save-excursion
+      (goto-char beg)
+      (when (looking-at org-babel-result-regexp)
+        (let ((end (org-babel-result-end))
+              (ansi-color-context-region nil))
+          (ansi-color-apply-on-region beg end))))))
+
 (provide 'setup/app/org/define)

@@ -35,6 +35,7 @@
 
   :hook
   ((org-babel-after-execute   . org-redisplay-inline-images)
+   (org-babel-after-execute   . dot-emacs::babel-color-result)
    (org-after-todo-statistics . dot-emacs::org-summary-todo)
    (after-save . org-babel-tangle))
   :custom

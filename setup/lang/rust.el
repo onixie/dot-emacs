@@ -10,7 +10,7 @@
   (:map rustic-mode-map
         ("C-c C-c s" . lsp-rust-analyzer-status))
   :config
-  (setq rustic-format-on-save t)
+  ;(setq rustic-format-on-save t)
   (add-hook 'rustic-mode-hook 'dot-emacs::rustic-mode-hook)
   (add-to-list 'display-buffer-alist
 	           '("\\*\\(rustfmt\\|cargo-.*\\)\\*"
