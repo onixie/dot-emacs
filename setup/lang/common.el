@@ -59,8 +59,8 @@
 (use-package lsp-mode :ensure t :commands lsp
   :custom
   (lsp-prefer-flymake nil)
-  (lsp-eldoc-render-all t)
-  (lsp-idle-delay 0.6)
+  (lsp-eldoc-enable-hover nil)
+  (lsp-idle-delay 1.0)
   (lsp-inlay-hint-enable t)
   :bind
   (:map lsp-mode-map
