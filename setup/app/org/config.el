@@ -1,14 +1,12 @@
-(use-package org :ensure t :after session
+(use-package ob-rust :ensure t)
+(use-package org :ensure t :after session ob-rust
   :config
-
   (if (display-graphic-p)
       (use-package org-beautify-theme :ensure t
         :config
         (load-theme 'org-beautify t)
         (face-spec-set 'org-hide '((((background dark)) (:inherit default :foreground "default" :inverse-video t))))
         (face-spec-set 'org-block '((t (:background "gray10"))))))
-
-  (use-package ob-rust :ensure t)
 
   (use-package org-bullets :ensure t
     :hook
