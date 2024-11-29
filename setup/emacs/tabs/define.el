@@ -12,7 +12,8 @@
 
 (defun dot-emacs::centaur-tabs-project-name (orig-fun &rest args)
   (let ((res (apply orig-fun args)))
-    (replace-regexp-in-string "Project:.*/\\(.*\\)/" "Project: \\1" res)))
+   (when res
+    (replace-regexp-in-string "Project:.*/\\(.*\\)/" "Project: \\1" res))))
 
 (defun dot-emacs::centaur-tabs-buffer-groups (orig-fun &rest args)
   (list
