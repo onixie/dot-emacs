@@ -1,6 +1,6 @@
 ;;; dot-emacs configuration
 
-;; Copyright (C) 2023 Yc.S
+;; Copyright (C) 2024 Yc.S
 ;; Author: Yc.S <onixie@gmail.com>
 ;; Keywords: emacs configuration
 
@@ -45,6 +45,7 @@
  :lang/kotlin
  :lang/sql
  :lang/bazel ; for starlark
+ :lang/wgsl
  )
 
 ;; (require 'setup/flim)
